@@ -348,7 +348,11 @@ fig = px.line_polar(
 fig.update_traces(fill='toself', line_color='cyan')
 fig.update_layout(
     polar=dict(
-        radialaxis=dict(showticklabels=False) # Menyembunyikan angka skala
+        radialaxis=dict(
+            showticklabels=False, # Menyembunyikan angka skala
+            showline=False,       # Menyembunyikan garis lurus horizontal
+            ticks=''              # Menyembunyikan titik-titik kecil pada garis
+        )
     ),
     paper_bgcolor="rgba(0,0,0,0)", 
     plot_bgcolor="rgba(0,0,0,0)"
