@@ -21,16 +21,14 @@ mode_aktif = st.session_state.get("mode_pengunjung", "umum")
 # ==========================================
 if mode_aktif == "hok":
     # --- TAMPILAN EKSKLUSIF KOMUNITAS HOK ---
-    ikl_hub = st.Page("pages/2_IKL_Hub.py", title="IKL Standings", icon="📊", default=True)
-    ikl_profil = st.Page("pages/2a_IKL_Team_Profiling.py", title="Team Profiling", icon="🛡️")
-    ikl_h2h = st.Page("pages/2b_IKL_H2H.py", title="Versus Mode (H2H)", icon="⚔️")
+    ikl_hub = st.Page("pages/2_IKL_Hub.py", title="Esport Data Analyst", icon="📊", default=True)
     
-    nav = st.navigation([ikl_hub, ikl_profil, ikl_h2h])
+    nav = st.navigation([ikl_hub])
     
     with st.sidebar:
         st.markdown("---")
         # Tombol rahasia membuang ingatan memori dan URL
-        if st.button("💼 Lihat Portofolio Penuh Dava"):
+        if st.button("💼 Tentang Davaard"):
             st.query_params.clear() 
             st.session_state["mode_pengunjung"] = "umum" # Kunci kembali ke mode umum
             st.rerun()
@@ -40,15 +38,13 @@ else:
     home = st.Page("pages/0_Home.py", title="Beranda & CV", icon="🏠", default=True)
     track_record = st.Page("pages/1_Track_Record.py", title="Rekam Jejak", icon="🏆")
     
-    ikl_hub = st.Page("pages/2_IKL_Hub.py", title="IKL Standings", icon="📊")
-    ikl_profil = st.Page("pages/2a_IKL_Team_Profiling.py", title="Team Profiling", icon="🛡️")
-    ikl_h2h = st.Page("pages/2b_IKL_H2H.py", title="Versus Mode (H2H)", icon="⚔️")
+    ikl_hub = st.Page("pages/2_IKL_Hub.py", title="Esport Data Analyst", icon="📊")
     
     data_analyst = st.Page("pages/3_Data_Analyst.py", title="Data Analyst", icon="📈")
 
     nav = st.navigation({
         "Profil Utama": [home, track_record],
-        "Esports Analytics": [ikl_hub, ikl_profil, ikl_h2h],
+        "Esports Analytics": [ikl_hub],
         "Learning Hub": [data_analyst]
     })
     
