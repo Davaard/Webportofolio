@@ -382,17 +382,17 @@ global_wins = {}
 team_freq = {}
 team_wins = {}
 
-# Buang data Upcoming (hanya ambil yang sudah ada Result)
-df_history = df_long.dropna(subset=['Result']).copy()
+# UBAH 'Result' menjadi 'Win' (karena namanya sudah diganti di Fase 1)
+df_combo_history = df_long.dropna(subset=['Win']).copy()
 
-# FUNGSI KOREKSI: Deteksi kemenangan murni dari angka 1 dan 0
+# FUNGSI KOREKSI: Lebih simpel karena nilainya sudah murni angka 1 dan 0 dari atas
 def is_win(result_val):
-    return 1 if str(result_val).strip() == '1' else 0
+    return 1 if float(result_val) == 1.0 else 0
 
 # Hitung Statistik Global (Semua Tim)
-for idx, row in df_history.iterrows():
+for idx, row in df_combo_history.iterrows():
     heroes = row['Heroes_List']
-    win_status = is_win(row['Result'])
+    win_status = is_win(row['Win']) # UBAH 'Result' menjadi 'Win'
     if isinstance(heroes, list) and len(heroes) > 0:
         n = len(heroes)
         # Ekstrak ukuran 1 (Solo) sampai 5 (Quintet)
@@ -402,10 +402,10 @@ for idx, row in df_history.iterrows():
                 global_wins[combo] = global_wins.get(combo, 0) + win_status
 
 # Hitung Statistik Khusus Tim Pilihan
-df_tim = df_history[df_history['Team'] == tim_pilihan]
+df_tim = df_combo_history[df_combo_history['Team'] == tim_pilihan]
 for idx, row in df_tim.iterrows():
     heroes = row['Heroes_List']
-    win_status = is_win(row['Result'])
+    win_status = is_win(row['Win']) # UBAH 'Result' menjadi 'Win'
     if isinstance(heroes, list) and len(heroes) >= 2:
         n = len(heroes)
         for r in range(2, min(n + 1, 6)):
