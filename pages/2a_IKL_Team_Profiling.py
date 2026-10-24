@@ -427,28 +427,50 @@ for kombo, freq in kombo_terurut_size:
         kombo_final[kombo] = freq
 
 # ==========================================
-# 3. TAMPILAN UI DINAMIS
+# 3. TAMPILAN UI DINAMIS (BERDASARKAN EKSKLUSIVITAS)
 # ==========================================
-# Urutkan lagi dari frekuensi tertinggi untuk ditampilkan
-kombo_display = sorted(kombo_final.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:6] # Maks 6 Kotak
+kombo_display = sorted(kombo_final.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:6]
 
 if not kombo_display:
     st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang memenuhi syarat (Duo min. 3x, Trio+ min. 2x).")
 else:
     cols = st.columns(3)
     
-    for idx, (kombo, frekuensi) in enumerate(kombo_display):
+    for idx, (kombo, freq_tim) in enumerate(kombo_display):
         with cols[idx % 3]:
-            # Format teks agar rapi (misal: "A, B, & C")
+            # Hitung seberapa sering kombo ini dipakai oleh SEMUA TIM di turnamen
+            freq_global = 0
+            for all_heroes in df_long['Heroes_List']:
+                if isinstance(all_heroes, list) and set(kombo).issubset(set(all_heroes)):
+                    freq_global += 1
+            
+            # Hitung Rasio Eksklusivitas
+            rasio = freq_tim / freq_global if freq_global > 0 else 1
+            persentase = int(rasio * 100)
+            
+            # Format nama hero
             if len(kombo) == 2:
                 nama_kombo = f"{kombo[0]} & {kombo[1]}"
-                st.info(f"**{nama_kombo}**\n\n🔹 Duo Pick: **{frekuensi}x**") # Biru
+                tipe_kombo = "Duo"
             elif len(kombo) == 3:
                 nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
-                st.success(f"**{nama_kombo}**\n\n🌿 Trio Pick: **{frekuensi}x**") # Hijau
-            elif len(kombo) == 4:
+                tipe_kombo = "Trio"
+            else:
                 nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
-                st.warning(f"**{nama_kombo}**\n\n🔥 Quad Pick: **{frekuensi}x**") # Kuning
-            elif len(kombo) == 5:
-                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
-                st.error(f"**{nama_kombo}**\n\n🌟 Full Squad: **{frekuensi}x**") # Merah
+                tipe_kombo = f"{len(kombo)} Heroes"
+
+            # Tentukan Warna berdasarkan Eksklusivitas
+            teks_tampilan = f"**{nama_kombo}**\n\n🎯 {tipe_kombo} Pick: **{freq_tim}x**\n\n📊 Eksklusivitas: **{persentase}%**"
+            
+            if rasio >= 0.50:
+                # Merah: True Signature (Lebih dari 50% penggunaan global adalah milik tim ini)
+                st.error("🌟 " + teks_tampilan)
+            elif rasio >= 0.25:
+                # Kuning: Semi-Signature (Cukup khas untuk tim ini)
+                st.warning("🔥 " + teks_tampilan)
+            elif rasio >= 0.10:
+                # Hijau: Common Pick (Banyak tim yang pakai, tapi tim ini lumayan sering)
+                st.success("🌿 " + teks_tampilan)
+            else:
+                # Biru: Meta Universal (Sejuta umat, tim ini cuma ikut-ikutan meta)
+                st.info("🔹 " + teks_tampilan)
