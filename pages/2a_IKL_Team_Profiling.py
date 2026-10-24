@@ -428,23 +428,43 @@ for combo, freq in team_freq.items():
 # 3. SELEKSI ALAM (RESOLUSI KONFLIK SUBSET BERDASARKAN WINRATE TIM)
 # ==========================================
 combos_to_remove = set()
-valid_combo_list = list(team_valid.keys())
 
-for i in range(len(valid_combo_list)):
-    for j in range(i + 1, len(valid_combo_list)):
-        c1, c2 = valid_combo_list[i], valid_combo_list[j]
-        s1, s2 = set(c1), set(c2)
+# Urutkan dari kombo terbesar (Quintet) ke terkecil (Duo) agar evaluasi hirarki lebih rapi
+sorted_combos = sorted(list(team_valid.keys()), key=lambda x: len(x), reverse=True)
+
+for i in range(len(sorted_combos)):
+    c_large = sorted_combos[i]
+    if c_large in combos_to_remove:
+        continue
         
-        if s1.issubset(s2) or s2.issubset(s1):
-            wr1, wr2 = team_valid[c1]['wr'], team_valid[c2]['wr']
+    for j in range(i + 1, len(sorted_combos)):
+        c_small = sorted_combos[j]
+        if c_small in combos_to_remove:
+            continue
             
-            if wr1 < wr2:
-                combos_to_remove.add(c1)
-            elif wr2 < wr1:
-                combos_to_remove.add(c2)
+        if set(c_small).issubset(set(c_large)):
+            wr_large = team_valid[c_large]['wr']
+            wr_small = team_valid[c_small]['wr']
+            f_large = team_valid[c_large]['freq']
+            f_small = team_valid[c_small]['freq']
+            
+            # 1. Jika WR beda, pertahankan yang menang
+            if wr_large > wr_small:
+                combos_to_remove.add(c_small)
+            elif wr_small > wr_large:
+                combos_to_remove.add(c_large)
+            # 2. Jika WR SERI (Kasus Biron-Lapu-Ukyo)
             else:
-                if len(c1) > len(c2): combos_to_remove.add(c1)
-                else: combos_to_remove.add(c2)
+                # Cek seberapa sering Duo ini dimainkan TANPA hero ke-3
+                indep_freq = f_small - f_large
+                syarat_mandiri = 3 if len(c_small) == 2 else 2
+                
+                if indep_freq < syarat_mandiri:
+                    # Duo ini cuma bagian dari formasi Trio, leburkan! (Buang Duo)
+                    combos_to_remove.add(c_small)
+                else:
+                    # Jika Duo ini sering dimainkan sendiri, Duo ini berhak hidup berdampingan
+                    pass 
 
 kombo_final = {k: v for k, v in team_valid.items() if k not in combos_to_remove}
 
