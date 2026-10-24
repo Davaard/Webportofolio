@@ -446,17 +446,24 @@ def get_signature_combos(tim_target):
 # endregion
 
 # ==========================================
-# MENU NAVIGASI UTAMA (SPA)
+# MENU NAVIGASI UTAMA (SPA - TANPA SIDEBAR)
 # ==========================================
-menu_utama = st.sidebar.radio(
-    "📊 Navigasi IKL", 
-    ["🏆 Klasemen & Meta", "🛡️ Team Profiling", "⚔️ Versus Mode (H2H)"]
+st.markdown("### 🎮 Navigasi IKL Dashboard")
+
+# Gunakan radio horizontal di halaman utama, bukan di sidebar
+menu_utama = st.radio(
+    "Pilih Menu:", 
+    ["🏆 Klasemen & Meta", "🛡️ Team Profiling", "⚔️ Versus Mode (H2H)"],
+    horizontal=True, # Ini kunci agar menunya berjejer ke samping, bukan ke bawah
+    label_visibility="collapsed" # Menyembunyikan tulisan "Pilih Menu:" agar lebih rapi
 )
+st.markdown("---")
 
 # ==========================================
 # HALAMAN 1: KLASEMEN & META
 # ==========================================
 if menu_utama == "🏆 Klasemen & Meta":
+
     st.title("🏆 Klasemen IKL & Meta Global")
     st.info("Fitur Klasemen dan Top Global Combo akan kita bangun di sini nanti.")
 
@@ -464,6 +471,7 @@ if menu_utama == "🏆 Klasemen & Meta":
 # HALAMAN 2: TEAM PROFILING
 # ==========================================
 elif menu_utama == "🛡️ Team Profiling":
+
     st.title("🛡️ Profiling Tim IKL - Honor of Kings")
     st.write("Dashboard ini menganalisis kekuatan tim menggunakan model Hexagon Radar.")
 
@@ -509,10 +517,12 @@ elif menu_utama == "🛡️ Team Profiling":
                 elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
                 elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
 
+
 # ==========================================
 # HALAMAN 3: VERSUS MODE (H2H)
 # ==========================================
 elif menu_utama == "⚔️ Versus Mode (H2H)":
+
     st.title("⚔️ H2H: Duel Mekanik & Taktik")
     st.markdown("---")
 
