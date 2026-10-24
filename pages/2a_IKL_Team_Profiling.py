@@ -367,39 +367,55 @@ st.plotly_chart(fig)
 st.subheader("Data Skor (Skala 0-100)")
 st.dataframe(data_tim)
 
-st.markdown("---")
-st.subheader("🔥 Signature Hero Combo (Duo)")
+# ==========================================
+# FASE 9: KOMBINASI HERO
+# ==========================================
 
-# Ambil data mentah (historis) khusus tim yang dipilih dari df_long
+st.markdown("---")
+st.subheader("🔥 Signature Hero Combo")
+
+# Ambil data mentah khusus tim yang dipilih
 df_mentah_tim = df_long[df_long['Team'] == tim_pilihan]
 
-# Ekstrak semua kemungkinan pasangan (Duo) dari setiap pertandingan
 kombinasi_duo = []
+kombinasi_trio = []
+
 for heroes in df_mentah_tim['Heroes_List']:
-    if isinstance(heroes, list) and len(heroes) >= 2:
-        # Di-urutkan alfabetis agar kombo (A, B) dihitung sama dengan (B, A)
-        kombinasi_duo.extend(combinations(sorted(heroes), 2))
+    if isinstance(heroes, list):
+        if len(heroes) >= 2:
+            kombinasi_duo.extend(combinations(sorted(heroes), 2))
+        if len(heroes) >= 3:
+            kombinasi_trio.extend(combinations(sorted(heroes), 3))
 
-# Hitung frekuensi kemunculan setiap kombo
-hitung_kombo = Counter(kombinasi_duo)
+# Hitung frekuensi kemunculan
+hitung_duo = Counter(kombinasi_duo)
+hitung_trio = Counter(kombinasi_trio)
 
 # ==========================================
-# THRESHOLD (BATAS MINIMAL KONSISTENSI)
-# Hanya kombo yang dipakai BERSAMAAN minimal 2 kali yang diakui sebagai kombo
+# FILTER KOMBO (DUO >= 3, TRIO >= 2)
 # ==========================================
-MIN_PLAY = 2 
-kombo_valid = {k: v for k, v in hitung_kombo.items() if v >= MIN_PLAY}
+duo_valid = {k: v for k, v in hitung_duo.items() if v >= 3}
+trio_valid = {k: v for k, v in hitung_trio.items() if v >= 2}
 
-if not kombo_valid:
-    st.info(f"Belum ada data! Tim {tim_pilihan} belum memiliki kombinasi 2 hero yang dimainkan bersamaan minimal {MIN_PLAY} kali. Tim ini mungkin memiliki draft yang sangat acak atau belum cukup data pertandingan.")
+# Gabungkan hasil Duo dan Trio ke dalam satu "keranjang"
+kombo_semua = {**duo_valid, **trio_valid}
+
+if not kombo_semua:
+    st.info(f"Tim {tim_pilihan} belum memiliki Duo (min. 3x) atau Trio (min. 2x) andalan.")
 else:
-    # Urutkan dari yang paling sering dipakai (dari tertinggi ke terendah)
-    kombo_terurut = sorted(kombo_valid.items(), key=lambda x: x[1], reverse=True)
+    # Urutkan berdasarkan frekuensi tertinggi. 
+    # Jika frekuensi sama, prioritaskan Trio untuk tampil lebih dulu (berdasarkan jumlah hero / len(x[0]))
+    MAX_TAMPIL = 6
+    kombo_terurut = sorted(kombo_semua.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:MAX_TAMPIL]
     
-    # Buat kolom agar tampilannya tidak memanjang ke bawah
+    # Gunakan 3 kolom statis agar rapi jika ada banyak kombo
     cols = st.columns(3)
     
     for idx, (kombo, frekuensi) in enumerate(kombo_terurut):
-        # Memasukkan hasil ke dalam kolom secara bergantian
         with cols[idx % 3]:
-            st.success(f"**{kombo[0]} & {kombo[1]}**\n\n🎯 Dipick bersama: **{frekuensi}x**")
+            if len(kombo) == 2:
+                # Tampilan untuk Duo (Warna Hijau/Success)
+                st.success(f"**{kombo[0]} & {kombo[1]}**\n\n🎯 Duo Pick: **{frekuensi}x**")
+            else:
+                # Tampilan untuk Trio (Warna Kuning/Warning agar menonjol)
+                st.warning(f"**{kombo[0]}, {kombo[1]}, & {kombo[2]}**\n\n🔥 Trio Pick: **{frekuensi}x**")
