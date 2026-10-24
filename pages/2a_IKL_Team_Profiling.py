@@ -377,45 +377,78 @@ st.subheader("🔥 Signature Hero Combo")
 # Ambil data mentah khusus tim yang dipilih
 df_mentah_tim = df_long[df_long['Team'] == tim_pilihan]
 
-kombinasi_duo = []
-kombinasi_trio = []
+kombinasi_semua = []
 
 for heroes in df_mentah_tim['Heroes_List']:
     if isinstance(heroes, list):
-        if len(heroes) >= 2:
-            kombinasi_duo.extend(combinations(sorted(heroes), 2))
-        if len(heroes) >= 3:
-            kombinasi_trio.extend(combinations(sorted(heroes), 3))
+        n = len(heroes)
+        # Ekstrak kombinasi mulai dari 2 hero (Duo) sampai 5 hero (Quintet)
+        for r in range(2, min(n + 1, 6)):
+            kombinasi_semua.extend(combinations(sorted(heroes), r))
 
 # Hitung frekuensi kemunculan
-hitung_duo = Counter(kombinasi_duo)
-hitung_trio = Counter(kombinasi_trio)
+hitung_kombo = Counter(kombinasi_semua)
 
 # ==========================================
-# FILTER KOMBO (DUO >= 3, TRIO >= 2)
+# 1. FILTER DASAR (THRESHOLD)
+# Duo minimal 3x, Trio/Quad/Quintet minimal 2x
 # ==========================================
-duo_valid = {k: v for k, v in hitung_duo.items() if v >= 3}
-trio_valid = {k: v for k, v in hitung_trio.items() if v >= 2}
+kombo_valid = {}
+for k, v in hitung_kombo.items():
+    if len(k) == 2 and v >= 3:
+        kombo_valid[k] = v
+    elif len(k) >= 3 and v >= 2:
+        kombo_valid[k] = v
 
-# Gabungkan hasil Duo dan Trio ke dalam satu "keranjang"
-kombo_semua = {**duo_valid, **trio_valid}
+# ==========================================
+# 2. ELIMINASI SUBSET (MENCEGAH REDUNDANSI)
+# ==========================================
+# Urutkan berdasarkan ukuran hero terbesar ke terkecil, lalu frekuensinya
+kombo_terurut_size = sorted(kombo_valid.items(), key=lambda x: (len(x[0]), x[1]), reverse=True)
 
-if not kombo_semua:
-    st.info(f"Tim {tim_pilihan} belum memiliki Duo (min. 3x) atau Trio (min. 2x) andalan.")
-else:
-    # Urutkan berdasarkan frekuensi tertinggi. 
-    # Jika frekuensi sama, prioritaskan Trio untuk tampil lebih dulu (berdasarkan jumlah hero / len(x[0]))
-    MAX_TAMPIL = 6
-    kombo_terurut = sorted(kombo_semua.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:MAX_TAMPIL]
+kombo_final = {}
+for kombo, freq in kombo_terurut_size:
+    is_redundant = False
     
-    # Gunakan 3 kolom statis agar rapi jika ada banyak kombo
+    for kombo_besar, freq_besar in kombo_final.items():
+        # Cek apakah kombo ini adalah bagian (subset) dari kombo yang lebih besar
+        if set(kombo).issubset(set(kombo_besar)):
+            # Hitung seberapa sering kombo kecil ini dimainkan di LUAR kombo besarnya
+            sisa_independen = freq - freq_besar
+            
+            # Syarat lolos sebagai kombo mandiri: Duo sisa min 3, lainnya sisa min 2
+            syarat_mandiri = 3 if len(kombo) == 2 else 2
+            
+            if sisa_independen < syarat_mandiri:
+                is_redundant = True
+                break # Langsung buang, jangan dimasukkan ke daftar final
+                
+    if not is_redundant:
+        kombo_final[kombo] = freq
+
+# ==========================================
+# 3. TAMPILAN UI DINAMIS
+# ==========================================
+# Urutkan lagi dari frekuensi tertinggi untuk ditampilkan
+kombo_display = sorted(kombo_final.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:6] # Maks 6 Kotak
+
+if not kombo_display:
+    st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang memenuhi syarat (Duo min. 3x, Trio+ min. 2x).")
+else:
     cols = st.columns(3)
     
-    for idx, (kombo, frekuensi) in enumerate(kombo_terurut):
+    for idx, (kombo, frekuensi) in enumerate(kombo_display):
         with cols[idx % 3]:
+            # Format teks agar rapi (misal: "A, B, & C")
             if len(kombo) == 2:
-                # Tampilan untuk Duo (Warna Hijau/Success)
-                st.success(f"**{kombo[0]} & {kombo[1]}**\n\n🎯 Duo Pick: **{frekuensi}x**")
-            else:
-                # Tampilan untuk Trio (Warna Kuning/Warning agar menonjol)
-                st.warning(f"**{kombo[0]}, {kombo[1]}, & {kombo[2]}**\n\n🔥 Trio Pick: **{frekuensi}x**")
+                nama_kombo = f"{kombo[0]} & {kombo[1]}"
+                st.info(f"**{nama_kombo}**\n\n🔹 Duo Pick: **{frekuensi}x**") # Biru
+            elif len(kombo) == 3:
+                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
+                st.success(f"**{nama_kombo}**\n\n🌿 Trio Pick: **{frekuensi}x**") # Hijau
+            elif len(kombo) == 4:
+                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
+                st.warning(f"**{nama_kombo}**\n\n🔥 Quad Pick: **{frekuensi}x**") # Kuning
+            elif len(kombo) == 5:
+                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
+                st.error(f"**{nama_kombo}**\n\n🌟 Full Squad: **{frekuensi}x**") # Merah
