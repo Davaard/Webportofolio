@@ -287,7 +287,7 @@ flexibility_df.rename(columns={'Heroes_List': 'Flexibility_Skor'}, inplace=True)
 rapor_akhir = pd.merge(rapor_akhir, flexibility_df[['Team', 'Flexibility_Skor']], on='Team')
 
 # ==========================================
-# FASE 8: NORMALISASI MIN-MAX SCALING (0 - 100)
+# FASE 8: NORMALISASI MIN-MAX SCALING (20 - 100)
 # ==========================================
 
 # Daftar metrik mentah yang akan diskala
@@ -300,16 +300,21 @@ metrik_mentah = [
     'Flexibility_Skor'
 ]
 
-# Lakukan scaling 0-100 untuk setiap kolom
+# Lakukan scaling 20-100 untuk setiap kolom (Batas bawah 20 agar grafik tidak hancur)
 for col in metrik_mentah:
     min_val = rapor_akhir[col].min()
     max_val = rapor_akhir[col].max()
     
-    # Rumus Min-Max: ((Nilai - Min) / (Max - Min)) * 100
     nama_kolom_baru = col.replace('_Skor', '_100')
-    rapor_akhir[nama_kolom_baru] = ((rapor_akhir[col] - min_val) / (max_val - min_val)) * 100
+    
+    # Mencegah error pembagian nol jika semua tim punya skor yang sama persis
+    if max_val == min_val:
+        rapor_akhir[nama_kolom_baru] = 100.0
+    else:
+        # Rumus Scaling [20, 100]: ((Nilai - Min) / (Max - Min)) * 80 + 20
+        rapor_akhir[nama_kolom_baru] = ((rapor_akhir[col] - min_val) / (max_val - min_val)) * 80 + 20
 
-# Buat dataframe final yang hanya berisi kolom 0-100 agar rapi untuk Streamlit
+# Buat dataframe final yang hanya berisi kolom skala agar rapi untuk Streamlit
 kolom_final = ['Team'] + [col.replace('_Skor', '_100') for col in metrik_mentah]
 rapor_radar = rapor_akhir[kolom_final].round(2)
 
@@ -341,7 +346,13 @@ fig = px.line_polar(
     range_r=[0, 100]
 )
 fig.update_traces(fill='toself', line_color='cyan')
-fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)") # Transparan
+fig.update_layout(
+    polar=dict(
+        radialaxis=dict(showticklabels=False) # Menyembunyikan angka skala
+    ),
+    paper_bgcolor="rgba(0,0,0,0)", 
+    plot_bgcolor="rgba(0,0,0,0)"
+) # Transparan
 
 # Tampilkan di website
 st.plotly_chart(fig)
