@@ -9,7 +9,7 @@ import plotly.express as px
 
 # 1. Baca data mentah 
 # Ubah baris ini:
-df_raw = pd.read_csv(r"D:\Dava Arya Danendra\Portofolio\Webportofolio\Data_Set_IKL_HOK.csv")
+df_raw = pd.read_csv("Data_Set_IKL_HOK.csv")
 
 # 2. Ambil dari sudut pandang Sisi Biru (Sebagai Tim Utama)
 df_A = df_raw.copy()
