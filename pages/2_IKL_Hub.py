@@ -1,3 +1,4 @@
+# region INISIALISASI
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -31,7 +32,9 @@ def load_and_preprocess_data(filepath):
     df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
     
     return df
+# endregion
 
+# region PRA-PEMPROSESAN
 # ==========================================
 # FASE 1: IMPORT & TRANSFORMASI DATA
 # ==========================================
@@ -66,7 +69,11 @@ df_long = df_long.sort_values(by=['Week', 'Day', 'Match', 'Game']).reset_index(d
 # Menghapus spasi ekstra di awal/akhir nama hero agar tidak ada duplikat palsu (misal ' Heino' vs 'Heino')
 df_long['Heroes'] = df_long['Heroes'].astype(str).apply(lambda x: [hero.strip() for hero in x.split(',')])
 df_long['Opp_Heroes'] = df_long['Opp_Heroes'].astype(str).apply(lambda x: [hero.strip() for hero in x.split(',')])
+# endregion
 
+# region RADAR PENILAIAN
+
+# region DOMINASI
 # ==========================================
 # FASE 2: KLASEMEN RETROAKTIF & DOMINASI H2H
 # ==========================================
@@ -122,7 +129,9 @@ dominasi_df['Dominance_Skor'] = (
 # D. NORMALISASI DOMINASI KE SKALA 0-100 (MIN-MAX SCALING)
 min_dom = dominasi_df['Dominance_Skor'].min()
 max_dom = dominasi_df['Dominance_Skor'].max()
+# endregion
 
+# region KETANGGUHAN
 # ==========================================
 # FASE 3: MENGHITUNG KETANGGUHAN (REVISI H2H SIMETRIS)
 # ==========================================
@@ -176,7 +185,9 @@ toughness_df['Toughness_Skor'] = toughness_df['Toughness_Skor'].fillna(0)
 
 # G. Gabung ke Rapor Akhir
 rapor_akhir = pd.merge(dominasi_df[['Team', 'Dominance_Skor']], toughness_df[['Team', 'Toughness_Skor']], on='Team')
+# endregion
 
+# region KEDISIPLINAN
 # ==========================================
 # FASE 4: MENGHITUNG KEDISIPLINAN (DISCIPLINE)
 # ==========================================
@@ -200,7 +211,9 @@ discipline_df = df_long.groupby('Team').agg(
 
 # E. Gabungkan skor Kedisiplinan ke tabel Rapor Akhir
 rapor_akhir = pd.merge(rapor_akhir, discipline_df[['Team', 'Discipline_Skor']], on='Team')
+# endregion
 
+# region FOLATILITAS
 # ==========================================
 # FASE 5: MENGHITUNG Volatility (Volatilitas)
 # ==========================================
@@ -242,7 +255,9 @@ volatility_df['Volatility_Skor'] = volatility_df['Volatility'] * volatility_df['
 
 # G. Gabungkan skor Potensi ke tabel Rapor Akhir
 rapor_akhir = pd.merge(rapor_akhir, volatility_df[['Team', 'Volatility_Skor']], on='Team')
+# endregion
 
+# region TEAMFIGHT
 # ==========================================
 # FASE 6: MENGHITUNG TEAM FIGHT
 # ==========================================
@@ -265,7 +280,9 @@ teamfight_df = df_long.groupby('Team').agg(
 
 # E. Gabung ke Rapor Akhir
 rapor_akhir = pd.merge(rapor_akhir, teamfight_df[['Team', 'TeamFight_Skor']], on='Team')
+# endregion
 
+# region FLEKSIBILITAS
 # ==========================================
 # FASE 7: MENGHITUNG FLEKSIBILITAS (HERO POOL)
 # ==========================================
@@ -290,7 +307,9 @@ flexibility_df.rename(columns={'Heroes_List': 'Flexibility_Skor'}, inplace=True)
 
 # C. Gabung ke Rapor Akhir
 rapor_akhir = pd.merge(rapor_akhir, flexibility_df[['Team', 'Flexibility_Skor']], on='Team')
+# endregion
 
+# region NORMALISASI
 # ==========================================
 # FASE 8: NORMALISASI MIN-MAX SCALING (20 - 100)
 # ==========================================
@@ -322,8 +341,14 @@ for col in metrik_mentah:
 # Buat dataframe final yang hanya berisi kolom skala agar rapi untuk Streamlit
 kolom_final = ['Team'] + [col.replace('_Skor', '_100') for col in metrik_mentah]
 rapor_radar = rapor_akhir[kolom_final].round(2)
+# endregion
 
-# region FASE 9: MESIN EVOLUSI KOMBO (FUNGSI GLOBAL)
+# endregion
+
+# region KOMBINASI
+# ==========================================
+# FASE 9: MESIN EVOLUSI KOMBO (FUNGSI GLOBAL)
+# ==========================================
 
 # 1. Siapkan Data Global (Dihitung 1x saja saat aplikasi dimuat)
 df_combo_history = df_long.dropna(subset=['Win']).copy()
@@ -445,8 +470,9 @@ def get_signature_combos(tim_target):
 
 # endregion
 
+# region DISPLAY
 # ==========================================
-# MENU NAVIGASI UTAMA (SPA - TANPA SIDEBAR)
+# MENU NAVIGASI UTAMA (SPA)
 # ==========================================
 st.markdown("### 🎮 Navigasi IKL Dashboard")
 
@@ -459,6 +485,7 @@ menu_utama = st.radio(
 )
 st.markdown("---")
 
+# region HOME
 # ==========================================
 # HALAMAN 1: KLASEMEN & META
 # ==========================================
@@ -466,7 +493,9 @@ if menu_utama == "🏆 Klasemen & Meta":
 
     st.title("🏆 Klasemen IKL & Meta Global")
     st.info("Fitur Klasemen dan Top Global Combo akan kita bangun di sini nanti.")
+# endregion
 
+# region PROFILING
 # ==========================================
 # HALAMAN 2: TEAM PROFILING
 # ==========================================
@@ -516,8 +545,9 @@ elif menu_utama == "🛡️ Team Profiling":
                 if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
                 elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
                 elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+# endregion
 
-
+# region H2H
 # ==========================================
 # HALAMAN 3: VERSUS MODE (H2H)
 # ==========================================
@@ -595,3 +625,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                     if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
                     elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
                     elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+# endregion
+       
+# endregion             
