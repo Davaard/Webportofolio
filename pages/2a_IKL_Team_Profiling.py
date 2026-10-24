@@ -372,105 +372,160 @@ st.dataframe(data_tim)
 # ==========================================
 
 st.markdown("---")
-st.subheader("🔥 Signature Hero Combo")
+st.subheader("🔥 Signature Hero Combo (Evolusi Taktik)")
 
-# Ambil data mentah khusus tim yang dipilih
-df_mentah_tim = df_long[df_long['Team'] == tim_pilihan]
+# ==========================================
+# 1. PERSIAPAN DATA GLOBAL & TIM (MENGHITUNG WINRATE)
+# ==========================================
+global_freq = {}
+global_wins = {}
+team_freq = {}
+team_wins = {}
 
-kombinasi_semua = []
+# Buang data Upcoming (hanya ambil yang sudah ada Result)
+df_history = df_long.dropna(subset=['Result']).copy()
 
-for heroes in df_mentah_tim['Heroes_List']:
-    if isinstance(heroes, list):
+# FUNGSI KOREKSI: Deteksi kemenangan murni dari angka 1 dan 0
+def is_win(result_val):
+    return 1 if str(result_val).strip() == '1' else 0
+
+# Hitung Statistik Global (Semua Tim)
+for idx, row in df_history.iterrows():
+    heroes = row['Heroes_List']
+    win_status = is_win(row['Result'])
+    if isinstance(heroes, list) and len(heroes) > 0:
         n = len(heroes)
-        # Ekstrak kombinasi mulai dari 2 hero (Duo) sampai 5 hero (Quintet)
+        # Ekstrak ukuran 1 (Solo) sampai 5 (Quintet)
+        for r in range(1, min(n + 1, 6)):
+            for combo in combinations(sorted(heroes), r):
+                global_freq[combo] = global_freq.get(combo, 0) + 1
+                global_wins[combo] = global_wins.get(combo, 0) + win_status
+
+# Hitung Statistik Khusus Tim Pilihan
+df_tim = df_history[df_history['Team'] == tim_pilihan]
+for idx, row in df_tim.iterrows():
+    heroes = row['Heroes_List']
+    win_status = is_win(row['Result'])
+    if isinstance(heroes, list) and len(heroes) >= 2:
+        n = len(heroes)
         for r in range(2, min(n + 1, 6)):
-            kombinasi_semua.extend(combinations(sorted(heroes), r))
-
-# Hitung frekuensi kemunculan
-hitung_kombo = Counter(kombinasi_semua)
-
-# ==========================================
-# 1. FILTER DASAR (THRESHOLD)
-# Duo minimal 3x, Trio/Quad/Quintet minimal 2x
-# ==========================================
-kombo_valid = {}
-for k, v in hitung_kombo.items():
-    if len(k) == 2 and v >= 3:
-        kombo_valid[k] = v
-    elif len(k) >= 3 and v >= 2:
-        kombo_valid[k] = v
+            for combo in combinations(sorted(heroes), r):
+                team_freq[combo] = team_freq.get(combo, 0) + 1
+                team_wins[combo] = team_wins.get(combo, 0) + win_status
 
 # ==========================================
-# 2. ELIMINASI SUBSET (MENCEGAH REDUNDANSI)
+# 2. FILTER AWAL (THRESHOLD MINIMAL MAIN)
+# Duo min 3x, Trio min 3x, Quad/Quintet min 2x
 # ==========================================
-# Urutkan berdasarkan ukuran hero terbesar ke terkecil, lalu frekuensinya
-kombo_terurut_size = sorted(kombo_valid.items(), key=lambda x: (len(x[0]), x[1]), reverse=True)
+team_valid = {}
+for combo, freq in team_freq.items():
+    sz = len(combo)
+    if (sz == 2 and freq >= 3) or (sz == 3 and freq >= 3) or (sz >= 4 and freq >= 2):
+        wr_tim = (team_wins[combo] / freq) * 100
+        team_valid[combo] = {'freq': freq, 'wr': wr_tim}
 
-kombo_final = {}
-for kombo, freq in kombo_terurut_size:
-    is_redundant = False
-    
-    for kombo_besar, freq_besar in kombo_final.items():
-        # Cek apakah kombo ini adalah bagian (subset) dari kombo yang lebih besar
-        if set(kombo).issubset(set(kombo_besar)):
-            # Hitung seberapa sering kombo kecil ini dimainkan di LUAR kombo besarnya
-            sisa_independen = freq - freq_besar
+# ==========================================
+# 3. SELEKSI ALAM (RESOLUSI KONFLIK SUBSET BERDASARKAN WINRATE TIM)
+# ==========================================
+combos_to_remove = set()
+valid_combo_list = list(team_valid.keys())
+
+for i in range(len(valid_combo_list)):
+    for j in range(i + 1, len(valid_combo_list)):
+        c1, c2 = valid_combo_list[i], valid_combo_list[j]
+        s1, s2 = set(c1), set(c2)
+        
+        if s1.issubset(s2) or s2.issubset(s1):
+            wr1, wr2 = team_valid[c1]['wr'], team_valid[c2]['wr']
             
-            # Syarat lolos sebagai kombo mandiri: Duo sisa min 3, lainnya sisa min 2
-            syarat_mandiri = 3 if len(kombo) == 2 else 2
-            
-            if sisa_independen < syarat_mandiri:
-                is_redundant = True
-                break # Langsung buang, jangan dimasukkan ke daftar final
-                
-    if not is_redundant:
-        kombo_final[kombo] = freq
+            if wr1 < wr2:
+                combos_to_remove.add(c1)
+            elif wr2 < wr1:
+                combos_to_remove.add(c2)
+            else:
+                if len(c1) > len(c2): combos_to_remove.add(c1)
+                else: combos_to_remove.add(c2)
+
+kombo_final = {k: v for k, v in team_valid.items() if k not in combos_to_remove}
 
 # ==========================================
-# 3. TAMPILAN UI DINAMIS (BERDASARKAN EKSKLUSIVITAS)
+# 4. TAMPILAN & WARNA (UJI EVOLUSI GLOBAL KETAT)
 # ==========================================
-kombo_display = sorted(kombo_final.items(), key=lambda x: (x[1], len(x[0])), reverse=True)[:6]
+top_3_combos = sorted(kombo_final.items(), key=lambda x: (x[1]['wr'], x[1]['freq']), reverse=True)[:3]
 
-if not kombo_display:
-    st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang memenuhi syarat (Duo min. 3x, Trio+ min. 2x).")
+if not top_3_combos:
+    st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang lolos evaluasi taktik.")
 else:
-    cols = st.columns(3)
+    cols = st.columns(len(top_3_combos))
     
-    for idx, (kombo, freq_tim) in enumerate(kombo_display):
-        with cols[idx % 3]:
-            # Hitung seberapa sering kombo ini dipakai oleh SEMUA TIM di turnamen
-            freq_global = 0
-            for all_heroes in df_long['Heroes_List']:
-                if isinstance(all_heroes, list) and set(kombo).issubset(set(all_heroes)):
-                    freq_global += 1
+    for idx, (combo, stats) in enumerate(top_3_combos):
+        freq_tim = stats['freq']
+        wr_tim = stats['wr']
+        
+        g_freq_current = global_freq.get(combo, 0)
+        g_wr_current = (global_wins.get(combo, 0) / g_freq_current * 100) if g_freq_current > 0 else 0
+        
+        is_red_worthy = False
+        rasio_global = 0
+        
+        # LOGIKA KHUSUS DUO
+        if len(combo) == 2:
+            base_heroes = [global_freq.get((h,), 0) for h in combo]
+            g_freq_base = min(base_heroes) if base_heroes else 1
+            rasio_global = (g_freq_current / g_freq_base) * 100 if g_freq_base > 0 else 0
             
-            # Hitung Rasio Eksklusivitas
-            rasio = freq_tim / freq_global if freq_global > 0 else 1
-            persentase = int(rasio * 100)
+            # Cek apakah WR Duo lebih besar dari WR seluruh Trio yang memuat Duo ini
+            max_trio_wr = 0
+            for g_combo, g_f in global_freq.items():
+                if len(g_combo) == 3 and set(combo).issubset(set(g_combo)):
+                    t_wr = (global_wins[g_combo] / g_f) * 100
+                    if t_wr > max_trio_wr:
+                        max_trio_wr = t_wr
             
-            # Format nama hero
-            if len(kombo) == 2:
-                nama_kombo = f"{kombo[0]} & {kombo[1]}"
-                tipe_kombo = "Duo"
-            elif len(kombo) == 3:
-                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
-                tipe_kombo = "Trio"
-            else:
-                nama_kombo = f"{', '.join(kombo[:-1])}, & {kombo[-1]}"
-                tipe_kombo = f"{len(kombo)} Heroes"
+            # Duo HANYA jadi merah jika menang WR vs versi Trio tertingginya
+            if g_wr_current > max_trio_wr:
+                is_red_worthy = True
 
-            # Tentukan Warna berdasarkan Eksklusivitas
-            teks_tampilan = f"**{nama_kombo}**\n\n🎯 {tipe_kombo} Pick: **{freq_tim}x**\n\n📊 Eksklusivitas: **{persentase}%**"
+        # LOGIKA TRIO / QUAD / QUINTET
+        else:
+            g_freq_base = 0
+            g_wr_base = 0
+            for sub_combo in combinations(combo, len(combo) - 1):
+                f_sub = global_freq.get(sub_combo, 0)
+                if f_sub > g_freq_base:
+                    g_freq_base = f_sub
+                    g_wr_base = (global_wins.get(sub_combo, 0) / f_sub) * 100
             
-            if rasio >= 0.50:
-                # Merah: True Signature (Lebih dari 50% penggunaan global adalah milik tim ini)
-                st.error("🌟 " + teks_tampilan)
-            elif rasio >= 0.25:
-                # Kuning: Semi-Signature (Cukup khas untuk tim ini)
-                st.warning("🔥 " + teks_tampilan)
-            elif rasio >= 0.10:
-                # Hijau: Common Pick (Banyak tim yang pakai, tapi tim ini lumayan sering)
-                st.success("🌿 " + teks_tampilan)
+            rasio_global = (g_freq_current / g_freq_base) * 100 if g_freq_base > 0 else 0
+            
+            if g_wr_current > g_wr_base:
+                is_red_worthy = True
+        
+        # EKSEKUSI WARNA
+        if rasio_global > 25.0:
+            if is_red_worthy:
+                warna = "error" # Merah
+                ikon = "🌟"
+                status_evolusi = f"Supreme Meta ({rasio_global:.0f}%)"
             else:
-                # Biru: Meta Universal (Sejuta umat, tim ini cuma ikut-ikutan meta)
-                st.info("🔹 " + teks_tampilan)
+                warna = "warning" # Kuning
+                ikon = "🔥"
+                status_evolusi = f"Global Meta ({rasio_global:.0f}%)"
+        else:
+            warna = "success" # Hijau
+            ikon = "🌿"
+            status_evolusi = "Team Signature Pick"
+
+        # Format Teks UI
+        nama_kombo = f"{', '.join(combo[:-1])} & {combo[-1]}"
+        tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
+        
+        teks = f"**{nama_kombo}**\n\n"
+        teks += f"🎯 {tipe} Pick: **{freq_tim}x**\n"
+        teks += f"🏆 Team WR: **{wr_tim:.0f}%**\n"
+        teks += f"📊 Kategori: **{status_evolusi}**"
+        
+        with cols[idx]:
+            if warna == "error": st.error(f"{ikon} {teks}")
+            elif warna == "warning": st.warning(f"{ikon} {teks}")
+            elif warna == "success": st.success(f"{ikon} {teks}")
