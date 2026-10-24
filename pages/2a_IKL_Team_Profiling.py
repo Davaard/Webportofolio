@@ -3,23 +3,49 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 
+@st.cache_data
+def load_and_preprocess_data(filepath):
+    # 1. Membaca CSV
+    df = pd.read_csv(filepath)
+    
+    # 2. Membersihkan kolom sebelum digabung menjadi Smart Key 
+    # (Menghindari angka seperti 1.0 menjadi 'IKL1111.0', kita buang '.0'-nya)
+    df['Week_str'] = df['Week'].fillna('').astype(str)
+    df['Day_str'] = df['Day'].fillna('').astype(str)
+    df['Match_str'] = df['Match'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
+    df['Game_str'] = df['Game'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
+    
+    # 3. Membuat Match_ID (Contoh hasil: IKL1111, IKLUpSf1)
+    df['Match_ID'] = 'IKL' + df['Week_str'] + df['Day_str'] + df['Match_str'] + df['Game_str']
+    
+    # 4. Deteksi Otomatis (History vs Upcoming)
+    # Jika Result-nya kosong (NaN), maka itu adalah laga jadwal (Upcoming)
+    df['Status'] = df['Result'].apply(lambda x: 'Upcoming' if pd.isna(x) else 'History')
+    
+    # Bersihkan kolom string sementara agar tabel tetap rapi
+    df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
+    
+    return df
+
 # ==========================================
 # FASE 1: IMPORT & TRANSFORMASI DATA
 # ==========================================
 
-# 1. Baca data mentah 
-# Ubah baris ini:
-df_raw = pd.read_csv("Data_Set_IKL_HOK.csv")
+# 1. Baca masterdata
+df_master = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+
+# Memisahkan data untuk profil tim (hanya ambil laga yang sudah selesai)
+df_history = df_master[df_master['Status'] == 'History'].copy()
 
 # 2. Ambil dari sudut pandang Sisi Biru (Sebagai Tim Utama)
-df_A = df_raw.copy()
+df_A = df_history.copy()
 df_A = df_A[['Week', 'Day', 'Match', 'Game', 'Team_(Blue)', 'Opponent_(Red)', 'Result', 'Duration_min', 'T_Gold', 'O_Gold', 'T_Kill', 'O_Kill', 'T_Assist', 'O_Assist', 'T_Objective', 'O_Objective', 'Heroes_Picked', 'Opponent_Picked']]
 # Standarisasi nama kolom agar mudah dipanggil di rumus selanjutnya
 kolom_standar = ['Week', 'Day', 'Match', 'Game', 'Team', 'Opponent', 'Win', 'Durasi', 'Gold', 'Opp_Gold', 'Kill', 'Opp_Kill', 'Ast', 'Opp_Ast', 'Obj', 'Opp_Obj', 'Heroes', 'Opp_Heroes']
 df_A.columns = kolom_standar
 
 # 3. Ambil dari sudut pandang Sisi Merah (Sebagai Tim Utama)
-df_B = df_raw.copy()
+df_B = df_history.copy()
 # Hitung kebalikan hasil untuk Sisi Merah (Jika Biru menang/1, Merah kalah/0)
 df_B['Result_Red'] = 1 - df_B['Result'] 
 # Tarik kolom dengan posisi silang (Milik Merah di depan, Biru di belakang)
