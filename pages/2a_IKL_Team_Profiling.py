@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import plotly.express as px
+from itertools import combinations
+from collections import Counter
 
 @st.cache_data
 def load_and_preprocess_data(filepath):
@@ -364,3 +366,40 @@ st.plotly_chart(fig)
 # Tampilkan tabel mentahnya juga di bawah grafik
 st.subheader("Data Skor (Skala 0-100)")
 st.dataframe(data_tim)
+
+st.markdown("---")
+st.subheader("🔥 Signature Hero Combo (Duo)")
+
+# Ambil data mentah (historis) khusus tim yang dipilih dari df_long
+df_mentah_tim = df_long[df_long['Team'] == tim_pilihan]
+
+# Ekstrak semua kemungkinan pasangan (Duo) dari setiap pertandingan
+kombinasi_duo = []
+for heroes in df_mentah_tim['Heroes_List']:
+    if isinstance(heroes, list) and len(heroes) >= 2:
+        # Di-urutkan alfabetis agar kombo (A, B) dihitung sama dengan (B, A)
+        kombinasi_duo.extend(combinations(sorted(heroes), 2))
+
+# Hitung frekuensi kemunculan setiap kombo
+hitung_kombo = Counter(kombinasi_duo)
+
+# ==========================================
+# THRESHOLD (BATAS MINIMAL KONSISTENSI)
+# Hanya kombo yang dipakai BERSAMAAN minimal 2 kali yang diakui sebagai kombo
+# ==========================================
+MIN_PLAY = 2 
+kombo_valid = {k: v for k, v in hitung_kombo.items() if v >= MIN_PLAY}
+
+if not kombo_valid:
+    st.info(f"Belum ada data! Tim {tim_pilihan} belum memiliki kombinasi 2 hero yang dimainkan bersamaan minimal {MIN_PLAY} kali. Tim ini mungkin memiliki draft yang sangat acak atau belum cukup data pertandingan.")
+else:
+    # Urutkan dari yang paling sering dipakai (dari tertinggi ke terendah)
+    kombo_terurut = sorted(kombo_valid.items(), key=lambda x: x[1], reverse=True)
+    
+    # Buat kolom agar tampilannya tidak memanjang ke bawah
+    cols = st.columns(3)
+    
+    for idx, (kombo, frekuensi) in enumerate(kombo_terurut):
+        # Memasukkan hasil ke dalam kolom secara bergantian
+        with cols[idx % 3]:
+            st.success(f"**{kombo[0]} & {kombo[1]}**\n\n🎯 Dipick bersama: **{frekuensi}x**")
