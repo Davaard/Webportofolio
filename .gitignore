@@ -1,0 +1,9 @@
+# Abaikan fail HTML mentah hasil bedah lokal
+bedah_*.html
+sample_*.html
+
+# Abaikan cache Python & environment
+__pycache__/
+*.pyc
+.env
+.venv/
