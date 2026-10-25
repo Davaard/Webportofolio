@@ -644,13 +644,23 @@ elif menu_utama == "🛡️ Team Profiling":
     else:
         tim_pilihan = st.session_state['profiling_team']
         
-        # Tombol navigasi untuk kembali dan shortcut VS
-        col_nav1, col_nav2 = st.columns([1, 4])
+        # Tombol navigasi: Kembali dan Shortcut Versus
+        col_nav1, col_nav2, col_nav3 = st.columns([1, 1.5, 3.5])
+        
         with col_nav1:
-            if st.button("🔙 Kembali ke Grid", use_container_width=True):
+            if st.button("🔙 Kembali", use_container_width=True):
                 st.session_state['profiling_team'] = None
                 st.rerun()
+                
         with col_nav2:
+            # SHORTCUT AJAIB KE H2H
+            if st.button("⚔️ Bandingkan (H2H)", use_container_width=True):
+                st.session_state['h2h_team_A'] = tim_pilihan # Jadikan tim ini sebagai Tim 1
+                st.session_state['h2h_team_B'] = None        # Kosongkan lawan (berjaga-jaga)
+                st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" # Pindah Halaman
+                st.rerun()
+                
+        with col_nav3:
             st.markdown(f"### Analisis Mendalam: {tim_pilihan}")
         
         st.markdown("---")
