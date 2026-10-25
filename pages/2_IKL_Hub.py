@@ -471,6 +471,8 @@ def get_signature_combos(tim_target):
 # endregion
 
 # region DISPLAY
+
+# region NAVIGASI
 # ==========================================
 # MENU NAVIGASI UTAMA (TAMPILAN TOMBOL HEADER)
 # ==========================================
@@ -499,6 +501,7 @@ st.markdown("---")
 
 # 3. Masukkan ke variabel utama agar if-elif di bawahnya tetap berfungsi
 menu_utama = st.session_state['menu_ikl']
+# endregion
 
 # region HOME
 # ==========================================
@@ -615,51 +618,80 @@ if menu_utama == "🏆 Klasemen & Meta":
 # HALAMAN 2: TEAM PROFILING
 # ==========================================
 elif menu_utama == "🛡️ Team Profiling":
-
     st.title("🛡️ Profiling Tim IKL - Honor of Kings")
-    st.write("Dashboard ini menganalisis kekuatan tim menggunakan model Hexagon Radar.")
-
-    tim_pilihan = st.selectbox("Pilih Tim:", options=rapor_radar['Team'].unique())
-    data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan]
-
-    # --- Bagian 1: Radar Chart ---
-    kategori_metrik = ['Dominance_100', 'Toughness_100', 'Discipline_100', 
-                       'Volatility_100', 'TeamFight_100', 'Flexibility_100']
-    skor_tim = data_tim[kategori_metrik].values.flatten().tolist()
-    skor_tim.append(skor_tim[0]) # Tutup garis polygon
     
-    kategori_radar = ['Dominance', 'Toughness', 'Discipline', 'Volatility', 'Team Fight', 'Flexibility']
-    kategori_radar.append(kategori_radar[0])
+    # 1. Inisialisasi memori untuk halaman Profiling
+    if 'profiling_team' not in st.session_state:
+        st.session_state['profiling_team'] = None
 
-    fig = px.line_polar(
-        r=skor_tim, theta=kategori_radar, line_close=True,
-        title=f"Hexagon Radar: {tim_pilihan}", range_r=[0, 100]
-    )
-    fig.update_traces(fill='toself', line_color='cyan')
-    fig.update_layout(
-        polar=dict(radialaxis=dict(showticklabels=False, showline=False, ticks='')),
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
-    )
-    st.plotly_chart(fig)
-    
-    st.subheader("Data Skor (Skala 0-100)")
-    st.dataframe(data_tim)
+    daftar_tim = sorted(rapor_radar['Team'].unique())
 
-    # --- Bagian 2: Memanggil Mesin Kombo ---
-    st.markdown("---")
-    st.subheader("🔥 Signature Hero Combo (Evolusi Taktik)")
-    
-    kombo_A = get_signature_combos(tim_pilihan)
-    
-    if not kombo_A:
-        st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang lolos evaluasi taktik.")
+    # 2. KONDISI A: Tampilkan Grid jika belum ada tim yang dipilih
+    if st.session_state['profiling_team'] is None:
+        st.markdown("### 🔍 Pilih Tim untuk Dianalisis")
+        st.markdown("---")
+        
+        # Membuat Grid 4 Kolom
+        kolom_grid = st.columns(4)
+        for idx, tim in enumerate(daftar_tim):
+            with kolom_grid[idx % 4]:
+                # Jika tombol ditekan, simpan nama tim ke memori dan muat ulang halaman
+                if st.button(tim, use_container_width=True, key=f"btn_{tim}"):
+                    st.session_state['profiling_team'] = tim
+                    st.rerun()
+
+    # 3. KONDISI B: Tampilkan Data Profiling jika tim sudah dipilih
     else:
-        cols = st.columns(len(kombo_A))
-        for idx, k in enumerate(kombo_A):
-            with cols[idx]:
-                if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
-                elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
-                elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+        tim_pilihan = st.session_state['profiling_team']
+        
+        # Tombol navigasi untuk kembali dan shortcut VS
+        col_nav1, col_nav2 = st.columns([1, 4])
+        with col_nav1:
+            if st.button("🔙 Kembali ke Grid", use_container_width=True):
+                st.session_state['profiling_team'] = None
+                st.rerun()
+        with col_nav2:
+            st.markdown(f"### Analisis Mendalam: {tim_pilihan}")
+        
+        st.markdown("---")
+        data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan]
+
+        # --- Bagian 1: Radar Chart ---
+        kategori_metrik = ['Dominance_100', 'Toughness_100', 'Discipline_100', 
+                           'Volatility_100', 'TeamFight_100', 'Flexibility_100']
+        skor_tim = data_tim[kategori_metrik].values.flatten().tolist()
+        skor_tim.append(skor_tim[0])
+        
+        kategori_radar = ['Dominance', 'Toughness', 'Discipline', 'Volatility', 'Team Fight', 'Flexibility']
+        kategori_radar.append(kategori_radar[0])
+
+        fig = px.line_polar(
+            r=skor_tim, theta=kategori_radar, line_close=True,
+            range_r=[0, 100]
+        )
+        fig.update_traces(fill='toself', line_color='cyan')
+        fig.update_layout(
+            polar=dict(radialaxis=dict(showticklabels=False, showline=False, ticks='')),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        # --- Bagian 2: Memanggil Mesin Kombo ---
+        st.markdown("---")
+        st.subheader("🔥 Signature Hero Combo (Evolusi Taktik)")
+        
+        kombo_A = get_signature_combos(tim_pilihan)
+        
+        if not kombo_A:
+            st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang lolos evaluasi taktik.")
+        else:
+            cols = st.columns(len(kombo_A))
+            for idx, k in enumerate(kombo_A):
+                with cols[idx]:
+                    if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
+                    elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
+                    elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
 # endregion
 
 # region H2H
