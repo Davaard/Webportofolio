@@ -505,112 +505,127 @@ menu_utama = st.session_state['menu_ikl']
 
 # region HOME
 # ==========================================
-# HALAMAN 1: KLASEMEN & META
+# HALAMAN 1: KLASEMEN, JADWAL & INSIGHT
 # ==========================================
 if menu_utama == "🏆 Klasemen & Meta":
-    st.title("🏆 Klasemen IKL & Meta Global")
     
-    # Membuat 2 Tab utama
-    tab_klasemen, tab_meta = st.tabs(["📊 Klasemen & Jadwal", "🔥 Global Meta Snapshot"])
+    col_kiri, col_kanan = st.columns([1.5, 1])
     
-    with tab_klasemen:
-        col_klasemen, col_jadwal = st.columns([1.5, 1])
+    with col_kiri:
+        st.markdown("### 🏆 Leaderboard IKL")
         
-        with col_klasemen:
-            st.subheader("Leaderboard")
-            # Rapikan tabel klasemen yang sudah dihitung di Fase 2
-            df_klasemen_tampil = klasemen.sort_values(by='Rank_Akhir').copy()
-            df_klasemen_tampil.columns = ['Tim', 'Menang', 'Kalah', 'Skor Akhir (IKL)', 'Peringkat']
-            df_klasemen_tampil = df_klasemen_tampil.set_index('Peringkat')
-            
-            # Tampilkan menggunakan st.dataframe untuk tabel interaktif
-            st.dataframe(df_klasemen_tampil, use_container_width=True)
-            
-        with col_jadwal:
-            st.subheader("📅 Upcoming Matches")
-            # Ambil data yang statusnya 'Upcoming' dari df_master (Fase 1)
-            df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
-            
-            if df_jadwal.empty:
-                st.info("Belum ada jadwal pertandingan baru.")
-            else:
-                df_jadwal_tampil = df_jadwal[['Week', 'Day', 'Match', 'Team_(Blue)', 'Opponent_(Red)']]
-                st.dataframe(df_jadwal_tampil, hide_index=True, use_container_width=True)
-                
-    with tab_meta:
-        st.subheader("🔥 Global Meta Snapshot")
-        st.markdown("Prioritas formasi terbesar. Jika ada Duo dan Trio bertarung, pemenang *winrate* akan menyala Merah (Supreme Meta).")
+        # 1. Agregasi Level Match (Bukan Game)
+        # Menghitung siapa yang menang di setiap Match (seri pertandingan)
+        df_match = df_long.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(
+            Game_W=('Win', 'sum'),
+            Game_L=('Win', lambda x: (x == 0).sum())
+        ).reset_index()
         
-        # 1. Tentukan Threshold Statis (Minimal 5x main agar valid, tidak perlu pakai persentase)
-        threshold_global = 5 
+        # Tim menang Match jika jumlah Game Win > Game Loss
+        df_match['Match_W'] = np.where(df_match['Game_W'] > df_match['Game_L'], 1, 0)
+        df_match['Match_L'] = np.where(df_match['Game_W'] < df_match['Game_L'], 1, 0)
         
-        global_valid = {}
-        for combo, freq in global_freq.items():
-            if freq >= threshold_global:
-                wr = (global_wins[combo] / freq) * 100
-                global_valid[combo] = {'freq': freq, 'wr': wr}
-                
-        # 2. SELEKSI ALAM GLOBAL (Resolusi Konflik Subset)
-        g_combos_to_remove = set()
-        g_red_combos = set() # Menyimpan kombo yang menang duel
+        # 2. Agregasi Total Level Tim
+        klasemen_baru = df_match.groupby('Team').agg(
+            Total_Match=('Match', 'count'),
+            M_W=('Match_W', 'sum'),
+            M_L=('Match_L', 'sum'),
+            G_W=('Game_W', 'sum'),
+            G_L=('Game_L', 'sum')
+        ).reset_index()
         
-        # Urutkan dari ukuran terbesar (Quintet) ke terkecil (Duo)
-        sorted_g_combos = sorted(list(global_valid.keys()), key=lambda x: len(x), reverse=True)
+        # 3. Format Kolom Sesuai Permintaan
+        klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(str) + "-" + klasemen_baru['M_L'].astype(str)
+        klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(str) + "-" + klasemen_baru['G_L'].astype(str)
+        klasemen_baru['Skor Windiff'] = klasemen_baru['G_W'] - klasemen_baru['G_L']
+        klasemen_baru['Peringkat'] = klasemen_baru['Skor Windiff'].rank(method='min', ascending=False).astype(int)
         
-        for i in range(len(sorted_g_combos)):
-            c_large = sorted_g_combos[i]
-            if c_large in g_combos_to_remove: continue
-                
-            for j in range(i + 1, len(sorted_g_combos)):
-                c_small = sorted_g_combos[j]
-                if c_small in g_combos_to_remove: continue
-                
-                if set(c_small).issubset(set(c_large)):
-                    wr_large = global_valid[c_large]['wr']
-                    wr_small = global_valid[c_small]['wr']
-                    f_large = global_valid[c_large]['freq']
-                    f_small = global_valid[c_small]['freq']
-                    
-                    if wr_small > wr_large:
-                        # Duo lebih mematikan dari Trio-nya! Trio dibuang, Duo jadi Merah.
-                        g_combos_to_remove.add(c_large)
-                        g_red_combos.add(c_small)
-                    elif wr_large > wr_small:
-                        # Trio lebih mematikan dari Duo-nya! Duo dibuang, Trio jadi Merah.
-                        g_combos_to_remove.add(c_small)
-                        g_red_combos.add(c_large)
-                    else:
-                        # WR Seri. Prioritas Rangkaian Terbesar: Buang yang kecil (Duo)
-                        # kecuali Duo itu sering dimainkan secara mandiri (selisih >= threshold)
-                        if (f_small - f_large) < threshold_global:
-                            g_combos_to_remove.add(c_small)
-                        else:
-                            pass 
-
-        kombo_g_final = {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}
+        # Rapikan dan urutkan
+        df_klasemen_tampil = klasemen_baru.sort_values(by='Peringkat')[
+            ['Peringkat', 'Team', 'Total_Match', 'Match (W-L)', 'Game (W-L)', 'Skor Windiff']
+        ]
+        df_klasemen_tampil = df_klasemen_tampil.set_index('Peringkat')
         
-        # 3. Urutkan Final: Ukuran Rangkaian (Terbesar) -> WR -> Frekuensi
-        top_global = sorted(kombo_g_final.items(), key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:6]
+        st.dataframe(df_klasemen_tampil, use_container_width=True)
         
-        if not top_global:
-            st.info("Belum ada kombo yang memenuhi syarat minimal 5x main.")
-        else:
-            cols_meta = st.columns(3)
-            for idx, (combo, stats) in enumerate(top_global):
-                nama_kombo = f"{', '.join(combo[:-1])} & {combo[-1]}"
-                tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
-                
-                # Eksekusi Warna sesuai hasil duel
-                if combo in g_red_combos:
-                    warna, ikon, kategori = "error", "🌟", "Supreme Meta (Winrate Winner)"
+        # --- ARTIKEL RINGKASAN TURNAMEN ---
+        st.markdown("### 📰 Highlight Turnamen")
+        
+        # Kalkulasi Winstreak Terpanjang (Game Level)
+        winstreak_record = {}
+        for team in df_long['Team'].unique():
+            wins = df_long[df_long['Team'] == team]['Win'].tolist()
+            max_streak, current_streak = 0, 0
+            for w in wins:
+                if w == 1:
+                    current_streak += 1
+                    max_streak = max(max_streak, current_streak)
                 else:
-                    warna, ikon, kategori = "warning", "🔥", "Global Meta (Max Size)"
-                    
-                teks = f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**\n📊 Kategori: **{kategori}**"
+                    current_streak = 0
+            winstreak_record[team] = max_streak
+            
+        tim_ws = max(winstreak_record, key=winstreak_record.get)
+        max_ws = winstreak_record[tim_ws]
+        
+        # Kalkulasi Top Meta Global (Dari Fase 9)
+        top_meta_nama = "Belum ada"
+        top_meta_wr = 0
+        if global_freq:
+            # Ambil kombo terbesar yang main minimal 5x
+            valid_g = {k: v for k, v in global_freq.items() if v >= 5}
+            if valid_g:
+                # Sort berdasar ukuran -> winrate
+                teratas = sorted(valid_g.items(), key=lambda x: (len(x[0]), (global_wins[x[0]]/x[1])*100), reverse=True)[0]
+                top_meta_nama = " & ".join(teratas[0])
+                top_meta_wr = (global_wins[teratas[0]] / teratas[1]) * 100
+        
+        st.info(
+            f"Sepanjang turnamen berlangsung, peta kekuatan meta sangat dipengaruhi oleh formasi "
+            f"**{top_meta_nama}** yang sukses mencatatkan rasio kemenangan global hingga **{top_meta_wr:.0f}%**. "
+            f"Di sisi lain, **{tim_ws}** tampil mengerikan dengan memegang rekor *winstreak* terpanjang, "
+            f"menyapu bersih **{max_ws} game** secara beruntun tanpa balas."
+        )
+
+    with col_kanan:
+        st.markdown("### 📅 Upcoming Matches")
+        
+        df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
+        
+        if df_jadwal.empty:
+            st.info("Belum ada jadwal pertandingan baru.")
+        else:
+            # Kamus Penerjemah Kode Pertandingan
+            dict_match = {
+                'Pl S': 'Play-in Stages',
+                'Up Sf': 'Upperbracket Semifinal',
+                'Lw Sf': 'Lowerbracket Semifinal',
+                'Up Fl': 'Upperbracket Final',
+                'Lw Fl': 'Lowerbracket Final',
+                'Gr Fl': 'Grand Final'
+            }
+            
+            st.markdown("<hr style='margin: 0px; border-top: 2px solid #555;'>", unsafe_allow_html=True)
+            
+            # Buat baris tanpa header tabel standar
+            for idx, row in df_jadwal.iterrows():
+                # Bersihkan kode match dari karakter spasi/simbol berlebih jika ada
+                m_code = str(row['Match']).strip()
+                f_match = dict_match.get(m_code, m_code) # Gunakan kode asli jika tidak ada di kamus
                 
-                with cols_meta[idx % 3]:
-                    if warna == "error": st.error(f"{ikon} {teks}")
-                    else: st.warning(f"{ikon} {teks}")
+                # Format Tanggal (Gabungan Week dan Day)
+                tgl = f"W{row['Week']} / D{row['Day']}"
+                tim_a = row['Team_(Blue)']
+                tim_b = row['Opponent_(Red)']
+                
+                # Format Baris ala Ticket/Jadwal
+                st.markdown(f"""
+                <div style='display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0px;'>
+                    <div style='width: 40%; font-weight: bold; color: #00d2ff;'>{f_match}</div>
+                    <div style='width: 20%; text-align: center; color: gray;'>{tgl}</div>
+                    <div style='width: 40%; text-align: right;'><b>{tim_a}</b> ⚔️ <b>{tim_b}</b></div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown("<hr style='margin: 0px; border-top: 1px dashed #444;'>", unsafe_allow_html=True)
 # endregion
 
 # region PROFILING
