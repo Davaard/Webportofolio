@@ -326,29 +326,68 @@ def get_signature_combos(tim_target):
 
 # region DISPLAY
 
+# region LOAD ASET
 # ==========================================
 # FUNGSI PEMBANTU VISUAL ASET
 # ==========================================
+import os
+
 def get_logo_path(team_name):
-    safe_name = team_name.replace(" ", "_")
-    path = f"assets/logos/{safe_name}.png"
-    return path if os.path.exists(path) else None
+    # KAMUS PENGHUBUNG: Singkatan CSV (Kiri) -> Nama Fail Unduhan (Kanan)
+    team_mapping = {
+        "AE": "Alter_Ego_Esport",
+        "OG": "OG_Esports",
+        "DESJ": "Deuscard_x_Sriwijaya_Esports",
+        "BTR": "Bigetron_by_Vitality",
+        "ONIC": "ONIC",
+        "CARS": "Carstensz_DuskMaven",
+        "DMT": "DOMINATOR_by_NEMESIS",
+        "RRQ": "Rex_Regum_Qeon",
+        "KAGE": "Kagendra",
+        "MAVE": "Mahadewa_Veshaka"
+    }
+    
+    nama_lengkap = team_mapping.get(team_name, team_name)
+    safe_name = nama_lengkap.replace(" ", "_")
+    
+    # Deteksi otomatis ekstensi format gambar (png/jpg/jpeg)
+    for ext in ['.png', '.jpg', '.jpeg']:
+        path = f"assets/logos/{safe_name}{ext}"
+        if os.path.exists(path):
+            return path
+            
+    return None # Jika tidak ada file yang cocok sama sekali
 
 def get_hero_path(hero_name):
-    safe_name = hero_name.replace(" ", "_").replace(".png", "")
-    path = f"assets/heroes/{safe_name}.png"
-    return path if os.path.exists(path) else None
+    # Bersihkan nama hero (buang spasi dan ekstensi lama jika terbawa)
+    safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
+    
+    # Deteksi otomatis ekstensi format gambar (bisa baca Liang.jpg atau Loong.png)
+    for ext in ['.png', '.jpg', '.jpeg']:
+        path = f"assets/heroes/{safe_name}{ext}"
+        if os.path.exists(path):
+            return path
+            
+    return None
 
 def render_hero_combo(combo_tuple):
-    # Membagi lebar kolom sesuai jumlah pahlawan
-    cols = st.columns(len(combo_tuple))
-    for i, hero in enumerate(combo_tuple):
-        path = get_hero_path(hero)
+    # Mengunci jumlah slot menjadi 5 agar ukuran gambar selalu statis & sama besar
+    cols = st.columns(5)
+    
+    for i in range(5):
         with cols[i]:
-            if path:
-                st.image(path, use_container_width=True)
+            if i < len(combo_tuple):
+                # Slot terisi (kiri)
+                hero = combo_tuple[i]
+                path = get_hero_path(hero)
+                if path:
+                    st.image(path, use_container_width=True)
+                else:
+                    st.caption(hero) # Jika gambar benar-benar hilang
             else:
-                st.caption(hero)
+                # Slot kosong (kanan) sebagai penahan ruang agar yang lain tidak membesar
+                st.empty()
+# endregion
 
 # region NAVIGASI
 st.markdown("### 🎮 IKL Dashboard")
@@ -786,4 +825,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                     if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
                     elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
                     elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+# endregion
+
 # endregion
