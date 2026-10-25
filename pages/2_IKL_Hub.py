@@ -535,30 +535,80 @@ if menu_utama == "🏆 Klasemen & Meta":
                 st.dataframe(df_jadwal_tampil, hide_index=True, use_container_width=True)
                 
     with tab_meta:
-        st.subheader("Top Global Combos (Winrate Tertinggi)")
-        st.markdown("Kombinasi taktik yang paling sering menang sepanjang turnamen.")
+        st.subheader("🔥 Global Meta Snapshot")
+        st.markdown("Prioritas formasi terbesar. Jika ada Duo dan Trio bertarung, pemenang *winrate* akan menyala Merah (Supreme Meta).")
         
-        # 1. Filter kombo global: Minimal dimainkan 5x secara global agar datanya valid (tidak kebetulan)
+        # 1. Tentukan Threshold (1/4 dari Total Pertandingan, minimal 3x)
+        total_matches = len(df_combo_history)
+        threshold_global = max(3, total_matches // 4) 
+        
         global_valid = {}
         for combo, freq in global_freq.items():
-            if freq >= 5: # Threshold global
+            if freq >= threshold_global:
                 wr = (global_wins[combo] / freq) * 100
                 global_valid[combo] = {'freq': freq, 'wr': wr}
                 
-        # 2. Urutkan berdasarkan Winrate tertinggi, lalu Frekuensi terbanyak
-        top_global = sorted(global_valid.items(), key=lambda x: (x[1]['wr'], x[1]['freq']), reverse=True)[:6]
+        # 2. SELEKSI ALAM GLOBAL (Resolusi Konflik Subset)
+        g_combos_to_remove = set()
+        g_red_combos = set() # Menyimpan kombo yang menang duel
+        
+        # Urutkan dari ukuran terbesar (Quintet) ke terkecil (Duo)
+        sorted_g_combos = sorted(list(global_valid.keys()), key=lambda x: len(x), reverse=True)
+        
+        for i in range(len(sorted_g_combos)):
+            c_large = sorted_g_combos[i]
+            if c_large in g_combos_to_remove: continue
+                
+            for j in range(i + 1, len(sorted_g_combos)):
+                c_small = sorted_g_combos[j]
+                if c_small in g_combos_to_remove: continue
+                
+                if set(c_small).issubset(set(c_large)):
+                    wr_large = global_valid[c_large]['wr']
+                    wr_small = global_valid[c_small]['wr']
+                    f_large = global_valid[c_large]['freq']
+                    f_small = global_valid[c_small]['freq']
+                    
+                    if wr_small > wr_large:
+                        # Duo lebih mematikan dari Trio-nya! Trio dibuang, Duo jadi Merah.
+                        g_combos_to_remove.add(c_large)
+                        g_red_combos.add(c_small)
+                    elif wr_large > wr_small:
+                        # Trio lebih mematikan dari Duo-nya! Duo dibuang, Trio jadi Merah.
+                        g_combos_to_remove.add(c_small)
+                        g_red_combos.add(c_large)
+                    else:
+                        # WR Seri (Misal sama-sama 100%).
+                        # Prioritas Rangkaian Terbesar: Buang yang kecil (Duo), kecuali Duo itu sering dimainkan secara mandiri
+                        if (f_small - f_large) < threshold_global:
+                            g_combos_to_remove.add(c_small)
+                        else:
+                            pass # Keduanya hidup jika Duo cukup sering dimainkan tanpa hero ke-3
+
+        kombo_g_final = {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}
+        
+        # 3. Urutkan Final: Ukuran Rangkaian (Terbesar) -> WR -> Frekuensi
+        top_global = sorted(kombo_g_final.items(), key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:6]
         
         if not top_global:
-            st.info("Belum ada data kombinasi meta global yang cukup.")
+            st.info(f"Belum ada kombo yang memenuhi syarat {threshold_global}x main (25% dari {total_matches} match).")
         else:
-            # Tampilkan dalam bentuk grid 3 kolom
             cols_meta = st.columns(3)
             for idx, (combo, stats) in enumerate(top_global):
                 nama_kombo = f"{', '.join(combo[:-1])} & {combo[-1]}"
                 tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
                 
+                # Eksekusi Warna sesuai hasil duel
+                if combo in g_red_combos:
+                    warna, ikon, kategori = "error", "🌟", "Supreme Meta (Winrate Winner)"
+                else:
+                    warna, ikon, kategori = "warning", "🔥", "Global Meta (Max Size)"
+                    
+                teks = f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**\n📊 Kategori: **{kategori}**"
+                
                 with cols_meta[idx % 3]:
-                    st.success(f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**")
+                    if warna == "error": st.error(f"{ikon} {teks}")
+                    else: st.warning(f"{ikon} {teks}")
 # endregion
 
 # region PROFILING
