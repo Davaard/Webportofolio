@@ -699,19 +699,79 @@ elif menu_utama == "🛡️ Team Profiling":
 # HALAMAN 3: VERSUS MODE (H2H)
 # ==========================================
 elif menu_utama == "⚔️ Versus Mode (H2H)":
-
     st.title("⚔️ H2H: Duel Mekanik & Taktik")
-    st.markdown("---")
 
-    col_A, col_B = st.columns(2)
-    with col_A:
-        tim_A = st.selectbox("Pilih Tim 1 (Kiri):", options=rapor_radar['Team'].unique(), index=0)
-    with col_B:
-        tim_B = st.selectbox("Pilih Tim 2 (Kanan):", options=rapor_radar['Team'].unique(), index=1)
+    # 1. Inisialisasi 2 Memori Tim
+    if 'h2h_team_A' not in st.session_state:
+        st.session_state['h2h_team_A'] = None
+    if 'h2h_team_B' not in st.session_state:
+        st.session_state['h2h_team_B'] = None
 
-    if tim_A == tim_B:
-        st.warning("⚠️ Silakan pilih dua tim yang berbeda untuk membandingkan.")
+    daftar_tim = sorted(rapor_radar['Team'].unique())
+
+    # 2. TAHAP 1: Pilih Tim Kiri (Tim A)
+    if st.session_state['h2h_team_A'] is None:
+        st.markdown("### 🔴 Pilih Tim 1 (Sisi Kiri)")
+        st.markdown("---")
+        kolom_grid = st.columns(4)
+        for idx, tim in enumerate(daftar_tim):
+            with kolom_grid[idx % 4]:
+                if st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
+                    st.session_state['h2h_team_A'] = tim
+                    st.rerun()
+
+    # 3. TAHAP 2: Pilih Tim Kanan (Tim B)
+    elif st.session_state['h2h_team_B'] is None:
+        tim_A = st.session_state['h2h_team_A']
+        
+        st.markdown("### ⚔️ Versus Mode: Pilih Lawan")
+        
+        # Desain 2 Slot (Kiri Terisi, Kanan Kosong)
+        col_slot1, col_slot2 = st.columns(2)
+        
+        with col_slot1:
+            st.info("🔴 Sisi Kiri (Tim 1)")
+            # Tombol ini seolah-olah "Ikon" tim yang sudah terpilih. 
+            # Kalau diklik, memori Tim 1 dihapus (kembali ke tahap 1)
+            if st.button(f"✨ {tim_A} (Klik untuk ganti)", use_container_width=True, key="btn_reset_A"):
+                st.session_state['h2h_team_A'] = None
+                st.rerun()
+                
+        with col_slot2:
+            st.warning("🔵 Sisi Kanan (Tim 2)")
+            # Placeholder untuk slot kedua yang masih menunggu
+            st.button("Menunggu pilihan...", use_container_width=True, disabled=True)
+            
+        st.markdown("---")
+        st.markdown(f"**Pilih lawan dari daftar di bawah ini untuk menantang {tim_A}:**")
+        
+        kolom_grid = st.columns(4)
+        for idx, tim in enumerate(daftar_tim):
+            with kolom_grid[idx % 4]:
+                # Kunci tombol jika tim sama dengan Tim A
+                if tim == tim_A:
+                    st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_B_{tim}")
+                else:
+                    if st.button(tim, use_container_width=True, key=f"btn_B_{tim}"):
+                        st.session_state['h2h_team_B'] = tim
+                        st.rerun()
+
+    # 4. TAHAP 3: Tampilkan H2H Dashboard
     else:
+        tim_A = st.session_state['h2h_team_A']
+        tim_B = st.session_state['h2h_team_B']
+
+        col_nav1, col_nav2 = st.columns([1, 4])
+        with col_nav1:
+            if st.button("🔄 Ganti Pertandingan", use_container_width=True):
+                st.session_state['h2h_team_A'] = None
+                st.session_state['h2h_team_B'] = None
+                st.rerun()
+        with col_nav2:
+            st.markdown(f"### Duel: {tim_A} vs {tim_B}")
+        
+        st.markdown("---")
+
         # --- Bagian 1: Overlay Radar Tumpuk ---
         data_A = rapor_radar[rapor_radar['Team'] == tim_A].iloc[0]
         data_B = rapor_radar[rapor_radar['Team'] == tim_B].iloc[0]
@@ -737,6 +797,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         fig_h2h.update_layout(
             polar=dict(radialaxis=dict(visible=False, range=[0, 100])),
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            margin=dict(l=20, r=20, t=20, b=20),
             legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="center", x=0.5)
         )
         st.plotly_chart(fig_h2h, use_container_width=True)
