@@ -509,13 +509,13 @@ menu_utama = st.session_state['menu_ikl']
 # ==========================================
 if menu_utama == "🏆 Klasemen & Meta":
     
-    col_kiri, col_kanan = st.columns([1.5, 1])
+    # --- BAGIAN ATAS: LEADERBOARD & UPCOMING MATCHES ---
+    col_kiri, col_kanan = st.columns([1.4, 1])
     
     with col_kiri:
         st.markdown("### 🏆 Leaderboard IKL")
         
         # 1. Agregasi Level Match (Bukan Game)
-        # Menghitung siapa yang menang di setiap Match (seri pertandingan)
         df_match = df_long.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(
             Game_W=('Win', 'sum'),
             Game_L=('Win', lambda x: (x == 0).sum())
@@ -534,10 +534,10 @@ if menu_utama == "🏆 Klasemen & Meta":
             G_L=('Game_L', 'sum')
         ).reset_index()
         
-        # 3. Format Kolom Sesuai Permintaan
-        klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(str) + "-" + klasemen_baru['M_L'].astype(str)
-        klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(str) + "-" + klasemen_baru['G_L'].astype(str)
-        klasemen_baru['Skor Windiff'] = klasemen_baru['G_W'] - klasemen_baru['G_L']
+        # 3. Format Kolom Sesuai Permintaan (Mengatasi Desimal)
+        klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(int).astype(str) + "-" + klasemen_baru['M_L'].astype(int).astype(str)
+        klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(int).astype(str) + "-" + klasemen_baru['G_L'].astype(int).astype(str)
+        klasemen_baru['Skor Windiff'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
         klasemen_baru['Peringkat'] = klasemen_baru['Skor Windiff'].rank(method='min', ascending=False).astype(int)
         
         # Rapikan dan urutkan
@@ -547,44 +547,6 @@ if menu_utama == "🏆 Klasemen & Meta":
         df_klasemen_tampil = df_klasemen_tampil.set_index('Peringkat')
         
         st.dataframe(df_klasemen_tampil, use_container_width=True)
-        
-        # --- ARTIKEL RINGKASAN TURNAMEN ---
-        st.markdown("### 📰 Highlight Turnamen")
-        
-        # Kalkulasi Winstreak Terpanjang (Game Level)
-        winstreak_record = {}
-        for team in df_long['Team'].unique():
-            wins = df_long[df_long['Team'] == team]['Win'].tolist()
-            max_streak, current_streak = 0, 0
-            for w in wins:
-                if w == 1:
-                    current_streak += 1
-                    max_streak = max(max_streak, current_streak)
-                else:
-                    current_streak = 0
-            winstreak_record[team] = max_streak
-            
-        tim_ws = max(winstreak_record, key=winstreak_record.get)
-        max_ws = winstreak_record[tim_ws]
-        
-        # Kalkulasi Top Meta Global (Dari Fase 9)
-        top_meta_nama = "Belum ada"
-        top_meta_wr = 0
-        if global_freq:
-            # Ambil kombo terbesar yang main minimal 5x
-            valid_g = {k: v for k, v in global_freq.items() if v >= 5}
-            if valid_g:
-                # Sort berdasar ukuran -> winrate
-                teratas = sorted(valid_g.items(), key=lambda x: (len(x[0]), (global_wins[x[0]]/x[1])*100), reverse=True)[0]
-                top_meta_nama = " & ".join(teratas[0])
-                top_meta_wr = (global_wins[teratas[0]] / teratas[1]) * 100
-        
-        st.info(
-            f"Sepanjang turnamen berlangsung, peta kekuatan meta sangat dipengaruhi oleh formasi "
-            f"**{top_meta_nama}** yang sukses mencatatkan rasio kemenangan global hingga **{top_meta_wr:.0f}%**. "
-            f"Di sisi lain, **{tim_ws}** tampil mengerikan dengan memegang rekor *winstreak* terpanjang, "
-            f"menyapu bersih **{max_ws} game** secara beruntun tanpa balas."
-        )
 
     with col_kanan:
         st.markdown("### 📅 Upcoming Matches")
@@ -594,8 +556,9 @@ if menu_utama == "🏆 Klasemen & Meta":
         if df_jadwal.empty:
             st.info("Belum ada jadwal pertandingan baru.")
         else:
-            # Kamus Penerjemah Kode Pertandingan
+            # Kamus Penerjemah Kode Pertandingan (Gabungan Week + Day)
             dict_match = {
+                'Pl St': 'Play-in Stages',
                 'Pl S': 'Play-in Stages',
                 'Up Sf': 'Upperbracket Semifinal',
                 'Lw Sf': 'Lowerbracket Semifinal',
@@ -608,24 +571,134 @@ if menu_utama == "🏆 Klasemen & Meta":
             
             # Buat baris tanpa header tabel standar
             for idx, row in df_jadwal.iterrows():
-                # Bersihkan kode match dari karakter spasi/simbol berlebih jika ada
-                m_code = str(row['Match']).strip()
-                f_match = dict_match.get(m_code, m_code) # Gunakan kode asli jika tidak ada di kamus
+                # Gabungkan Week dan Day untuk deteksi fase (Misal: 'Pl' + 'St' = 'Pl St')
+                w_val = str(row['Week']).strip()
+                d_val = str(row['Day']).strip()
+                phase_key = f"{w_val} {d_val}"
                 
-                # Format Tanggal (Gabungan Week dan Day)
-                tgl = f"W{row['Week']} / D{row['Day']}"
-                tim_a = row['Team_(Blue)']
-                tim_b = row['Opponent_(Red)']
+                f_match = dict_match.get(phase_key, phase_key)
+                
+                # Tanggal / Nomor Match
+                match_num = str(row['Match']).replace('.0', '').strip()
+                tgl = f"Match {match_num}" if match_num not in ['0', 'nan'] else "-"
+                
+                # Nama Tim (Ubah nan menjadi TBD)
+                tim_a = str(row['Team_(Blue)'])
+                tim_b = str(row['Opponent_(Red)'])
+                tim_a = "TBD" if tim_a == "nan" else tim_a
+                tim_b = "TBD" if tim_b == "nan" else tim_b
                 
                 # Format Baris ala Ticket/Jadwal
                 st.markdown(f"""
                 <div style='display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0px;'>
-                    <div style='width: 40%; font-weight: bold; color: #00d2ff;'>{f_match}</div>
+                    <div style='width: 45%; font-weight: bold; color: #00d2ff;'>{f_match}</div>
                     <div style='width: 20%; text-align: center; color: gray;'>{tgl}</div>
-                    <div style='width: 40%; text-align: right;'><b>{tim_a}</b> ⚔️ <b>{tim_b}</b></div>
+                    <div style='width: 35%; text-align: right;'><b>{tim_a}</b> ⚔️ <b>{tim_b}</b></div>
                 </div>
                 """, unsafe_allow_html=True)
                 st.markdown("<hr style='margin: 0px; border-top: 1px dashed #444;'>", unsafe_allow_html=True)
+
+    # --- BAGIAN BAWAH: HIGHLIGHT & GLOBAL META (Satu Baris Penuh) ---
+    st.markdown("---")
+    st.markdown("### 📰 Highlight Turnamen")
+    
+    # Kalkulasi Winstreak Terpanjang (Game Level)
+    winstreak_record = {}
+    for team in df_long['Team'].unique():
+        wins = df_long[df_long['Team'] == team]['Win'].tolist()
+        max_streak, current_streak = 0, 0
+        for w in wins:
+            if w == 1:
+                current_streak += 1
+                max_streak = max(max_streak, current_streak)
+            else:
+                current_streak = 0
+        winstreak_record[team] = max_streak
+        
+    tim_ws = max(winstreak_record, key=winstreak_record.get)
+    max_ws = winstreak_record[tim_ws]
+    
+    # Kalkulasi Top Meta Global Cepat (Untuk Teks Berita)
+    top_meta_nama = "Belum ada"
+    top_meta_wr = 0
+    if global_freq:
+        valid_g = {k: v for k, v in global_freq.items() if v >= 5}
+        if valid_g:
+            teratas = sorted(valid_g.items(), key=lambda x: (len(x[0]), (global_wins[x[0]]/x[1])*100), reverse=True)[0]
+            top_meta_nama = " & ".join(teratas[0])
+            top_meta_wr = (global_wins[teratas[0]] / teratas[1]) * 100
+    
+    st.info(
+        f"Sepanjang turnamen berlangsung, peta kekuatan meta sangat dipengaruhi oleh formasi "
+        f"**{top_meta_nama}** yang sukses mencatatkan rasio kemenangan global hingga **{top_meta_wr:.0f}%**. "
+        f"Di sisi lain, **{tim_ws}** tampil mengerikan dengan memegang rekor *winstreak* terpanjang, "
+        f"menyapu bersih **{max_ws} game** secara beruntun tanpa balas."
+    )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 🔥 Global Meta Snapshot")
+    st.markdown("Prioritas formasi terbesar. Jika ada Duo dan Trio bertarung, pemenang *winrate* akan menyala Merah (Supreme Meta).")
+    
+    # Threshold Statis: Minimal 5x main agar valid
+    threshold_global = 5 
+    
+    global_valid = {}
+    for combo, freq in global_freq.items():
+        if freq >= threshold_global:
+            wr = (global_wins[combo] / freq) * 100
+            global_valid[combo] = {'freq': freq, 'wr': wr}
+            
+    # SELEKSI ALAM GLOBAL (Resolusi Konflik Subset)
+    g_combos_to_remove = set()
+    g_red_combos = set()
+    
+    sorted_g_combos = sorted(list(global_valid.keys()), key=lambda x: len(x), reverse=True)
+    
+    for i in range(len(sorted_g_combos)):
+        c_large = sorted_g_combos[i]
+        if c_large in g_combos_to_remove: continue
+            
+        for j in range(i + 1, len(sorted_g_combos)):
+            c_small = sorted_g_combos[j]
+            if c_small in g_combos_to_remove: continue
+            
+            if set(c_small).issubset(set(c_large)):
+                wr_large = global_valid[c_large]['wr']
+                wr_small = global_valid[c_small]['wr']
+                f_large = global_valid[c_large]['freq']
+                f_small = global_valid[c_small]['freq']
+                
+                if wr_small > wr_large:
+                    g_combos_to_remove.add(c_large)
+                    g_red_combos.add(c_small)
+                elif wr_large > wr_small:
+                    g_combos_to_remove.add(c_small)
+                    g_red_combos.add(c_large)
+                else:
+                    if (f_small - f_large) < threshold_global:
+                        g_combos_to_remove.add(c_small)
+
+    kombo_g_final = {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}
+    top_global = sorted(kombo_g_final.items(), key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:6]
+    
+    if not top_global:
+        st.warning("Belum ada kombo yang memenuhi syarat minimal 5x main.")
+    else:
+        cols_meta = st.columns(3)
+        for idx, (combo, stats) in enumerate(top_global):
+            nama_kombo = f"{', '.join(combo[:-1])} & {combo[-1]}"
+            tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
+            
+            if combo in g_red_combos:
+                warna, ikon, kategori = "error", "🌟", "Supreme Meta (Winrate Winner)"
+            else:
+                warna, ikon, kategori = "warning", "🔥", "Global Meta (Max Size)"
+                
+            teks = f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**\n📊 Kategori: **{kategori}**"
+            
+            with cols_meta[idx % 3]:
+                if warna == "error": st.error(f"{ikon} {teks}")
+                else: st.warning(f"{ikon} {teks}")
 # endregion
 
 # region PROFILING
