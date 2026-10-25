@@ -505,9 +505,60 @@ menu_utama = st.session_state['menu_ikl']
 # HALAMAN 1: KLASEMEN & META
 # ==========================================
 if menu_utama == "🏆 Klasemen & Meta":
-
     st.title("🏆 Klasemen IKL & Meta Global")
-    st.info("Fitur Klasemen dan Top Global Combo akan kita bangun di sini nanti.")
+    
+    # Membuat 2 Tab utama
+    tab_klasemen, tab_meta = st.tabs(["📊 Klasemen & Jadwal", "🔥 Global Meta Snapshot"])
+    
+    with tab_klasemen:
+        col_klasemen, col_jadwal = st.columns([1.5, 1])
+        
+        with col_klasemen:
+            st.subheader("Leaderboard")
+            # Rapikan tabel klasemen yang sudah dihitung di Fase 2
+            df_klasemen_tampil = klasemen.sort_values(by='Rank_Akhir').copy()
+            df_klasemen_tampil.columns = ['Tim', 'Menang', 'Kalah', 'Skor Akhir (IKL)', 'Peringkat']
+            df_klasemen_tampil = df_klasemen_tampil.set_index('Peringkat')
+            
+            # Tampilkan menggunakan st.dataframe untuk tabel interaktif
+            st.dataframe(df_klasemen_tampil, use_container_width=True)
+            
+        with col_jadwal:
+            st.subheader("📅 Upcoming Matches")
+            # Ambil data yang statusnya 'Upcoming' dari df_master (Fase 1)
+            df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
+            
+            if df_jadwal.empty:
+                st.info("Belum ada jadwal pertandingan baru.")
+            else:
+                df_jadwal_tampil = df_jadwal[['Week', 'Day', 'Match', 'Team_(Blue)', 'Opponent_(Red)']]
+                st.dataframe(df_jadwal_tampil, hide_index=True, use_container_width=True)
+                
+    with tab_meta:
+        st.subheader("Top Global Combos (Winrate Tertinggi)")
+        st.markdown("Kombinasi taktik yang paling sering menang sepanjang turnamen.")
+        
+        # 1. Filter kombo global: Minimal dimainkan 5x secara global agar datanya valid (tidak kebetulan)
+        global_valid = {}
+        for combo, freq in global_freq.items():
+            if freq >= 5: # Threshold global
+                wr = (global_wins[combo] / freq) * 100
+                global_valid[combo] = {'freq': freq, 'wr': wr}
+                
+        # 2. Urutkan berdasarkan Winrate tertinggi, lalu Frekuensi terbanyak
+        top_global = sorted(global_valid.items(), key=lambda x: (x[1]['wr'], x[1]['freq']), reverse=True)[:6]
+        
+        if not top_global:
+            st.info("Belum ada data kombinasi meta global yang cukup.")
+        else:
+            # Tampilkan dalam bentuk grid 3 kolom
+            cols_meta = st.columns(3)
+            for idx, (combo, stats) in enumerate(top_global):
+                nama_kombo = f"{', '.join(combo[:-1])} & {combo[-1]}"
+                tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
+                
+                with cols_meta[idx % 3]:
+                    st.success(f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**")
 # endregion
 
 # region PROFILING
