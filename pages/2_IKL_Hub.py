@@ -328,65 +328,82 @@ def get_signature_combos(tim_target):
 
 # region LOAD ASET
 # ==========================================
-# FUNGSI PEMBANTU VISUAL ASET
+# FUNGSI PEMBANTU VISUAL ASET (DENGAN CUSTOM UI CARD)
 # ==========================================
 import os
+import base64
 
 def get_logo_path(team_name):
-    # KAMUS PENGHUBUNG: Singkatan CSV (Kiri) -> Nama Fail Unduhan (Kanan)
     team_mapping = {
-        "AE": "Alter_Ego_Esports",
-        "OG": "OG_Esports",
-        "DESJ": "Deuscard_x_Sriwijaya_Esports",
-        "BTR": "Bigetron_by_Vitality",
-        "ONIC": "ONIC",
-        "CARS": "Carstensz_DuskMaven",
-        "DMT": "DOMINATOR_by_NEMESIS",
-        "RRQ": "Rex_Regum_Qeon",
-        "KAGE": "Kagendra",
+        "AE": "Alter_Ego_Esports", "OG": "OG_Esports", "DESJ": "Deuscard_x_Sriwijaya_Esports",
+        "BTR": "Bigetron_by_Vitality", "ONIC": "ONIC", "CARS": "Carstensz_DuskMaven",
+        "DMT": "DOMINATOR_by_NEMESIS", "RRQ": "Rex_Regum_Qeon", "KAGE": "Kagendra",
         "MAVE": "Mahadewa_Vesakha"
     }
-    
     nama_lengkap = team_mapping.get(team_name, team_name)
     safe_name = nama_lengkap.replace(" ", "_")
-    
-    # Deteksi otomatis ekstensi format gambar (png/jpg/jpeg)
     for ext in ['.png', '.jpg', '.jpeg']:
         path = f"assets/logos/{safe_name}{ext}"
-        if os.path.exists(path):
-            return path
-            
-    return None # Jika tidak ada file yang cocok sama sekali
-
-def get_hero_path(hero_name):
-    # Bersihkan nama hero (buang spasi dan ekstensi lama jika terbawa)
-    safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
-    
-    # Deteksi otomatis ekstensi format gambar (bisa baca Liang.jpg atau Loong.png)
-    for ext in ['.png', '.jpg', '.jpeg']:
-        path = f"assets/heroes/{safe_name}{ext}"
-        if os.path.exists(path):
-            return path
-            
+        if os.path.exists(path): return path
     return None
 
-def render_hero_combo(combo_tuple):
-    # Mengunci jumlah slot menjadi 5 agar ukuran gambar selalu statis & sama besar
-    cols = st.columns(5)
+def get_hero_path(hero_name):
+    safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
+    for ext in ['.png', '.jpg', '.jpeg']:
+        path = f"assets/heroes/{safe_name}{ext}"
+        if os.path.exists(path): return path
+    return None
+
+# Fungsi pengubah gambar menjadi kode sandi (Base64) agar bisa masuk ke HTML
+def image_to_base64(img_path):
+    if img_path and os.path.exists(img_path):
+        with open(img_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return ""
+
+# FUNGSI BARU: Perender Kartu Satu Kesatuan
+def render_combo_card(combo_tuple, warna, ikon, teks):
+    # Definisi palet warna Streamlit
+    tema_warna = {
+        "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
+        "warning": {"bg": "rgba(255, 190, 0, 0.15)", "border": "rgba(255, 190, 0, 1)"},
+        "success": {"bg": "rgba(9, 171, 59, 0.15)", "border": "rgba(9, 171, 59, 1)"}
+    }
     
+    bg = tema_warna[warna]["bg"]
+    brdr = tema_warna[warna]["border"]
+    
+    # Merakit deretan 5 gambar
+    img_html = "<div style='display: flex; gap: 2%; margin-bottom: 12px;'>"
     for i in range(5):
-        with cols[i]:
-            if i < len(combo_tuple):
-                # Slot terisi (kiri)
-                hero = combo_tuple[i]
-                path = get_hero_path(hero)
-                if path:
-                    st.image(path, use_container_width=True)
-                else:
-                    st.caption(hero) # Jika gambar benar-benar hilang
+        if i < len(combo_tuple):
+            path = get_hero_path(combo_tuple[i])
+            if path:
+                b64 = image_to_base64(path)
+                # Gambar hero HD
+                img_html += f"<img src='data:image/png;base64,{b64}' style='width: 18.4%; border-radius: 8px; box-shadow: 1px 2px 5px rgba(0,0,0,0.3); object-fit: cover; aspect-ratio: 1/1;'>"
             else:
-                # Slot kosong (kanan) sebagai penahan ruang agar yang lain tidak membesar
-                st.empty()
+                img_html += f"<div style='width: 18.4%; background: #444; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center; aspect-ratio: 1/1;'>{combo_tuple[i]}</div>"
+        else:
+            # Slot kosong transparan (agar ukurannya tetap absolut)
+            img_html += "<div style='width: 18.4%; aspect-ratio: 1/1;'></div>"
+    img_html += "</div>"
+    
+    # Merapikan Teks (Ubah markdown ke HTML)
+    teks_html = teks.replace('\n', '<br>').replace('**', '<b>')
+    
+    # Merakit Kartu Utuh
+    html_final = f"""
+    <div style='background-color: {bg}; border-left: 5px solid {brdr}; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>
+        {img_html}
+        <div style='font-size: 14.5px; line-height: 1.5; color: white;'>
+            <b>{ikon}</b> {teks_html}
+        </div>
+    </div>
+    """
+    
+    # Suntikkan ke layar!
+    st.markdown(html_final, unsafe_allow_html=True)
 # endregion
 
 # region NAVIGASI
@@ -583,11 +600,7 @@ if menu_utama == "🏆 Klasemen & Meta":
             
             with cols_meta[idx % 3]:
                 # Merender Ikon Hero
-                render_hero_combo(combo)
-                
-                # Merender Kotak Keterangan
-                if warna == "error": st.error(f"{ikon} {teks}")
-                else: st.warning(f"{ikon} {teks}")
+               render_combo_card(combo, warna, ikon, teks)
 # endregion
 
 # region PROFILING
@@ -672,11 +685,7 @@ elif menu_utama == "🛡️ Team Profiling":
             for idx, k in enumerate(kombo_A):
                 with cols[idx]:
                     # Merender Ikon Pahlawan
-                    render_hero_combo(k["combo"])
-                    
-                    if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
 # endregion
 
 # region H2H
@@ -807,10 +816,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 st.info("Belum ada kombinasi andalan.")
             else:
                 for k in kombo_A:
-                    render_hero_combo(k["combo"])
-                    if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
                 
         with divider:
             st.markdown("<div style='border-left: 2px solid gray; height: 100%; min-height: 250px;'></div>", unsafe_allow_html=True)
@@ -821,10 +827,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 st.info("Belum ada kombinasi andalan.")
             else:
                 for k in kombo_B:
-                    render_hero_combo(k["combo"])
-                    if k["warna"] == "error": st.error(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "warning": st.warning(f"{k['ikon']} {k['teks']}")
-                    elif k["warna"] == "success": st.success(f"{k['ikon']} {k['teks']}")
+                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
 # endregion
 
 # endregion
