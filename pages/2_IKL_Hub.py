@@ -335,7 +335,7 @@ import os
 def get_logo_path(team_name):
     # KAMUS PENGHUBUNG: Singkatan CSV (Kiri) -> Nama Fail Unduhan (Kanan)
     team_mapping = {
-        "AE": "Alter_Ego_Esport",
+        "AE": "Alter_Ego_Esports",
         "OG": "OG_Esports",
         "DESJ": "Deuscard_x_Sriwijaya_Esports",
         "BTR": "Bigetron_by_Vitality",
@@ -344,7 +344,7 @@ def get_logo_path(team_name):
         "DMT": "DOMINATOR_by_NEMESIS",
         "RRQ": "Rex_Regum_Qeon",
         "KAGE": "Kagendra",
-        "MAVE": "Mahadewa_Veshaka"
+        "MAVE": "Mahadewa_Vesakha"
     }
     
     nama_lengkap = team_mapping.get(team_name, team_name)
