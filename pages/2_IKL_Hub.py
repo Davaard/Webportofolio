@@ -472,18 +472,33 @@ def get_signature_combos(tim_target):
 
 # region DISPLAY
 # ==========================================
-# MENU NAVIGASI UTAMA (SPA)
+# MENU NAVIGASI UTAMA (TAMPILAN TOMBOL HEADER)
 # ==========================================
-st.markdown("### 🎮 Navigasi IKL Dashboard")
+st.markdown("### 🎮 IKL Dashboard")
 
-# Gunakan radio horizontal di halaman utama, bukan di sidebar
-menu_utama = st.radio(
-    "Pilih Menu:", 
-    ["🏆 Klasemen & Meta", "🛡️ Team Profiling", "⚔️ Versus Mode (H2H)"],
-    horizontal=True, # Ini kunci agar menunya berjejer ke samping, bukan ke bawah
-    label_visibility="collapsed" # Menyembunyikan tulisan "Pilih Menu:" agar lebih rapi
-)
+# 1. Inisialisasi memori halaman awal jika belum ada
+if "menu_ikl" not in st.session_state:
+    st.session_state['menu_ikl'] = "🏆 Klasemen & Meta"
+
+# 2. Buat 3 kolom sejajar untuk tombol
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+
+with col_nav1:
+    if st.button("🏆 Klasemen & Meta", use_container_width=True):
+        st.session_state['menu_ikl'] = "🏆 Klasemen & Meta"
+        
+with col_nav2:
+    if st.button("🛡️ Team Profiling", use_container_width=True):
+        st.session_state['menu_ikl'] = "🛡️ Team Profiling"
+        
+with col_nav3:
+    if st.button("⚔️ Versus Mode (H2H)", use_container_width=True):
+        st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)"
+
 st.markdown("---")
+
+# 3. Masukkan ke variabel utama agar if-elif di bawahnya tetap berfungsi
+menu_utama = st.session_state['menu_ikl']
 
 # region HOME
 # ==========================================
