@@ -538,9 +538,8 @@ if menu_utama == "🏆 Klasemen & Meta":
         st.subheader("🔥 Global Meta Snapshot")
         st.markdown("Prioritas formasi terbesar. Jika ada Duo dan Trio bertarung, pemenang *winrate* akan menyala Merah (Supreme Meta).")
         
-        # 1. Tentukan Threshold (1/4 dari Total Pertandingan, minimal 3x)
-        total_matches = len(df_combo_history)
-        threshold_global = max(3, total_matches // 4) 
+        # 1. Tentukan Threshold Statis (Minimal 5x main agar valid, tidak perlu pakai persentase)
+        threshold_global = 5 
         
         global_valid = {}
         for combo, freq in global_freq.items():
@@ -578,12 +577,12 @@ if menu_utama == "🏆 Klasemen & Meta":
                         g_combos_to_remove.add(c_small)
                         g_red_combos.add(c_large)
                     else:
-                        # WR Seri (Misal sama-sama 100%).
-                        # Prioritas Rangkaian Terbesar: Buang yang kecil (Duo), kecuali Duo itu sering dimainkan secara mandiri
+                        # WR Seri. Prioritas Rangkaian Terbesar: Buang yang kecil (Duo)
+                        # kecuali Duo itu sering dimainkan secara mandiri (selisih >= threshold)
                         if (f_small - f_large) < threshold_global:
                             g_combos_to_remove.add(c_small)
                         else:
-                            pass # Keduanya hidup jika Duo cukup sering dimainkan tanpa hero ke-3
+                            pass 
 
         kombo_g_final = {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}
         
@@ -591,7 +590,7 @@ if menu_utama == "🏆 Klasemen & Meta":
         top_global = sorted(kombo_g_final.items(), key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:6]
         
         if not top_global:
-            st.info(f"Belum ada kombo yang memenuhi syarat {threshold_global}x main (25% dari {total_matches} match).")
+            st.info("Belum ada kombo yang memenuhi syarat minimal 5x main.")
         else:
             cols_meta = st.columns(3)
             for idx, (combo, stats) in enumerate(top_global):
