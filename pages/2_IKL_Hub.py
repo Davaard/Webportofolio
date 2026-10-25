@@ -404,6 +404,25 @@ def render_combo_card(combo_tuple, warna, ikon, teks):
     
     # Suntikkan ke layar!
     st.markdown(html_final, unsafe_allow_html=True)
+
+    # FUNGSI BARU: Perender Kartu Logo Tim Seragam
+def render_logo_card(logo_path, team_name):
+    if logo_path and os.path.exists(logo_path):
+        b64 = image_to_base64(logo_path)
+        # Menampilkan gambar dengan object-fit: contain agar logo tidak terpotong namun ukuran kotak tetap statis
+        html_logo = f"""
+        <div style='background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+            <img src='data:image/png;base64,{b64}' style='max-width: 100%; max-height: 100%; object-fit: contain;'>
+        </div>
+        """
+    else:
+        # Fallback keren jika logo tim belum ada (Tampil inisial teks di tengah kotak)
+        html_logo = f"""
+        <div style='background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+            <span style='color: gray; font-weight: bold; font-size: 20px; text-align: center;'>{team_name}</span>
+        </div>
+        """
+    st.markdown(html_logo, unsafe_allow_html=True)
 # endregion
 
 # region NAVIGASI
@@ -620,11 +639,7 @@ elif menu_utama == "🛡️ Team Profiling":
         for idx, tim in enumerate(daftar_tim):
             with kolom_grid[idx % 4]:
                 logo_path = get_logo_path(tim)
-                if logo_path:
-                    # Menambahkan perataan ke tengah menggunakan HTML kosong
-                    col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
-                    with col_logo2:
-                        st.image(logo_path, use_container_width=True)
+                render_logo_card(logo_path, tim)
                 
                 if st.button(tim, use_container_width=True, key=f"btn_{tim}"):
                     st.session_state['profiling_team'] = tim
@@ -707,10 +722,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             with kolom_grid[idx % 4]:
                 # Render Logo
                 logo_path = get_logo_path(tim)
-                if logo_path:
-                    col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
-                    with col_logo2:
-                        st.image(logo_path, use_container_width=True)
+                render_logo_card(logo_path, tim)
                 
                 if st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
                     st.session_state['h2h_team_A'] = tim
@@ -746,10 +758,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         for idx, tim in enumerate(daftar_tim):
             with kolom_grid[idx % 4]:
                 logo_path = get_logo_path(tim)
-                if logo_path:
-                    col_logo1, col_logo2, col_logo3 = st.columns([1, 2, 1])
-                    with col_logo2:
-                        st.image(logo_path, use_container_width=True)
+                render_logo_card(logo_path, tim)
                         
                 if tim == tim_A:
                     st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_B_{tim}")
