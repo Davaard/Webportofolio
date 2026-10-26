@@ -9,24 +9,18 @@ from itertools import combinations
 
 st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# === SIHIR CSS: STICKY HEADER & NAVBAR ===
-# Membuat baris paling atas (Title & Season Selector) dan Baris Navigasi menempel di atas saat di-scroll
+# === SIHIR CSS: STICKY HEADER SEMPURNA ===
 st.markdown("""
     <style>
-    div[data-testid="stVerticalBlock"] > div:first-child {
+    /* Target spesifik HANYA untuk kontainer paling atas di halaman utama */
+    .main .block-container > div:first-child {
         position: sticky;
-        top: 2.5rem;
+        top: 2.875rem; /* Menempel persis di bawah header bawaan Streamlit */
         z-index: 999;
-        background-color: var(--primary-background-color);
-        padding-bottom: 10px;
-    }
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) {
-        position: sticky;
-        top: 6.5rem;
-        z-index: 998;
-        background-color: var(--primary-background-color);
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background-color: #0e1117; /* Latar gelap pekat agar elemen di bawahnya tertutup */
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1); /* Garis batas tipis nan elegan */
     }
     </style>
 """, unsafe_allow_html=True)
@@ -43,10 +37,18 @@ def load_and_preprocess_data(filepath):
     df['Status'] = df['Result'].apply(lambda x: 'Upcoming' if pd.isna(x) else 'History')
     df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
     return df
-# endregion
 
-# region PRA-PEMPROSESAN
 df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+
+# [+] FUNGSI GLOBAL PEMBOBOT MUSIM
+def urutkan_musim(s):
+    bagian = str(s).strip().split()
+    if len(bagian) == 2 and bagian[1].isdigit():
+        musim, tahun = bagian[0].lower(), int(bagian[1])
+        # Fall berbobot 2 (akhir tahun), Spring berbobot 1 (awal tahun)
+        bobot_musim = 2 if musim == 'fall' else 1
+        return (tahun, bobot_musim)
+    return (0, 0)
 
 # === PENGATURAN HEADER GLOBAL (FIXED TOP-RIGHT) ===
 col_title, col_season = st.columns([3, 1])
@@ -55,12 +57,12 @@ with col_title:
         
 with col_season:
     if 'Season' in df_csv.columns:
-        # Mengurutkan menggunakan fungsi khusus (dari terbaru ke terlama)
+        # Panggil fungsi global untuk mengurutkan musim
         daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
         
-        # [+] INJEKSI ANTI-ALIAS TERISOLASI HANYA UNTUK FALL 2025
+        # [+] INJEKSI ANTI-ALIAS TERISOLASI KHUSUS FALL 2025
         if musim_pilihan == "Fall 2025":
             df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace({'VIT': 'BTR'})
             df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace({'VIT': 'BTR'})
