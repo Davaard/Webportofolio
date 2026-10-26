@@ -27,7 +27,20 @@ def load_and_preprocess_data(filepath):
 # ==========================================
 # FASE 1: IMPORT & TRANSFORMASI DATA
 # ==========================================
-df_master = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+
+# === TAMBAHAN DROPDOWN PEMILIH MUSIM DI SIDEBAR ===
+st.sidebar.markdown("### ⚙️ Pengaturan Global")
+if 'Season' in df_csv.columns:
+    daftar_musim = df_csv['Season'].dropna().unique().tolist()
+    musim_pilihan = st.sidebar.selectbox("📅 Pilih Musim Turnamen", daftar_musim)
+    df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
+else:
+    st.error("Kolom 'Season' tidak ditemukan! Pastikan memakai CSV dari skrip V5.1")
+    st.stop()
+st.sidebar.markdown("---")
+# ==================================================
+
 df_history = df_master[df_master['Status'] == 'History'].copy()
 
 df_A = df_history.copy()
@@ -318,7 +331,6 @@ def get_signature_combos(tim_target):
         tipe = {2: "Duo", 3: "Trio", 4: "Quad", 5: "Quintet"}[len(combo)]
         teks = f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{freq_tim}x**\n🏆 Team WR: **{wr_tim:.0f}%**\n📊 Kategori: **{status}**"
         
-        # Tambahan pengiriman array combo ke UI
         hasil_ui.append({"warna": warna, "ikon": ikon, "teks": teks, "combo": combo})
         
     return hasil_ui
@@ -327,24 +339,32 @@ def get_signature_combos(tim_target):
 # region DISPLAY
 
 # region LOAD ASET
-# ==========================================
-# FUNGSI PEMBANTU VISUAL ASET (DENGAN CUSTOM UI CARD)
-# ==========================================
 import os
 import base64
 
+# FUNGSI BARU: Membaca kamus logo dinamis dari IKL_Rosters.csv
+@st.cache_data
+def get_dynamic_logo_map():
+    logo_map = {}
+    ros_path = "IKL_Rosters.csv"
+    if os.path.exists(ros_path):
+        df_ros = pd.read_csv(ros_path)
+        # Menghapus duplikasi agar setiap tim hanya punya 1 entri logo
+        df_unik = df_ros.dropna(subset=['Logo_File']).drop_duplicates(subset=['Team'])
+        logo_map = dict(zip(df_unik['Team'], df_unik['Logo_File']))
+    return logo_map
+
+# Load kamus secara global
+TEAM_LOGO_MAP = get_dynamic_logo_map()
+
 def get_logo_path(team_name):
-    team_mapping = {
-        "AE": "Alter_Ego_Esports", "OG": "OG_Esports", "DESJ": "Deuscard_x_Sriwijaya_Esports",
-        "BTR": "Bigetron_by_Vitality", "ONIC": "ONIC", "CARS": "Carstensz_DuskMaven",
-        "DMT": "DOMINATOR_by_NEMESIS", "RRQ": "Rex_Regum_Qeon", "KAGE": "Kagendra",
-        "MAVE": "Mahadewa_Vesakha"
-    }
-    nama_lengkap = team_mapping.get(team_name, team_name)
-    safe_name = nama_lengkap.replace(" ", "_")
-    for ext in ['.png', '.jpg', '.jpeg']:
-        path = f"assets/logos/{safe_name}{ext}"
-        if os.path.exists(path): return path
+    if team_name in TEAM_LOGO_MAP:
+        nama_file = TEAM_LOGO_MAP[team_name]
+        jalur_logo = os.path.join("assets", "logo_tim", str(nama_file))
+        if os.path.exists(jalur_logo):
+            return jalur_logo
+            
+    # Jika gagal/tidak ada logo, kembalikan None agar dirender sebagai teks oleh UI
     return None
 
 def get_hero_path(hero_name):
@@ -354,16 +374,13 @@ def get_hero_path(hero_name):
         if os.path.exists(path): return path
     return None
 
-# Fungsi pengubah gambar menjadi kode sandi (Base64) agar bisa masuk ke HTML
 def image_to_base64(img_path):
     if img_path and os.path.exists(img_path):
         with open(img_path, "rb") as f:
             return base64.b64encode(f.read()).decode()
     return ""
 
-# FUNGSI BARU: Perender Kartu Satu Kesatuan
 def render_combo_card(combo_tuple, warna, ikon, teks):
-    # Definisi palet warna Streamlit
     tema_warna = {
         "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
         "warning": {"bg": "rgba(255, 190, 0, 0.15)", "border": "rgba(255, 190, 0, 1)"},
@@ -373,26 +390,21 @@ def render_combo_card(combo_tuple, warna, ikon, teks):
     bg = tema_warna[warna]["bg"]
     brdr = tema_warna[warna]["border"]
     
-    # Merakit deretan 5 gambar
     img_html = "<div style='display: flex; gap: 2%; margin-bottom: 12px;'>"
     for i in range(5):
         if i < len(combo_tuple):
             path = get_hero_path(combo_tuple[i])
             if path:
                 b64 = image_to_base64(path)
-                # Gambar hero HD
                 img_html += f"<img src='data:image/png;base64,{b64}' style='width: 18.4%; border-radius: 8px; box-shadow: 1px 2px 5px rgba(0,0,0,0.3); object-fit: cover; aspect-ratio: 1/1;'>"
             else:
                 img_html += f"<div style='width: 18.4%; background: #444; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center; aspect-ratio: 1/1;'>{combo_tuple[i]}</div>"
         else:
-            # Slot kosong transparan (agar ukurannya tetap absolut)
             img_html += "<div style='width: 18.4%; aspect-ratio: 1/1;'></div>"
     img_html += "</div>"
     
-    # Merapikan Teks (Ubah markdown ke HTML)
     teks_html = teks.replace('\n', '<br>').replace('**', '<b>')
     
-    # Merakit Kartu Utuh
     html_final = f"""
     <div style='background-color: {bg}; border-left: 5px solid {brdr}; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>
         {img_html}
@@ -401,22 +413,17 @@ def render_combo_card(combo_tuple, warna, ikon, teks):
         </div>
     </div>
     """
-    
-    # Suntikkan ke layar!
     st.markdown(html_final, unsafe_allow_html=True)
 
-    # FUNGSI BARU: Perender Kartu Logo Tim Seragam
 def render_logo_card(logo_path, team_name):
     if logo_path and os.path.exists(logo_path):
         b64 = image_to_base64(logo_path)
-        # Menampilkan gambar dengan object-fit: contain agar logo tidak terpotong namun ukuran kotak tetap statis
         html_logo = f"""
         <div style='background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
             <img src='data:image/png;base64,{b64}' style='max-width: 100%; max-height: 100%; object-fit: contain;'>
         </div>
         """
     else:
-        # Fallback keren jika logo tim belum ada (Tampil inisial teks di tengah kotak)
         html_logo = f"""
         <div style='background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
             <span style='color: gray; font-weight: bold; font-size: 20px; text-align: center;'>{team_name}</span>
@@ -454,9 +461,12 @@ if menu_utama == "🏆 Klasemen & Meta":
     col_kiri, col_kanan = st.columns([1.4, 1])
     
     with col_kiri:
-        st.markdown("### 🏆 Leaderboard IKL")
+        st.markdown(f"### 🏆 Leaderboard Regular Season ({musim_pilihan})")
         
-        df_match = df_long.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(
+        # === FIX: Klasemen HANYA menghitung data Regular Season (Week berupa Angka) ===
+        df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
+        
+        df_match = df_reguler.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(
             Game_W=('Win', 'sum'),
             Game_L=('Win', lambda x: (x == 0).sum())
         ).reset_index()
@@ -484,7 +494,7 @@ if menu_utama == "🏆 Klasemen & Meta":
         st.dataframe(df_klasemen_tampil, use_container_width=True)
 
     with col_kanan:
-        st.markdown("### 📅 Upcoming Matches")
+        st.markdown(f"### 📅 Upcoming Matches ({musim_pilihan})")
         
         df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
         
@@ -618,13 +628,12 @@ if menu_utama == "🏆 Klasemen & Meta":
             teks = f"**{nama_kombo}**\n\n🎯 {tipe} Pick: **{stats['freq']}x**\n🏆 Global WR: **{stats['wr']:.0f}%**\n📊 Kategori: **{kategori}**"
             
             with cols_meta[idx % 3]:
-                # Merender Ikon Hero
-               render_combo_card(combo, warna, ikon, teks)
+                render_combo_card(combo, warna, ikon, teks)
 # endregion
 
 # region PROFILING
 elif menu_utama == "🛡️ Team Profiling":
-    st.title("🛡️ Profiling Tim IKL - Honor of Kings")
+    st.title(f"🛡️ Profiling Tim IKL - {musim_pilihan}")
     
     if 'profiling_team' not in st.session_state:
         st.session_state['profiling_team'] = None
@@ -699,13 +708,12 @@ elif menu_utama == "🛡️ Team Profiling":
             cols = st.columns(len(kombo_A))
             for idx, k in enumerate(kombo_A):
                 with cols[idx]:
-                    # Merender Ikon Pahlawan
                     render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
 # endregion
 
 # region H2H
 elif menu_utama == "⚔️ Versus Mode (H2H)":
-    st.title("⚔️ H2H: Duel Mekanik & Taktik")
+    st.title(f"⚔️ H2H: Duel Mekanik & Taktik ({musim_pilihan})")
 
     if 'h2h_team_A' not in st.session_state:
         st.session_state['h2h_team_A'] = None
@@ -720,7 +728,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         kolom_grid = st.columns(4)
         for idx, tim in enumerate(daftar_tim):
             with kolom_grid[idx % 4]:
-                # Render Logo
                 logo_path = get_logo_path(tim)
                 render_logo_card(logo_path, tim)
                 
@@ -748,7 +755,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 
         with col_slot2:
             st.warning("🔵 Sisi Kanan (Tim 2)")
-            st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True) # Spacer
+            st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
             st.button("Menunggu pilihan...", use_container_width=True, disabled=True)
             
         st.markdown("---")
@@ -837,6 +844,4 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             else:
                 for k in kombo_B:
                     render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
-# endregion
-
 # endregion
