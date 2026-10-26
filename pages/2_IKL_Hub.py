@@ -55,9 +55,16 @@ with col_title:
         
 with col_season:
     if 'Season' in df_csv.columns:
-        daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), reverse=True)
+        # Mengurutkan menggunakan fungsi khusus (dari terbaru ke terlama)
+        daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
+        
+        # [+] INJEKSI ANTI-ALIAS TERISOLASI HANYA UNTUK FALL 2025
+        if musim_pilihan == "Fall 2025":
+            df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace({'VIT': 'BTR'})
+            df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace({'VIT': 'BTR'})
+        # [+] ===============================================
     else:
         st.error("Kolom 'Season' tidak ditemukan!")
         st.stop()
@@ -309,9 +316,18 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             klasemen_baru['Net Point'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
             klasemen_baru['Rank'] = klasemen_baru['Net Point'].rank(method='min', ascending=False).astype(int)
             
-            df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']].set_index('Rank')
+            # JANGAN gunakan set_index('Rank') agar terhindar dari Error Indeks Kembar
+            df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']]
             
-            st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True)
+            # Kembalikan indeks ke angka normal (0, 1, 2, 3) 
+            df_tampil = df_tampil.reset_index(drop=True)
+            
+            # Sembunyikan indeks aslinya dengan hide_index=True
+            st.dataframe(
+                df_tampil.style.set_properties(**{'text-align': 'center'}), 
+                use_container_width=True, 
+                hide_index=True
+            )
         else:
             st.info("Data Regular Season belum tersedia.")
 
