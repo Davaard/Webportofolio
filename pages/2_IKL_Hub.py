@@ -311,7 +311,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             
             df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']].set_index('Rank')
             
-            st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}).background_gradient(subset=['Net Point'], cmap='RdYlGn'), use_container_width=True)
+            st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True)
         else:
             st.info("Data Regular Season belum tersedia.")
 
