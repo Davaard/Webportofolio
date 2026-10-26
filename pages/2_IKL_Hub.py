@@ -255,7 +255,7 @@ def get_dynamic_logo_map(season):
     if os.path.exists("IKL_Rosters.csv"):
         df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
         
-        # 1. Ambil logo fallback/global (jaga-jaga jika ada tim yang logonya kosong di musim tertentu)
+        # 1. Ambil logo fallback/global
         df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
         map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
         
@@ -268,8 +268,13 @@ def get_dynamic_logo_map(season):
         return map_global
     return {}
 
-# Panggil fungsinya dengan menyuntikkan variabel musim_pilihan dari header
 TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
+
+def get_logo_path(team_name):
+    if team_name in TEAM_LOGO_MAP:
+        path = os.path.join("assets", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
+        if os.path.exists(path): return path
+    return None
 
 def get_hero_path(hero_name):
     safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
