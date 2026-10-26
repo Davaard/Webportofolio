@@ -6,18 +6,19 @@ import time
 import os
 import urllib.parse
 from datetime import datetime
+import re
 
 # ==========================================
 # 1. KONFIGURASI UTAMA
 # ==========================================
 TAHUN = "2025"
-MUSIM = "Spring"
+MUSIM = "Fall"
 HALAMAN_DASAR = f"Indonesia_Kings_Laga/{TAHUN}/{MUSIM}"
 SEASON_NAME = f"{MUSIM} {TAHUN}"
 DIR_LOGO = "assets/logo_tim"
 
 HEADERS = {
-    'User-Agent': 'IKL_Hub_Master_Bot/5.1 (Contact: daryadarendra@gmail.com)',
+    'User-Agent': 'IKL_Hub_Master_Bot/5.2_Final (Contact: daryadarendra@gmail.com)',
     'Accept-Encoding': 'gzip'
 }
 URL_API = "https://liquipedia.net/honorofkings/api.php"
@@ -71,13 +72,33 @@ def clean_team(name):
     if not name: return np.nan
     return TEAM_MAP_DINAMIS.get(name.replace(" (page does not exist)", "").strip(), name.strip())
 
-def clean_hero(name):
-    return HERO_MAP.get(name.replace(" (page does not exist)", "").strip(), name.replace(" (page does not exist)", "").strip())
+# === 🦸 FUNGSI BARU: PENCARI HERO AGRESIF ===
+def clean_hero(nama):
+    # Membersihkan anomali '(page does not exist)' dan memetakan ke nama global (seperti Loong)
+    nama_bersih = str(nama).replace(" (page does not exist)", "").strip()
+    return HERO_MAP.get(nama_bersih, nama_bersih)
+
+def get_heroes_agresif(kolom_html):
+    # Langkah 1: Coba ambil dari tag <a> bertitel
+    heroes = [clean_hero(a['title']) for a in kolom_html.find_all('a', title=True) if 'Hero' not in a['title']]
+    # Langkah 2: Jika gagal, paksa ambil dari tag <img> 
+    if not heroes:
+        for img in kolom_html.find_all('img'):
+            val = img.get('alt') or img.get('title')
+            if val: heroes.append(clean_hero(val))
+    return heroes
+# ============================================
 
 def fetch_api_soup(page_title):
     print(f"📡 Menarik API: {page_title}...")
     try:
-        res = requests.get(URL_API, params={"action": "parse", "page": page_title, "format": "json", "disabletoc": 1}, headers=HEADERS, timeout=15)
+        res = requests.get(URL_API, params={
+            "action": "parse",
+            "page": page_title, 
+            "format": "json", 
+            "disabletoc": 1
+            # BOM CACHE BUSTER TELAH DIMATIKAN
+        }, headers=HEADERS, timeout=15)
         if res.status_code == 200 and "parse" in res.json():
             time.sleep(1.5)
             return BeautifulSoup(res.json()["parse"]["text"]["*"], 'html.parser')
@@ -121,8 +142,8 @@ def extract_popup_data(popup, week_code, day_code, match_num, player_to_team):
             b_cols = v_row.find_all('div', class_='brkts-popup-body-element-thumbs')
             if len(b_cols) >= 2:
                 bans_per_round.append({
-                    'left': [clean_hero(a['title']) for a in b_cols[0].find_all('a', title=True)],
-                    'right': [clean_hero(a['title']) for a in b_cols[1].find_all('a', title=True)]
+                    'left': get_heroes_agresif(b_cols[0]),
+                    'right': get_heroes_agresif(b_cols[1])
                 })
 
     games = popup.find_all('div', class_='brkts-popup-body-grid-row')
@@ -130,15 +151,21 @@ def extract_popup_data(popup, week_code, day_code, match_num, player_to_team):
 
     for i, game in enumerate(games):
         cols = game.find_all('div', class_='brkts-popup-spaced')
-        if len(cols) < 3: continue  # FIX: Tidak lagi me-skip game meskipun hero/durasi kosong!
+        if len(cols) < 3: continue 
 
-        p_left = [clean_hero(a['title']) for a in cols[0].find_all('a', title=True)]
-        p_right = [clean_hero(a['title']) for a in cols[2].find_all('a', title=True)]
+        # === 🦸 PENGGUNAAN PENCARI HERO AGRESIF ===
+        p_left = get_heroes_agresif(cols[0])
+        p_right = get_heroes_agresif(cols[2])
 
         valid_games += 1
-        durasi = cols[1].text.strip() if ":" in cols[1].text else "-"
         
-        # FIX: Logika Pemenang yang presisi
+        # === ⏱️ TOLERANSI TYPO ADMIN (. atau :) ===
+        durasi_teks = cols[1].text.strip()
+        if ":" in durasi_teks or "." in durasi_teks or durasi_teks.isdigit():
+            durasi = durasi_teks
+        else:
+            durasi = "-"
+        
         labels = game.find_all('div', class_='generic-label')
         win_left = 1.0 if len(labels) > 0 and 'result-win' in labels[0].get('data-label-type', '') else 0.0
         
@@ -156,7 +183,6 @@ def extract_popup_data(popup, week_code, day_code, match_num, player_to_team):
 
         mvp_player = mvps[i] if i < len(mvps) else np.nan
         
-        # LOGIKA SELF-HEALING: Timpa Result jika ada anomali HTML Liquipedia
         if pd.notna(mvp_player) and mvp_player.lower() in player_to_team:
             mvp_team = player_to_team[mvp_player.lower()]
             if mvp_team == t_blue:
@@ -226,6 +252,18 @@ def parse_all_matches(soup_reg, soup_po, player_to_team):
     all_rows = []
     if soup_reg:
         for w_idx, mlist in enumerate(soup_reg.find_all('div', class_='brkts-matchlist')):
+            
+            # === 🛡️ BENTENG PENJAGA GERBANG RIGID ===
+            title_tag = mlist.find(class_=re.compile('brkts-matchlist-title'))
+            if not title_tag:
+                continue
+                
+            header_text = title_tag.text.strip().lower()
+            valid_keywords = ['week', 'play-in', 'play', 'upper', 'lower', 'grand']
+            if not any(k in header_text for k in valid_keywords):
+                continue
+            # ========================================
+            
             if area := mlist.find('div', class_='brkts-matchlist-collapse-area'):
                 d_num, m_in_day = 0, 0
                 for child in area.children:
@@ -246,7 +284,6 @@ def parse_all_matches(soup_reg, soup_po, player_to_team):
             w_code, d_code, m_num = playoff_map[idx] if idx < len(playoff_map) else ('Po', 'Xx', idx + 1)
             all_rows.extend(extract_popup_data(popup, w_code, d_code, m_num, player_to_team))
             
-    # FIX: Anti-Duplikat dini dengan Sidik Jari (Token) sempurna!
     df_bersih = pd.DataFrame(all_rows)
     if not df_bersih.empty:
         df_bersih.drop_duplicates(subset=['Season', 'Week', 'Day', 'Match', 'Game'], keep='first', inplace=True)
@@ -276,10 +313,7 @@ if __name__ == "__main__":
         else: 
             df_roster_final = df_roster_new
         
-        # === FIX: SORTING ROSTER ===
-        # Mengurutkan berdasarkan Musim, lalu Tim, lalu Status (Main/Subs), dan Nama Pemain
         df_roster_final.sort_values(by=['Season', 'Team', 'Status', 'Player_ID'], inplace=True, na_position='last')
-        
         df_roster_final.to_csv(ros_path, index=False)
         print(f"✅ Data Roster Diperbarui & Tersusun Rapi!")
 
@@ -292,15 +326,33 @@ if __name__ == "__main__":
         df_old['Week'], df_old['Day'] = df_old['Week'].astype(str), df_old['Day'].astype(str)
         if 'Season' not in df_old.columns: df_old['Season'] = SEASON_NAME
 
+        # === 💎 SMART MERGE ULTIMATE ===
+        # Ubah kosong dari scraper menjadi NaN
+        df_scraped.replace(['', '-', 'nan', 'NaN', 'TBD'], np.nan, inplace=True)
+        
+        # Lindungi semua kolom manual, hero, dan durasi
+        metric_cols = [
+            'T_Rank', 'O_Rank', 'T_Gold', 'O_Gold', 'T_Kill', 'O_Kill', 
+            'T_Assist', 'O_Assist', 'T_Objective', 'O_Objective', 
+            'Heroes_Picked', 'Opponent_Picked', 'Bans_Blue', 'Bans_Red', 'Duration_min'
+        ]
         key_cols = ['Season', 'Week', 'Day', 'Match', 'Game']
-        metric_cols = ['T_Rank', 'O_Rank', 'T_Gold', 'O_Gold', 'T_Kill', 'O_Kill', 'T_Assist', 'O_Assist', 'T_Objective', 'O_Objective']
+        
+        # [+] INJEKSI ANTI-ERROR: Pastikan CSV lama punya semua kolom sebelum di-merge
+        for col in metric_cols:
+            if col not in df_old.columns:
+                df_old[col] = np.nan
+        # [+] =========================================================================
         
         df_old_games = df_old[df_old['Game'].notna()].copy()
         df_merged = pd.merge(df_scraped, df_old_games[key_cols + metric_cols], on=key_cols, how='left', suffixes=('', '_old'))
+        
         for col in metric_cols:
             if f"{col}_old" in df_merged.columns:
-                df_merged[col] = df_merged[f"{col}_old"].combine_first(df_merged[col])
+                # Kombinasi Prioritas: Scraper -> Manual (Old)
+                df_merged[col] = df_merged[col].combine_first(df_merged[f"{col}_old"])
                 df_merged.drop(columns=[f"{col}_old"], inplace=True)
+        # ===============================
 
         scraped_valid = set(df_scraped[df_scraped['Game'].notna()][['Season', 'Week', 'Day', 'Match']].itertuples(index=False, name=None))
         preserved_rows = [row.to_dict() for _, row in df_old_games.iterrows() if (row['Season'], str(row['Week']), str(row['Day']), int(row['Match'])) not in scraped_valid]
@@ -315,13 +367,11 @@ if __name__ == "__main__":
         
         df_final['Tgl_Sort'] = pd.to_datetime(df_final['Date'], format='mixed', errors='coerce')
         
-        # Bobot untuk kolom Week
         def sort_week(w):
             w = str(w).strip()
             if w.isdigit(): return int(w)
             return {'Pl': 100, 'Up': 101, 'Lw': 102, 'Gr': 103}.get(w, 999)
             
-        # Bobot untuk kolom Day (Memaksa Sf selalu di atas Fl)
         def sort_day(d):
             d = str(d).strip()
             if d.isdigit(): return int(d)
@@ -330,10 +380,7 @@ if __name__ == "__main__":
         df_final['_w_sort'] = df_final['Week'].apply(sort_week)
         df_final['_d_sort'] = df_final['Day'].apply(sort_day)
         
-        # Eksekusi sortir menggunakan _w_sort dan _d_sort
         df_final.sort_values(by=['Tgl_Sort', '_w_sort', '_d_sort', 'Match', 'Game'], inplace=True, na_position='first')
-        
-        # FIX: Obat Sapu Jagat Anti-Duplikat Global sebelum disimpan!
         df_final.drop_duplicates(subset=['Season', 'Week', 'Day', 'Match', 'Game'], keep='first', inplace=True)
 
         final_cols = ['Season', 'Date', 'Time', 'Week', 'Day', 'Match', 'Game', 'Team_(Blue)', 'Opponent_(Red)', 'T_Rank', 'O_Rank', 'Result', 'MVP', 'Duration_min', 'T_Gold', 'O_Gold', 'T_Kill', 'O_Kill', 'T_Assist', 'O_Assist', 'T_Objective', 'O_Objective', 'Heroes_Picked', 'Bans_Blue', 'Opponent_Picked', 'Bans_Red']

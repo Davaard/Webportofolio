@@ -22,7 +22,7 @@ Spring 2025,4/13/2025,15:30,1,3,1,2.0,VESA,ONIC,,,1.0,YangYu,20:57,,,,,,,,,"Dhar
 Spring 2025,4/13/2025,17:00,1,3,2,1.0,AE,DMT,,,1.0,Chouxx,23:50,,,,,,,,,"Allain,Menki,Gan & Mo,Di Renjie,Dolia","Dolia,Luna,Yixing,Angela","Mayene,Pei,Nuwa,Loong,Zhang Fei","Mai Shiranui,Dharma,Chano,Biron"
 Spring 2025,4/13/2025,17:00,1,3,2,2.0,DMT,AE,,,1.0,TianX,19:26,,,,,,,,,"Dharma,Menki,Yuhuan,Arli,Dyadia","Zhang Fei,Loong,Sakeer,Mozi","Sun Ce,Augran,Wang Zhaojun,Chano,Lian Po","Mai Shiranui,Luna,Jing,Lady Zhen"
 Spring 2025,4/13/2025,17:00,1,3,2,3.0,AE,DMT,,,0.0,GuiYu,13:13,,,,,,,,,"Guan Yu,Dun,Angela,Loong,Mozi","Mai Shiranui,Luna,Musashi,Jing","Liu Bang,Lam,Yixing,Lady Sun,Lian Po","Mai Shiranui,Dharma,Fuzi,Dyadia"
-Spring 2025,4/13/2025,19:00,1,3,3,1.0,NMSS,KAGE,,,0.0,LanFeng,-,,,,,,,,,"Biron,Musashi,Gan & Mo,Loong,Lian Po","Dharma,Dolia,Mayene,Yixing","Sun Ce,Augran,Nuwa,Chano,Dyadia","Arli,Mai Shiranui,Luna,Liu Bang"
+Spring 2025,4/13/2025,19:00,1,3,3,1.0,NMSS,KAGE,,,0.0,LanFeng,,,,,,,,,,"Biron,Musashi,Gan & Mo,Loong,Lian Po","Dharma,Dolia,Mayene,Yixing","Sun Ce,Augran,Nuwa,Chano,Dyadia","Arli,Mai Shiranui,Luna,Liu Bang"
 Spring 2025,4/13/2025,19:00,1,3,3,2.0,NMSS,KAGE,,,0.0,LanFeng,14:43,,,,,,,,,"Mayene,Menki,Angela,Arli,Zhang Fei","Dolia,Loong,Yixing,Pei","Dharma,Dun,Wang Zhaojun,Di Renjie,Sakeer","Mai Shiranui,Dyadia,Luna,Augran"
 Spring 2025,4/13/2025,20:30,1,3,4,1.0,BTR,MHD,,,1.0,Zaan,15:38,,,,,,,,,"Sun Ce,Augran,Shi,Di Renjie,Dyadia","Dharma,Liang,Angela,Luna","Mayene,Pei,Lady Zhen,Chano,Zhang Fei","Mai Shiranui,Biron,Yixing,Nuwa"
 Spring 2025,4/13/2025,20:30,1,3,4,2.0,MHD,BTR,,,1.0,Enyx,24:19,,,,,,,,,"Charlotte,Luna,Nuwa,Loong,Liang","Dharma,Chano,Liu Bang,Hou Yi","Allain,Jing,Gan & Mo,Shouyue,Dolia","Mai Shiranui,Arli,Lian Po,Mozi"
@@ -406,7 +406,7 @@ Spring 2026,3/7/2026,13:30,2,2,1,1.0,OG,AE,,,1.0,DaoDao,11:41,,,,,,,,,"Dharma,Pe
 Spring 2026,3/7/2026,13:30,2,2,1,2.0,OG,AE,,,1.0,Ahem,10:44,,,,,,,,,"Bai Qi,Lam,Haya,Chicha,Lian Po","Pei,Dharma,Nuwa,Guan Yu","Charlotte,Agudo,Wang Zhaojun,Chano,Zhang Fei","Luna,Dolia,Biron,Jing"
 Spring 2026,3/7/2026,13:30,2,2,1,3.0,OG,AE,,,1.0,DaoDao,12:21,,,,,,,,,"Guan Yu,Feyd,Yuhuan,Loong,Mozi","Pei,Haya,Nuwa,Lady Zhen","Mayene,Musashi,Xiao Qiao,Erin,Lapulapu","Dolia,Zhang Fei,Luna,Jing"
 Spring 2026,3/7/2026,16:00,2,2,2,1.0,DMT,SE,,,1.0,TianX,11:06,,,,,,,,,"Chicha,Agudo,Mai Shiranui,Loong,Lapulapu","Pei,Haya,Flowborn (Tank),Biron","Fatih,Augran,Nuwa,Mozi,Zhang Fei","Guan Yu,Dharma,Jing,Luna"
-Spring 2026,3/7/2026,16:00,2,2,2,2.0,DMT,SE,,,1.0,Cc,-,,,,,,,,,"Ata,Pei,Haya,Di Renjie,Mozi","Loong,Mai Shiranui,Lapulapu,Lian Po","Biron,Jing,Shi,Arli,Yuhuan","Guan Yu,Zhang Fei,Dharma,Bai Qi"
+Spring 2026,3/7/2026,16:00,2,2,2,2.0,DMT,SE,,,1.0,Cc,21.14,,,,,,,,,"Ata,Pei,Haya,Di Renjie,Mozi","Loong,Mai Shiranui,Lapulapu,Lian Po","Biron,Jing,Shi,Arli,Yuhuan","Guan Yu,Zhang Fei,Dharma,Bai Qi"
 Spring 2026,3/7/2026,16:00,2,2,2,3.0,DMT,SE,,,1.0,TianX,13:28,,,,,,,,,"Dharma,Nakoruru,Yixing,Flowborn (Marksman),Zhang Fei","Haya,Loong,Mayene,Chicha","Charlotte,Luna,Wang Zhaojun,Di Renjie,Lian Po","Guan Yu,Arli,Jing,Feyd"
 Spring 2026,3/7/2026,19:00,2,2,3,1.0,KAGE,VESA,,,0.0,Enyx,15:42,,,,,,,,,"Sun Ce,Feyd,Mai Shiranui,Chano,Lian Po","Dharma,Guan Yu,Augran,Di Renjie","Biron,Musashi,Yixing,Marco Polo,Dyadia","Dolia,Haya,Jing,Charlotte"
 Spring 2026,3/7/2026,19:00,2,2,3,2.0,VESA,KAGE,,,0.0,FeiShi,18:38,,,,,,,,,"Dharma,Yang Jian,Nuwa,Loong,Dolia","Dyadia,Agudo,Garuda,Flowborn (Marksman)","Charlotte,Musashi,Lady Zhen,Di Renjie,Lapulapu","Haya,Mai Shiranui,Menki,Flowborn (Tank)"
@@ -567,7 +567,7 @@ Spring 2026,4/12/2026,17:30,Gr,Fl,0,1.0,DMT,BTR,,,1.0,Cc,16:46,,,,,,,,,"Fatih,Uk
 Spring 2026,4/12/2026,17:30,Gr,Fl,0,2.0,BTR,DMT,,,1.0,ZhanQ,13:11,,,,,,,,,"Guan Yu,Jing,Mai Shiranui,Erin,Lian Po","Lapulapu,Dharma,Flowborn (Tank),Shi","Biron,Luna,Yixing,Arli,Dyadia","Pei,Haya,Nezha,Loong"
 Spring 2026,4/12/2026,17:30,Gr,Fl,0,3.0,DMT,BTR,,,0.0,ZhanQ,11:12,,,,,,,,,"Guan Yu,Jing,Mai Shiranui,Flowborn (Marksman),Lapulapu","Loong,Pei,Yixing,Lady Zhen","Charlotte,Luna,Shi,Chicha,Zhang Fei","Haya,Dharma,Feyd,Nakoruru"
 Spring 2026,4/12/2026,17:30,Gr,Fl,0,4.0,DMT,BTR,,,0.0,LanFeng,11:33,,,,,,,,,"Mayene,Pei,Xiao Qiao,Luara,Mozi","Loong,Fatih,Feyd,Ukyo Tachibana","Ata,Ying,Yixing,Arli,Yuhuan","Haya,Dharma,Chano,Lady Sun"
-Spring 2026,4/12/2026,17:30,Gr,Fl,0,5.0,BTR,DMT,,,1.0,,-,,,,,,,,,"Fatih,Yang Jian,Garuda,Loong,Mozi","Dharma,Liang,Chano,Lady Sun","Charlotte,Nezha,Lady Zhen,Chicha,Dolia","Haya,Pei,Feyd,Nakoruru"
+Spring 2026,4/12/2026,17:30,Gr,Fl,0,5.0,BTR,DMT,,,1.0,,,,,,,,,,,"Fatih,Yang Jian,Garuda,Loong,Mozi","Dharma,Liang,Chano,Lady Sun","Charlotte,Nezha,Lady Zhen,Chicha,Dolia","Haya,Pei,Feyd,Nakoruru"
 Fall 2026,8/28/2026,14:00,1,1,1,1.0,DESJ,RRQ,,,0.0,XiiaoAnn,13:20,39315.0,47551.0,5.0,10.0,12.0,29.0,4.0,13.0,"Ata,Ukyo Tachibana,Lorion,Chano,Zhang Fei","Guan Yu,Jing,Nezha,Pei","Charlotte,Feyd,Mai Shiranui,Loong,Lapulapu","Dolia,Haya,Augran,Biron"
 Fall 2026,8/28/2026,14:00,1,1,1,2.0,RRQ,DESJ,,,1.0,XiiaoAnn,12:56,44484.0,38122.0,12.0,6.0,33.0,14.0,11.0,6.0,"Biron,Pei,Garuda,Shouyue,Mozi","Mai Shiranui,Loong,Lapulapu,Zilong","Charlotte,Menki,Haya,Chicha,Dyadia","Lorion,Zhang Fei,Chano,Flowborn (Marksman)"
 Fall 2026,8/28/2026,14:00,1,1,1,3.0,RRQ,DESJ,,,1.0,XingLin,13:41,50686.0,40308.0,12.0,5.0,38.0,15.0,12.0,1.0,"Guan Yu,Augran,Nuwa,Chano,Dyadia","Loong,Pei,Musashi,Ying","Biron,Agudo,Mai Shiranui,Flowborn (Marksman),Annette","Lorion,Haya,Luna,Jing"
@@ -708,26 +708,26 @@ Fall 2026,10/9/2026,17:00,4,1,2,1.0,OG,MAVE,,,0.0,Mufeng,11:47,35133.0,42633.0,4
 Fall 2026,10/9/2026,17:00,4,1,2,2.0,MAVE,OG,,,0.0,DaoDao,15:56,47838.0,52641.0,7.0,10.0,18.0,29.0,2.0,12.0,"Florentino,Ying,Mai Shiranui,Chicha,Lian Po","Loong,Haya,Erin,Kaizer","Umbrosa,Augran,Lorion,Devara,Lapulapu","Pei,Biron,Annette,Mozi"
 Fall 2026,10/9/2026,17:00,4,1,2,3.0,OG,MAVE,,,0.0,JunYong,10:45,31966.0,34644.0,6.0,14.0,15.0,45.0,5.0,6.0,"Florentino,Kaizer,Xiao Qiao,Loong,Kui","Lorion,Pei,Zilong,Biron","Ata,Agudo,Yuhuan,Di Renjie,Flowborn (Roamer)","Guan Yu,Haya,Jing,Dharma"
 Fall 2026,10/9/2026,17:00,4,1,2,4.0,MAVE,OG,,,1.0,Mufeng,14:34,52210.0,41047.0,13.0,1.0,38.0,4.0,12.0,4.0,"Dharma,Zilong,Lorion,Luara,Annette","Guan Yu,Chicha,Jing,Luna","Charlotte,Ying,Haya,Flowborn (Marksman),Zhang Fei","Pei,Lapulapu,Mozi,Dyadia"
-Fall 2026,10/9/2026,19:30,4,1,3,1.0,DMT,ONIC,,,1.0,,-,59758.0,58483.0,6.0,9.0,16.0,33.0,13.0,4.0,,,,
-Fall 2026,10/9/2026,19:30,4,1,3,2.0,DMT,ONIC,,,1.0,,-,32300.0,44218.0,2.0,15.0,4.0,32.0,2.0,11.0,,,,
-Fall 2026,10/9/2026,19:30,4,1,3,3.0,DMT,ONIC,,,1.0,,-,51242.0,40142.0,11.0,3.0,30.0,11.0,12.0,5.0,,,,
-Fall 2026,10/10/2026,14:00,4,2,1,1.0,ONIC,DESJ,,,1.0,,-,41132.0,29429.0,13.0,0.0,31.0,0.0,11.0,0.0,,,,
-Fall 2026,10/10/2026,14:00,4,2,1,2.0,ONIC,DESJ,,,1.0,,-,43838.0,51212.0,7.0,15.0,12.0,33.0,4.0,11.0,,,,
-Fall 2026,10/10/2026,14:00,4,2,1,3.0,ONIC,DESJ,,,1.0,,-,46837.0,53135.0,5.0,11.0,15.0,28.0,5.0,13.0,,,,
-Fall 2026,10/10/2026,17:00,4,2,2,1.0,KAGE,RRQ,,,0.0,,-,55251.0,64055.0,9.0,10.0,25.0,24.0,5.0,15.0,,,,
-Fall 2026,10/10/2026,17:00,4,2,2,2.0,KAGE,RRQ,,,0.0,,-,27825.0,32218.0,1.0,8.0,4.0,16.0,3.0,7.0,,,,
-Fall 2026,10/10/2026,17:00,4,2,2,3.0,KAGE,RRQ,,,0.0,,-,59373.0,48460.0,11.0,4.0,26.0,12.0,15.0,3.0,,,,
-Fall 2026,10/10/2026,19:30,4,2,3,1.0,BTR,MAVE,,,0.0,,-,53680.0,48762.0,8.0,5.0,26.0,14.0,11.0,7.0,,,,
-Fall 2026,10/10/2026,19:30,4,2,3,2.0,BTR,MAVE,,,1.0,,-,62870.0,61708.0,12.0,12.0,26.0,27.0,16.0,3.0,,,,
-Fall 2026,10/10/2026,19:30,4,2,3,3.0,BTR,MAVE,,,0.0,,-,58930.0,57009.0,15.0,8.0,34.0,23.0,11.0,5.0,,,,
-Fall 2026,10/10/2026,19:30,4,2,3,4.0,BTR,MAVE,,,1.0,,-,61720.0,55552.0,13.0,12.0,42.0,34.0,13.0,6.0,,,,
-Fall 2026,10/10/2026,19:30,4,2,3,5.0,BTR,MAVE,,,1.0,,-,57831.0,53010.0,9.0,3.0,30.0,6.0,14.0,6.0,,,,
-Fall 2026,10/11/2026,14:00,4,3,1,1.0,AE,CARS,,,1.0,,-,32077.0,40654.0,6.0,15.0,8.0,34.0,1.0,11.0,,,,
-Fall 2026,10/11/2026,14:00,4,3,1,2.0,AE,CARS,,,1.0,,-,32798.0,27769.0,10.0,4.0,25.0,8.0,5.0,2.0,,,,
-Fall 2026,10/11/2026,14:00,4,3,1,3.0,AE,CARS,,,1.0,,-,31475.0,39911.0,1.0,17.0,2.0,45.0,4.0,9.0,,,,
-Fall 2026,10/11/2026,16:10,4,3,2,1.0,KAGE,OG,,,1.0,,-,58659.0,51188.0,18.0,5.0,49.0,8.0,15.0,2.0,,,,
-Fall 2026,10/11/2026,16:10,4,3,2,2.0,KAGE,OG,,,1.0,,-,39273.0,45032.0,7.0,15.0,11.0,44.0,6.0,9.0,,,,
-Fall 2026,10/11/2026,16:10,4,3,2,3.0,KAGE,OG,,,1.0,,-,36116.0,44345.0,8.0,17.0,15.0,55.0,3.0,11.0,,,,
+Fall 2026,10/9/2026,19:30,4,1,3,1.0,DMT,ONIC,,,1.0,,19:28,59758.0,58483.0,6.0,9.0,16.0,33.0,13.0,4.0,"Nezha,Yang Jian,Garuda,Loong,Dolia",,"Zhang Fei,Shouyue,Nuwa,Zilong,Biron",
+Fall 2026,10/9/2026,19:30,4,1,3,2.0,DMT,ONIC,,,1.0,,12:03,32300.0,44218.0,2.0,15.0,4.0,32.0,2.0,11.0,"Dharma,Ukyo Tachibana,Wang Wei,Devara,Annette",,"Mozi,Chicha,Lorion,Pei,Fatih",
+Fall 2026,10/9/2026,19:30,4,1,3,3.0,DMT,ONIC,,,1.0,,14:39,51242.0,40142.0,11.0,3.0,30.0,11.0,12.0,5.0,"Umbrosa,Kaizer,Angela,Consort Yu,Flowborn (Roamer)",,"Liang,Chano,Wang Zhaojun,Jing,Xiang Yu",
+Fall 2026,10/10/2026,14:00,4,2,1,1.0,ONIC,DESJ,,,1.0,,11:13,41132.0,29429.0,13.0,0.0,31.0,0.0,11.0,0.0,"Florentino,Pei,Lorion,Loong,Mozi",,"Flowborn (Roamer),Luara,Garuda,Zilong,Biron",
+Fall 2026,10/10/2026,14:00,4,2,1,2.0,ONIC,DESJ,,,1.0,,14:57,43838.0,51212.0,7.0,15.0,12.0,33.0,4.0,11.0,"Fatih,Jing,Haya,Chicha,Lian Po",,"Zhang Fei,Chano,Nuwa,Zilong,Fuzi",
+Fall 2026,10/10/2026,14:00,4,2,1,3.0,ONIC,DESJ,,,1.0,,15:56,46837.0,53135.0,5.0,11.0,15.0,28.0,5.0,13.0,"Guan Yu,Agudo,Heino,Loong,Mozi",,"Lapulapu,Shouyue,Angela,Feyd,Xiang Yu",
+Fall 2026,10/10/2026,17:00,4,2,2,1.0,KAGE,RRQ,,,0.0,,18:55,55251.0,64055.0,9.0,10.0,25.0,24.0,5.0,15.0,"Biron,Pei,Lorion,Loong,Lian Po",,"Lapulapu,Chano,Mai Shiranui,Ying,Florentino",
+Fall 2026,10/10/2026,17:00,4,2,2,2.0,KAGE,RRQ,,,0.0,,09:46,27825.0,32218.0,1.0,8.0,4.0,16.0,3.0,7.0,"Charlotte,Jing,Ziya,Chano,Lapulapu",,"Zhang Fei,Chicha,Shi,Kongming,Fatih",
+Fall 2026,10/10/2026,17:00,4,2,2,3.0,KAGE,RRQ,,,0.0,,16:47,59373.0,48460.0,11.0,4.0,26.0,12.0,15.0,3.0,"Charlotte,Jing,Haya,Erin,Lian Po",,"Annette,Devara,Garuda,Kaizer,Guan Yu",
+Fall 2026,10/10/2026,19:30,4,2,3,1.0,BTR,MAVE,,,0.0,,16:38,53680.0,48762.0,8.0,5.0,26.0,14.0,11.0,7.0,"Biron,Ukyo Tachibana,Mai Shiranui,Erin,Lapulapu",,"Zhang Fei,Chicha,Yuhuan,Agudo,Fatih",
+Fall 2026,10/10/2026,19:30,4,2,3,2.0,BTR,MAVE,,,1.0,,19:41,62870.0,61708.0,12.0,12.0,26.0,27.0,16.0,3.0,"Florentino,Feyd,Haya,Chano,Lian Po",,"Annette,Luara,Nuwa,Zilong,Guan Yu",
+Fall 2026,10/10/2026,19:30,4,2,3,3.0,BTR,MAVE,,,0.0,,18:22,58930.0,57009.0,15.0,8.0,34.0,23.0,11.0,5.0,"Dharma,Jing,Garuda,Loong,Lian Po",,"Lapulapu,Consort Yu,Lorion,Zilong,Devara",
+Fall 2026,10/10/2026,19:30,4,2,3,4.0,BTR,MAVE,,,1.0,,19:08,61720.0,55552.0,13.0,12.0,42.0,34.0,13.0,6.0,"Biron,Jing,Angela,Erin,Flowborn (Roamer)",,"Zhang Fei,Chicha,Shi,Feyd,Florentino",
+Fall 2026,10/10/2026,19:30,4,2,3,5.0,BTR,MAVE,,,1.0,,18:30,57831.0,53010.0,9.0,3.0,30.0,6.0,14.0,6.0,"Dharma,Nezha,Nuwa,Arli,Annette",,"Mozi,Chano,Lorion,Pei,Charlotte",
+Fall 2026,10/11/2026,14:00,4,3,1,1.0,AE,CARS,,,1.0,,11:25,32077.0,40654.0,6.0,15.0,8.0,34.0,1.0,11.0,"Florentino,Zilong,Haya,Arli,Zhang Fei",,"Lapulapu,Flowborn (Marksman),Lorion,Yang Jian,Charlotte",
+Fall 2026,10/11/2026,14:00,4,3,1,2.0,AE,CARS,,,1.0,,10:03,32798.0,27769.0,10.0,4.0,25.0,8.0,5.0,2.0,"Guan Yu,Jing,Wang Wei,Loong,Zhang Fei",,"Lapulapu,Flowborn (Marksman),Mai Shiranui,Nezha,Charlotte",
+Fall 2026,10/11/2026,14:00,4,3,1,3.0,AE,CARS,,,1.0,,11:12,31475.0,39911.0,1.0,17.0,2.0,45.0,4.0,9.0,"Umbrosa,Feyd,Xiao Qiao,Chicha,Kui",,"Dyadia,Arli,Nuwa,Augran,Dharma",
+Fall 2026,10/11/2026,16:10,4,3,2,1.0,KAGE,OG,,,1.0,,17:00,58659.0,51188.0,18.0,5.0,49.0,8.0,15.0,2.0,"Florentino,Yang Jian,Nuwa,Chano,Lapulapu",,"Liu Bang,Loong,Mai Shiranui,Zilong,Charlotte",
+Fall 2026,10/11/2026,16:10,4,3,2,2.0,KAGE,OG,,,1.0,,13:34,39273.0,45032.0,7.0,15.0,11.0,44.0,6.0,9.0,"Florentino,Pei,Lorion,Chano,Mozi",,"Zhang Fei,Flowborn (Marksman),Shi,Zilong,Guan Yu",
+Fall 2026,10/11/2026,16:10,4,3,2,3.0,KAGE,OG,,,1.0,,12:52,36116.0,44345.0,8.0,17.0,15.0,55.0,3.0,11.0,"Dharma,Ying,Haya,Chicha,Lian Po",,"Kui,Di Renjie,Xiao Qiao,Agudo,Bai Qi",
 Fall 2026,10/11/2026,18:30,4,3,3,1.0,BTR,DMT,,,1.0,LanFeng,17:49,53439.0,53517.0,10.0,12.0,30.0,39.0,9.0,9.0,"Charlotte,Augran,Haya,Luara,Lapulapu","Lorion,Flowborn (Roamer),Flowborn (Marksman),Chano","Biron,Zilong,Nuwa,Arli,Zhang Fei","Loong,Guan Yu,Dharma,Florentino"
 Fall 2026,10/11/2026,18:30,4,3,3,2.0,BTR,DMT,,,0.0,eL,09:48,26967.0,34315.0,2.0,11.0,3.0,32.0,0.0,7.0,"Florentino,Kaizer,Mai Shiranui,Erin,Zhang Fei","Haya,Lapulapu,Ata,Dharma","Fatih,Pei,Yuhuan,Chicha,Lian Po","Loong,Guan Yu,Ukyo Tachibana,Zilong"
 Fall 2026,10/11/2026,18:30,4,3,3,3.0,DMT,BTR,,,0.0,LanFeng,21:27,62546.0,70762.0,3.0,10.0,10.0,25.0,2.0,16.0,"Nezha,Yang Jian,Lorion,Consort Yu,Dolia","Guan Yu,Nuwa,Lian Po,Mozi","Dharma,Jing,Garuda,Chano,Annette","Lapulapu,Loong,Devara,Umbrosa"
