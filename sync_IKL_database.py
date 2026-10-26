@@ -261,25 +261,28 @@ if __name__ == "__main__":
                         if popup := child.find('div', class_='brkts-match-info-popup'):
                             scraped_matches.extend(extract_popup_data(popup, w_idx + 1, d_num, m_in_day))
 
-    # Playoffs (Deteksi Bracket Pintar)
+    # Playoffs (Pemetaan via Indeks HTML)
     if soup_po:
-        headers = soup_po.find_all('div', class_='brkts-header-div')
-        stage_codes = []
-        for h in headers:
-            txt = h.text.lower()
-            if 'play-in' in txt: stage_codes.append(('Pl', 'St'))
-            elif 'quarter' in txt or 'qf' in txt: stage_codes.append(('Up', 'Qf'))
-            elif 'upper' in txt and 'semi' in txt: stage_codes.append(('Up', 'Sf'))
-            elif 'lower' in txt and 'semi' in txt: stage_codes.append(('Lw', 'Sf'))
-            elif 'upper' in txt and 'final' in txt: stage_codes.append(('Up', 'Fl'))
-            elif 'lower' in txt and 'final' in txt: stage_codes.append(('Lw', 'Fl'))
-            elif 'grand final' in txt: stage_codes.append(('Gr', 'Fl'))
-            else: stage_codes.append(('Po', 'Xx'))
+        # Secara matematis, Play-In dan UB Quarterfinals menempati node yang sama di struktur HTML
+        playoff_map = [
+            ('Pl', 'St', 1),  # Urutan HTML 0: Laga Pembuka
+            ('Up', 'Sf', 1),  # Urutan HTML 1: UB Semi 1
+            ('Pl', 'St', 2),  # Urutan HTML 2: Laga Pembuka Kiri
+            ('Up', 'Sf', 2),  # Urutan HTML 3: UB Semi 2
+            ('Up', 'Fl', 0),  # Urutan HTML 4: UB Final
+            ('Lw', 'Sf', 0),  # Urutan HTML 5: LB Semi
+            ('Lw', 'Fl', 0),  # Urutan HTML 6: LB Final
+            ('Gr', 'Fl', 0),  # Urutan HTML 7: Grand Final
+        ]
 
         popups = soup_po.find_all('div', class_='brkts-match-info-popup')
         for idx, popup in enumerate(popups):
-            w_code, d_code = stage_codes[idx] if idx < len(stage_codes) else ('Po', 'Xx')
-            scraped_matches.extend(extract_popup_data(popup, w_code, d_code, idx + 1))
+            if idx < len(playoff_map):
+                w_code, d_code, m_num = playoff_map[idx]
+            else:
+                w_code, d_code, m_num = ('Po', 'Xx', idx + 1)
+                
+            scraped_matches.extend(extract_popup_data(popup, w_code, d_code, m_num))
 
     # 3. Smart Merge CSV
     df_scraped = pd.DataFrame(scraped_matches)
