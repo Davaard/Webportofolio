@@ -424,7 +424,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         st.info("Babak Playoffs belum dimulai atau data belum tersedia.")
     else:
         po_matches = df_playoff.drop_duplicates(subset=['Match_ID'])
-        col_b1, col_b2, col_b3 = st.columns(3)
+        col_b1, col_b2, col_b3, col_b4 = st.columns(4)
         
         # === FUNGSI BRACKET YANG SUDAH DIPERBAIKI (PER MATCH) ===
         def render_bracket_box(df_match_filtered, title):
@@ -466,14 +466,19 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
         with col_b1:
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Pl'], "Play-In Stages")
-            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinal")
+            
         with col_b2:
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Sf')], "UB Semifinal")
-            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinal")
+            
         with col_b3:
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
+            
+        with col_b4:
+            # Berikan ruang kosong di atas Grand Final agar posisinya agak ke tengah
+            st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final 🏆")
-        # ==========================================================
 
     st.markdown("---")
     
