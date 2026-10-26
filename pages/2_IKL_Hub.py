@@ -365,20 +365,36 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         po_matches = df_playoff.drop_duplicates(subset=['Match_ID'])
         col_b1, col_b2, col_b3 = st.columns(3)
         
+        # === FUNGSI BRACKET YANG SUDAH DIPERBAIKI (PER MATCH) ===
         def render_bracket_box(df_match_filtered, title):
             st.markdown(f"<div style='text-align: center; color: #00d2ff; font-size: 14px; font-weight: bold; margin-bottom: 5px;'>{title}</div>", unsafe_allow_html=True)
             if df_match_filtered.empty:
                 st.markdown("<div style='background: #222; border: 1px dashed #555; border-radius: 5px; padding: 10px; text-align: center; color: gray; margin-bottom: 15px;'>TBD</div>", unsafe_allow_html=True)
                 return
-            for idx, row in df_match_filtered.iterrows():
-                tim_a = str(row['Team_(Blue)']) if str(row['Team_(Blue)']) != "nan" else "TBD"
-                tim_b = str(row['Opponent_(Red)']) if str(row['Opponent_(Red)']) != "nan" else "TBD"
+                
+            # Filter agar yang tampil HANYA 1 kotak per Match (Seri)
+            series_list = df_match_filtered.drop_duplicates(subset=['Week', 'Day', 'Match'])
+            
+            for idx, row in series_list.iterrows():
+                # Ambil semua game yang terjadi di dalam seri pertandingan ini
+                games = df_playoff[(df_playoff['Week'] == row['Week']) & (df_playoff['Day'] == row['Day']) & (df_playoff['Match'] == row['Match'])]
+                
+                # Tentukan tim kiri dan kanan dari game pertama
+                tim_a = str(row['Team_(Blue)']) if pd.notna(row['Team_(Blue)']) and str(row['Team_(Blue)']) != "nan" else "TBD"
+                tim_b = str(row['Opponent_(Red)']) if pd.notna(row['Opponent_(Red)']) and str(row['Opponent_(Red)']) != "nan" else "TBD"
+                
                 skor = ""
-                if row['Status'] == 'History':
-                    games_played = df_playoff[df_playoff['Match_ID'] == row['Match_ID']]
-                    win_A = games_played['Result'].sum()
-                    win_B = len(games_played) - win_A
-                    skor = f"<span style='float: right; color: #00d2ff;'>{int(win_A)} - {int(win_B)}</span>"
+                # Kalkulasi skor jika pertandingan sudah berjalan
+                if row['Status'] == 'History' or games['Result'].notna().any():
+                    win_a = 0
+                    win_b = 0
+                    for _, g in games.dropna(subset=['Result']).iterrows():
+                        if g['Team_(Blue)'] == tim_a and g['Result'] == 1.0: win_a += 1
+                        elif g['Team_(Blue)'] == tim_b and g['Result'] == 1.0: win_b += 1
+                        elif g['Opponent_(Red)'] == tim_a and g['Result'] == 0.0: win_a += 1
+                        elif g['Opponent_(Red)'] == tim_b and g['Result'] == 0.0: win_b += 1
+                        
+                    skor = f"<span style='float: right; color: #00d2ff;'>{win_a} - {win_b}</span>"
                     
                 st.markdown(f"""
                 <div style='background: #222; border-left: 3px solid #00d2ff; border-radius: 5px; padding: 10px; margin-bottom: 15px;'>
@@ -388,14 +404,15 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 """, unsafe_allow_html=True)
 
         with col_b1:
-            render_bracket_box(po_matches[po_matches['Week'] == 'Pl'], "Play-In Stages")
-            render_bracket_box(po_matches[(po_matches['Week'] == 'Lw') & (po_matches['Day'] == 'Sf')], "LB Semifinal")
+            render_bracket_box(df_playoff[df_playoff['Week'] == 'Pl'], "Play-In Stages")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinal")
         with col_b2:
-            render_bracket_box(po_matches[(po_matches['Week'] == 'Up') & (po_matches['Day'] == 'Sf')], "UB Semifinal")
-            render_bracket_box(po_matches[(po_matches['Week'] == 'Lw') & (po_matches['Day'] == 'Fl')], "LB Final")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Sf')], "UB Semifinal")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
         with col_b3:
-            render_bracket_box(po_matches[(po_matches['Week'] == 'Up') & (po_matches['Day'] == 'Fl')], "UB Final")
-            render_bracket_box(po_matches[po_matches['Week'] == 'Gr'], "Grand Final 🏆")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
+            render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final 🏆")
+        # ==========================================================
 
     st.markdown("---")
     
