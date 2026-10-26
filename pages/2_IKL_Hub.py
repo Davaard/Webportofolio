@@ -56,8 +56,12 @@ df_B.columns = kolom_standar
 df_long = pd.concat([df_A, df_B], ignore_index=True)
 df_long = df_long.sort_values(by=['Week', 'Day', 'Match', 'Game']).reset_index(drop=True)
 
-df_long['Heroes'] = df_long['Heroes'].astype(str).apply(lambda x: [hero.strip() for hero in x.split(',')])
-df_long['Opp_Heroes'] = df_long['Opp_Heroes'].astype(str).apply(lambda x: [hero.strip() for hero in x.split(',')])
+def aman_split(x):
+    if pd.isna(x) or str(x).strip().lower() in ['nan', '-', '']: return []
+    return [h.strip() for h in str(x).split(',') if h.strip()]
+
+df_long['Heroes'] = df_long['Heroes'].apply(aman_split)
+df_long['Opp_Heroes'] = df_long['Opp_Heroes'].apply(aman_split)
 # endregion
 
 # region RADAR PENILAIAN
@@ -96,10 +100,28 @@ dominasi_df['Dominance_Skor'] = (
 # region KETANGGUHAN
 def konversi_waktu(waktu):
     waktu = str(waktu).strip()
+    # Jika data kosong atau berupa tanda strip/nan, anggap durasinya 0
+    if pd.isna(waktu) or waktu.lower() in ['nan', '-', '']: 
+        return 0.0
+        
     if ':' in waktu:
-        menit, detik = waktu.split(':')
-        return float(menit) + (float(detik) / 60.0)
-    return float(waktu)
+        try:
+            menit, detik = waktu.split(':')
+            return float(menit) + (float(detik) / 60.0)
+        except:
+            return 0.0
+
+    if '.' in waktu:
+            try:
+                menit, detik = waktu.split('.')
+                return float(menit) + (float(detik) / 60.0)
+            except:
+                return 0.0
+            
+    try:
+        return float(waktu)
+    except ValueError:
+        return 0.0
 
 df_long['Durasi'] = df_long['Durasi'].apply(konversi_waktu)
 df_long['Kill'] = pd.to_numeric(df_long['Kill'], errors='coerce').fillna(0)
@@ -844,4 +866,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             else:
                 for k in kombo_B:
                     render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+# endregion
+
 # endregion
