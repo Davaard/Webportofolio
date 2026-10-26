@@ -473,13 +473,13 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             
         with col_b3:
             # Berikan ruang kosong di atas Grand Final agar posisinya agak ke tengah
-            st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
             
         with col_b4:
             # Berikan ruang kosong di atas Grand Final agar posisinya agak ke tengah
-            st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 90px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final 🏆")
 
     st.markdown("---")
