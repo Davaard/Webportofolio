@@ -324,12 +324,43 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             # Kembalikan indeks ke angka normal (0, 1, 2, 3) 
             df_tampil = df_tampil.reset_index(drop=True)
             
-            # Sembunyikan indeks aslinya dengan hide_index=True
-            st.dataframe(
-                df_tampil.style.set_properties(**{'text-align': 'center'}), 
-                use_container_width=True, 
-                hide_index=True
-            )
+            # === LOGIKA PERCABANGAN FORMAT MUSIM (GROUP VS GLOBAL) ===
+            if "2025" in musim_pilihan:
+                st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Double Group Stage</p>", unsafe_allow_html=True)
+                
+                # Kamus Grup Dinamis
+                if musim_pilihan == "Spring 2025":
+                    grup_1_nama = "Group Tyrant"
+                    grup_1_tim = ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS']
+                    grup_2_nama = "Group Overlord"
+                    grup_2_tim = ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
+                else: # Fall 2025
+                    grup_1_nama = "Group Tyrant"
+                    grup_1_tim = ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'] 
+                    grup_2_nama = "Group Overlord"
+                    grup_2_tim = ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
+                
+                # Membelah DataFrame utama menjadi dua
+                df_grup1 = df_tampil[df_tampil['Team'].isin(grup_1_tim)].reset_index(drop=True)
+                df_grup2 = df_tampil[df_tampil['Team'].isin(grup_2_tim)].reset_index(drop=True)
+                
+                # Hitung ulang peringkat (1-5) di dalam masing-masing grup
+                df_grup1['Rank'] = df_grup1['Net Point'].rank(method='min', ascending=False).astype(int)
+                df_grup2['Rank'] = df_grup2['Net Point'].rank(method='min', ascending=False).astype(int)
+                
+                col_g1, col_g2 = st.columns(2)
+                with col_g1:
+                    st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>{grup_1_nama}</h5>", unsafe_allow_html=True)
+                    st.dataframe(df_grup1.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+                with col_g2:
+                    st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>{grup_2_nama}</h5>", unsafe_allow_html=True)
+                    st.dataframe(df_grup2.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+                    
+            else:
+                # Format 2026 (Single Global League)
+                st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Format 2026: Single Global League</p>", unsafe_allow_html=True)
+                st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+            # =========================================================
         else:
             st.info("Data Regular Season belum tersedia.")
 
