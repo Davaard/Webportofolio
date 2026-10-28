@@ -860,20 +860,17 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     if not df_long.empty:
         # 1. MESIN PENCARI MATCH WINSTREAK (Akumulasi per Seri Pertandingan)
-        # Kelompokkan data menjadi level Match (Seri)
         match_df = df_long.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(
             Game_W=('Win', 'sum'), 
             Game_L=('Win', lambda x: (x == 0.0).sum())
         ).reset_index()
         match_df['Match_Win'] = (match_df['Game_W'] > match_df['Game_L']).astype(int)
         
-        # Ambil data Lawan per Match
         opp_df = df_long.groupby(['Week', 'Day', 'Match', 'Team'])['Opponent'].first().reset_index()
         match_df = match_df.merge(opp_df, on=['Week', 'Day', 'Match', 'Team'])
 
         team_match_streaks = []
         for team in match_df['Team'].dropna().unique():
-            # Urutkan berdasarkan urutan asli kemunculan di dataset (kronologis turnamen)
             df_t = match_df[match_df['Team'] == team]
             wins = df_t['Match_Win'].tolist()
             opps = df_t['Opponent'].tolist()
@@ -907,25 +904,45 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         streak_opps = top_team_data['Streak_Opps']
         toughest_opp, match_score = "Unknown", "0-0"
         
-        # Cek ketersediaan data klasemen reguler untuk menentukan Rank lawan
         if streak_opps and 'df_tampil' in locals() and not df_tampil.empty:
             rank_dict = dict(zip(df_tampil['Team'], df_tampil['Rank']))
-            # Cari lawan dengan Rank TERKECIL (Peringkat Klasemen Tertinggi) yang dikalahkan saat Streak
             best_opp_tuple = min(streak_opps, key=lambda x: rank_dict.get(x[0], 99))
             toughest_opp = best_opp_tuple[0]
             
-            # Ambil skor Match saat mengalahkan tim terberat itu
             skor_data = match_df[(match_df['Team'] == tim_unstoppable) & (match_df['Opponent'] == toughest_opp)]
             if not skor_data.empty:
                 skor_w = int(skor_data.iloc[0]['Game_W'])
                 skor_l = int(skor_data.iloc[0]['Game_L'])
                 match_score = f"{skor_w} - {skor_l}"
+                
+        # Menghitung Persentase Kemenangan Sisi (Blue vs Red)
+        blue_wins = len(df_history[(df_history['Team_(Blue)'] == tim_unstoppable) & (df_history['Result'] == 1.0)])
+        red_wins = len(df_history[(df_history['Opponent_(Red)'] == tim_unstoppable) & (df_history['Result'] == 0.0)])
+        total_wins_overall = blue_wins + red_wins
+        
+        if total_wins_overall > 0:
+            pct_blue = (blue_wins / total_wins_overall) * 100
+            pct_red = (red_wins / total_wins_overall) * 100
+            if pct_blue >= pct_red:
+                dominant_side = "Biru (Blue)"
+                dominant_pct = pct_blue
+            else:
+                dominant_side = "Merah (Red)"
+                dominant_pct = pct_red
+            teks_sisi = f" Menariknya, sebanyak <b style='color: white;'>{dominant_pct:.0f}%</b> kemenangan {tim_unstoppable} secara keseluruhan diperoleh saat mereka berada di sisi <b style='color: white;'>{dominant_side}</b>."
+        else:
+            teks_sisi = ""
             
         # Mencari MVP terbanyak di tim tersebut
         mvp_team = df_long[(df_long['Team'] == tim_unstoppable) & (df_long['Win'] == 1)]['MVP'].value_counts()
         most_mvp_player = mvp_team.idxmax() if not mvp_team.empty else "Pemain Kunci"
         
         kombo_andalan = get_signature_combos(tim_unstoppable)
+        top_combo_count = 0
+        if kombo_andalan:
+            import re
+            match_freq = re.search(r'Pick:\s*\*\*(\d+)x\*\*', kombo_andalan[0]['teks'])
+            if match_freq: top_combo_count = match_freq.group(1)
         
         # 2. LOGIKA WARNA BORDER (GLOBAL PRESENCE) & DATA DRAFT
         total_global_matches = len(df_history)
@@ -971,7 +988,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         with col_u2:
             narasi_unstoppable = f"""
             <div style="color: #e0e0e0; font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.8; text-align: justify; margin-bottom: 20px;">
-                <span class="highlight-text">{tim_panjang}</span> berhasil memperoleh rekor <b style="color: white;">{top_team_data['Max_Streak']} winstreak (Kemenangan Seri Beruntun)</b> dari total {top_team_data['Total_Matches']} pertandingan mereka di musim ini, disusul oleh {tim_2} dan {tim_3}. Dalam rentetan kemenangan tersebut, lawan terberat yang berhasil mereka tumbangkan adalah <b style="color: white;">{toughest_opp}</b> dengan skor <b style="color: white;">{match_score}</b>. <b>{most_mvp_player}</b> menjadi pemain kunci yang paling sering bersinar di lapangan.<br><br>
+                <span class="highlight-text">{tim_panjang}</span> berhasil memperoleh rekor <b style="color: white;">{top_team_data['Max_Streak']} winstreak (Kemenangan Seri Beruntun)</b> dari total {top_team_data['Total_Matches']} pertandingan mereka di musim ini, disusul oleh {tim_2} dan {tim_3}. Dalam rentetan kemenangan tersebut, lawan terberat yang berhasil mereka tumbangkan adalah <b style="color: white;">{toughest_opp}</b> dengan skor <b style="color: white;">{match_score}</b>.{teks_sisi} Selain itu, <b>{most_mvp_player}</b> menjadi pemain kunci yang paling sering bersinar di lapangan.<br><br>
                 Berikut adalah strategi rancangan draft kombo yang menjadi andalan dan rahasia kemenangan {tim_unstoppable}:
             </div>
             """
@@ -1004,7 +1021,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 h_path = get_hero_path(hero_name)
                 border_color = get_border_color(hero_name)
                 if h_path: 
-                    html_pb += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 4px; filter: grayscale(35%) brightness(75%);'>"
+                    # Filter grayscale sudah DIHAPUS, gambar akan tampil cerah sepenuhnya
+                    html_pb += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 4px;'>"
                 else:
                     html_pb += f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:8px; text-align:center;'>{hero_name}</div>"
             html_pb += "</div></div>"
