@@ -854,6 +854,168 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 st.markdown(html_mvp, unsafe_allow_html=True)
                 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- C. MOST UNSTOPPABLE TEAM (WINSTREAK & DRAFT PATTERN) ---
+    st.markdown("#### 🚀 Most Unstoppable Team")
+    
+    if not df_long.empty:
+        # 1. MESIN PENCARI WINSTREAK & STATISTIK
+        team_streaks = []
+        for team in df_long['Team'].unique():
+            df_team = df_long[df_long['Team'] == team].sort_values(['Date', 'Time'])
+            wins = df_team['Win'].tolist()
+            opps = df_team['Opponent'].tolist()
+            match_ids = df_team['Match'].tolist()
+            
+            max_st, curr_st = 0, 0
+            best_streak_opps = []
+            curr_streak_opps = []
+            
+            for w, opp, mid in zip(wins, opps, match_ids):
+                if w == 1:
+                    curr_st += 1
+                    curr_streak_opps.append((opp, mid))
+                    if curr_st > max_st:
+                        max_st = curr_st
+                        best_streak_opps = list(curr_streak_opps)
+                else:
+                    curr_st = 0
+                    curr_streak_opps = []
+                    
+            team_streaks.append({'Team': team, 'Max_Streak': max_st, 'Streak_Opps': best_streak_opps, 'Total_Games': len(wins)})
+            
+        team_streaks.sort(key=lambda x: x['Max_Streak'], reverse=True)
+        top_team_data = team_streaks[0]
+        tim_unstoppable = top_team_data['Team']
+        
+        tim_2 = team_streaks[1]['Team'] if len(team_streaks) > 1 else "-"
+        tim_3 = team_streaks[2]['Team'] if len(team_streaks) > 2 else "-"
+        
+        # Mencari lawan terberat dalam streak tersebut (Berdasarkan Rank Klasemen)
+        streak_opps = top_team_data['Streak_Opps']
+        toughest_opp, match_score = "Unknown", "0-0"
+        if streak_opps and not df_tampil.empty:
+            rank_dict = dict(zip(df_tampil['Team'], df_tampil['Rank']))
+            # Cari lawan dengan Rank terkecil (Peringkat tertinggi)
+            best_opp_tuple = min(streak_opps, key=lambda x: rank_dict.get(x[0], 99))
+            toughest_opp = best_opp_tuple[0]
+            toughest_match_id = best_opp_tuple[1]
+            
+            # Hitung skor Match tersebut (Tim Unstoppable vs Lawan Terberat)
+            df_match = df_long[(df_long['Team'] == tim_unstoppable) & (df_long['Match'] == toughest_match_id)]
+            wins = df_match['Win'].sum()
+            losses = len(df_match) - wins
+            match_score = f"{int(wins)} - {int(losses)}"
+            
+        # Mencari MVP terbanyak di tim tersebut
+        mvp_team = df_long[(df_long['Team'] == tim_unstoppable) & (df_long['Win'] == 1)]['MVP'].value_counts()
+        most_mvp_player = mvp_team.idxmax() if not mvp_team.empty else "Pemain Kunci"
+        
+        # Ekstraksi Kombo Tim
+        kombo_andalan = get_signature_combos(tim_unstoppable)
+        top_combo_count = 0
+        if kombo_andalan:
+            import re
+            match_freq = re.search(r'Pick:\s*\*\*(\d+)x\*\*', kombo_andalan[0]['teks'])
+            if match_freq: top_combo_count = match_freq.group(1)
+        
+        # 2. LOGIKA WARNA BORDER (GLOBAL PRESENCE) & DATA DRAFT
+        total_global_matches = len(df_history)
+        all_picks_global = df_long.explode('Heroes_List')['Heroes_List'].value_counts()
+        
+        # Membaca data Ban dari file CSV-mu secara spesifik (Bans_Blue dan Bans_Red)
+        bans_b_global = df_history['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+        bans_r_global = df_history['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+        all_bans_global = pd.concat([bans_b_global, bans_r_global]).value_counts()
+             
+        def get_border_color(hero_name):
+            p = all_picks_global.get(hero_name, 0)
+            b = all_bans_global.get(hero_name, 0)
+            presence_rate = (p + b) / max(total_global_matches, 1)
+            
+            if presence_rate >= 0.8: return "#ff4b4b" # Merah (Sangat Meta / Hampir selalu Pick/Ban)
+            elif presence_rate >= 0.3: return "#ffc107" # Kuning (Menengah)
+            else: return "#4caf50" # Hijau (Jarang / Strategi Khusus)
+
+        # 5 Hero Most Picked oleh Tim Ini
+        team_picks = df_long[df_long['Team'] == tim_unstoppable].explode('Heroes_List')['Heroes_List'].value_counts().head(5)
+        
+        # 5 Hero Most Banned oleh Tim Ini (Menggabungkan saat dia di posisi Blue dan Red)
+        team_bans_blue = df_history[df_history['Team_(Blue)'] == tim_unstoppable]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+        team_bans_red = df_history[df_history['Opponent_(Red)'] == tim_unstoppable]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+        team_bans = pd.concat([team_bans_blue, team_bans_red]).value_counts().head(5)
+        
+        # 3. RENDER UI 
+        col_u1, col_u2 = st.columns([1, 2.5])
+        
+        with col_u1:
+            logo_path = get_logo_path(tim_unstoppable)
+            logo_b64 = image_to_base64(logo_path) if logo_path else ""
+            tim_panjang = nama_panjang.get(tim_unstoppable, tim_unstoppable)
+            
+            html_team = f"""
+            <div style="text-align: center; margin-top: 20px;">
+                <div style="background-color: #7952ff; border-radius: 50%; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(121, 82, 255, 0.4);">
+                    <img src="data:image/png;base64,{logo_b64}" style="width: 80%; height: 80%; object-fit: contain;">
+                </div>
+                <h2 style="color: white; font-family: 'Montserrat', sans-serif; font-weight: 800; margin-top: 20px; line-height: 1.2;">
+                    {tim_unstoppable}<br><span style="font-size: 18px; color: #d1d1d1; font-weight: 600;">by {tim_panjang.split()[-1] if len(tim_panjang.split()) > 1 else tim_panjang}</span>
+                </h2>
+            </div>
+            """
+            st.markdown(html_team, unsafe_allow_html=True)
+            
+        with col_u2:
+            narasi_unstoppable = f"""
+            <div style="color: #e0e0e0; font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.8; text-align: justify; margin-bottom: 20px;">
+                <span class="highlight-text">{tim_panjang}</span> berhasil memperoleh total <b style="color: white;">{top_team_data['Max_Streak']} winstreak</b> dalam {top_team_data['Total_Games']} pertandingan, disusul oleh {tim_2} dan {tim_3}. Dalam streak ini, lawan terberat {tim_unstoppable} adalah <b style="color: white;">{toughest_opp}</b> dengan skor <b style="color: white;">{match_score}</b>. <b>{most_mvp_player}</b> adalah pemain kunci di dalam tim.<br><br>
+                <b>{top_combo_count}x</b> dari {top_team_data['Total_Games']} pertandingan, {tim_unstoppable} menggunakan strategi draft berikut:
+            </div>
+            """
+            st.markdown(narasi_unstoppable, unsafe_allow_html=True)
+            
+            # Merender 3 Kartu Kombo Andalan (Daur Ulang dari Modul Mesin Kombinasi)
+            if kombo_andalan:
+                cols_k = st.columns(3)
+                for i, k in enumerate(kombo_andalan[:3]):
+                    with cols_k[i]:
+                        render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+                        
+            # Kotak Most Picked & Banned Hero
+            html_pb = "<div style='display: flex; gap: 20px; margin-top: 10px;'>"
+            
+            # Picked Box
+            html_pb += "<div style='flex: 1; background-color: #2a2a35; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+            html_pb += "<div style='color: white; font-weight: bold; margin-bottom: 10px; font-size: 14px;'>Most Picked</div>"
+            html_pb += "<div style='display: flex; gap: 8px;'>"
+            for hero_name, _ in team_picks.items():
+                h_path = get_hero_path(hero_name)
+                border_color = get_border_color(hero_name)
+                if h_path: 
+                    html_pb += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 4px;'>"
+                else:
+                    # Fallback jika gambar hero belum ada di asset
+                    html_pb += f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:8px; text-align:center;'>{hero_name}</div>"
+            html_pb += "</div></div>"
+            
+            # Banned Box
+            html_pb += "<div style='flex: 1; background-color: #2a2a35; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+            html_pb += "<div style='color: white; font-weight: bold; margin-bottom: 10px; font-size: 14px;'>Most Banned</div>"
+            html_pb += "<div style='display: flex; gap: 8px;'>"
+            for hero_name, _ in team_bans.items():
+                h_path = get_hero_path(hero_name)
+                border_color = get_border_color(hero_name)
+                if h_path: 
+                    # Sedikit digelapkan (grayscale/brightness) agar memberikan kesan "Banned" ala UI Game Moba
+                    html_pb += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 4px; filter: grayscale(35%) brightness(75%);'>"
+                else:
+                    html_pb += f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:8px; text-align:center;'>{hero_name}</div>"
+            html_pb += "</div></div>"
+            
+            html_pb += "</div>"
+            st.markdown(html_pb, unsafe_allow_html=True)
+            
+    st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
     # Bagian 2: Meta & Draft
     st.markdown("#### 🦸 Meta & Draft")
