@@ -8,21 +8,167 @@ import plotly.graph_objects as go
 from itertools import combinations
 import base64
 
+# Pindahkan fungsi ini ke paling atas agar bisa dibaca duluan oleh Streamlit
+def image_to_base64(img_path):
+    if img_path and os.path.exists(img_path):
+        with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
+    return ""
+
+st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
+
+# === SIHIR CSS: STICKY HEADER SEMPURNA ===
+st.markdown("""
+    <style>
+    .main .block-container > div:first-child {
+        position: sticky;
+        top: 2.875rem; 
+        z-index: 999;
+        background-color: #0e1117; 
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1); 
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
+
+    .recap-kill {
+        font-family: 'Akronim', system-ui;
+        font-size: 55px;
+        color: transparent;
+        -webkit-text-stroke: 1.5px #ff4b4b;
+        margin-bottom: -10px;
+    }
+    .recap-time {
+        font-family: 'Londrina Shadow', display;
+        font-size: 45px;
+        color: #4caf50; 
+    }
+    .recap-match-id {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 35px;
+        color: transparent;
+        -webkit-text-stroke: 1px #ffc107;
+        letter-spacing: 2px;
+    }
+    
+    .esports-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    .esports-text {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 400;
+        color: #d1d1d1;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: justify;
+    }
+    .highlight-text {
+        color: #00d2ff;
+        font-weight: 600;
+    }
+    
+    div.stButton > button {
+        background-color: transparent !important;
+        border: none !important;
+        color: gray !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease-in-out;
+        opacity: 0.6;
+    }
+    div.stButton > button:hover {
+        color: white !important;
+        opacity: 1; 
+    }
+    
+    .clean-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        text-align: center;
+    }
+    .clean-table th {
+        border-bottom: 2px solid #555;
+        padding: 12px 8px;
+        color: #b0b0b0;
+        font-weight: 600;
+    }
+    .clean-table td {
+        border-bottom: 1px solid #333;
+        padding: 12px 8px;
+        vertical-align: middle;
+    }
+    .clean-table td.team-cell {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+# =========================================
+
+@st.cache_data
+def load_and_preprocess_data(filepath):
+    df = pd.read_csv(filepath)
+    df['Week_str'] = df['Week'].fillna('').astype(str)
+    df['Day_str'] = df['Day'].fillna('').astype(str)
+    df['Match_str'] = df['Match'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
+    df['Game_str'] = df['Game'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
+    df['Match_ID'] = 'IKL' + df['Week_str'] + df['Day_str'] + df['Match_str'] + df['Game_str']
+    df['Status'] = df['Result'].apply(lambda x: 'Upcoming' if pd.isna(x) else 'History')
+    df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
+    return df
+
+df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+
+def urutkan_musim(s):
+    bagian = str(s).strip().split()
+    if len(bagian) == 2 and bagian[1].isdigit():
+        musim, tahun = bagian[0].lower(), int(bagian[1])
+        bobot_musim = 2 if musim == 'fall' else 1
+        return (tahun, bobot_musim)
+    return (0, 0)
+
+# === PENGATURAN HEADER GLOBAL (FIXED TOP-RIGHT) ===
+col_title, col_season = st.columns([3, 1])
+with col_title:
+    st.markdown("## 🎮 Indonesia Kings Laga (IKL) - HOK")
+        
+with col_season:
+    if 'Season' in df_csv.columns:
+        daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
+        musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
+        df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
+        
+        if musim_pilihan == "Fall 2025":
+            df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace({'VIT': 'BTR'})
+            df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace({'VIT': 'BTR'})
+    else:
+        st.error("Kolom 'Season' tidak ditemukan!")
+        st.stop()
+# ==================================================
+
 # region UI HELPERS
+# UI Helpers dikembalikan ke bawah musim_pilihan agar tidak NameError
 @st.cache_data
 def get_dynamic_logo_map(season):
     if os.path.exists("IKL_Rosters.csv"):
         df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
-        
-        # 1. Ambil logo fallback/global
         df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
         map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
         
-        # 2. Ambil logo SPESIFIK untuk musim yang sedang dibuka pengguna
         df_season = df_ros[df_ros['Season'] == season].drop_duplicates(subset=['Team'])
         map_season = dict(zip(df_season['Team'], df_season['Logo_File']))
         
-        # 3. Timpa logo global dengan logo spesifik musim tersebut
         map_global.update(map_season)
         return map_global
     return {}
@@ -62,181 +208,7 @@ def render_logo_card(logo_path, team_name):
         st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'><img src='data:image/png;base64,{image_to_base64(logo_path)}' style='max-width: 100%; max-height: 100%;'></div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px;'><span style='color: gray; font-weight: bold; font-size: 20px;'>{team_name}</span></div>", unsafe_allow_html=True)
-
-def image_to_base64(img_path):
-    if img_path and os.path.exists(img_path):
-        with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
-    return ""
-
 # endregion
-
-st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
-
-# === SIHIR CSS: STICKY HEADER SEMPURNA ===
-st.markdown("""
-    <style>
-    /* Target spesifik HANYA untuk kontainer paling atas di halaman utama */
-    .main .block-container > div:first-child {
-        position: sticky;
-        top: 2.875rem; /* Menempel persis di bawah header bawaan Streamlit */
-        z-index: 999;
-        background-color: #0e1117; /* Latar gelap pekat agar elemen di bawahnya tertutup */
-        padding-top: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1); /* Garis batas tipis nan elegan */
-    }
-    
-    /* =========================================
-       1. IMPORT FONTS DARI GOOGLE FONTS (FASE 1)
-       ========================================= */
-    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
-
-    /* 2. KELAS FONT UNTUK RECAP (Nanti dipakai di Fase 3) */
-    .recap-kill {
-        font-family: 'Akronim', system-ui;
-        font-size: 55px;
-        color: transparent;
-        -webkit-text-stroke: 1.5px #ff4b4b; /* Merah darah tegas */
-        margin-bottom: -10px;
-    }
-    .recap-time {
-        font-family: 'Londrina Shadow', display;
-        font-size: 45px;
-        color: #4caf50; /* Hijau */
-    }
-    .recap-match-id {
-        font-family: 'Rajdhani', sans-serif; /* Placeholder sementara yang kaku ala Esports */
-        font-weight: 700;
-        font-size: 35px;
-        color: transparent;
-        -webkit-text-stroke: 1px #ffc107; /* Outline Emas */
-        letter-spacing: 2px;
-    }
-    
-    /* 3. KELAS FONT UNTUK TEKS GENERAL (League Info dll) */
-    .esports-title {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        color: white;
-        font-size: 24px;
-        margin-bottom: 5px;
-    }
-    .esports-text {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 400;
-        color: #d1d1d1;
-        font-size: 14px;
-        line-height: 1.6;
-        text-align: justify;
-    }
-    .highlight-text {
-        color: #00d2ff;
-        font-weight: 600;
-    }
-    
-    /* 4. KUSTOMISASI TOMBOL NAVIGASI MENU (DESAIN CANVA) */
-    div.stButton > button {
-        background-color: transparent !important;
-        border: none !important;
-        color: gray !important;
-        font-family: 'Montserrat', sans-serif !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease-in-out;
-        opacity: 0.6; /* Tambahkan ini agar menu di kiri/kanan sedikit redup */
-    }
-    div.stButton > button:hover {
-        color: white !important;
-        opacity: 1; /* Menyala saat di-hover */
-    }
-    
-    /* Membuat kelas palsu di Streamlit untuk tombol aktif lewat markdown container */
-    .menu-active {
-        color: white !important;
-        font-weight: 800 !important;
-        font-size: 18px !important;
-        text-shadow: 0px 0px 15px rgba(0, 0, 255, 0.8), 0px 0px 30px rgba(0, 210, 255, 0.6) !important;
-        border-bottom: 3px solid #00d2ff !important;
-        padding-bottom: 5px !important;
-    }
-
-    /* 5. KUSTOMISASI TABEL HTML (CLEAN HORIZONTAL LINES) */
-    .clean-table {
-        width: 100%;
-        border-collapse: collapse;
-        color: white;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 14px;
-        text-align: center;
-    }
-    .clean-table th {
-        border-bottom: 2px solid #555;
-        padding: 12px 8px;
-        color: #b0b0b0;
-        font-weight: 600;
-    }
-    .clean-table td {
-        border-bottom: 1px solid #333;
-        padding: 12px 8px;
-        vertical-align: middle;
-    }
-    /* Kolom Tim rata kiri agar rapi */
-    .clean-table td.team-cell {
-        text-align: left;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    </style>
-""", unsafe_allow_html=True)
-# =========================================
-
-@st.cache_data
-def load_and_preprocess_data(filepath):
-    df = pd.read_csv(filepath)
-    df['Week_str'] = df['Week'].fillna('').astype(str)
-    df['Day_str'] = df['Day'].fillna('').astype(str)
-    df['Match_str'] = df['Match'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
-    df['Game_str'] = df['Game'].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
-    df['Match_ID'] = 'IKL' + df['Week_str'] + df['Day_str'] + df['Match_str'] + df['Game_str']
-    df['Status'] = df['Result'].apply(lambda x: 'Upcoming' if pd.isna(x) else 'History')
-    df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
-    return df
-
-df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
-
-# [+] FUNGSI GLOBAL PEMBOBOT MUSIM
-def urutkan_musim(s):
-    bagian = str(s).strip().split()
-    if len(bagian) == 2 and bagian[1].isdigit():
-        musim, tahun = bagian[0].lower(), int(bagian[1])
-        # Fall berbobot 2 (akhir tahun), Spring berbobot 1 (awal tahun)
-        bobot_musim = 2 if musim == 'fall' else 1
-        return (tahun, bobot_musim)
-    return (0, 0)
-
-# === PENGATURAN HEADER GLOBAL (FIXED TOP-RIGHT) ===
-col_title, col_season = st.columns([3, 1])
-with col_title:
-    st.markdown("## 🎮 Indonesia Kings Laga (IKL) - HOK")
-        
-with col_season:
-    if 'Season' in df_csv.columns:
-        # Panggil fungsi global untuk mengurutkan musim
-        daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
-        musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
-        df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
-        
-        # [+] INJEKSI ANTI-ALIAS TERISOLASI KHUSUS FALL 2025
-        if musim_pilihan == "Fall 2025":
-            df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace({'VIT': 'BTR'})
-            df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace({'VIT': 'BTR'})
-        # [+] ===============================================
-    else:
-        st.error("Kolom 'Season' tidak ditemukan!")
-        st.stop()
-# ==================================================
 
 # region NAVIGASI INTERNAL IKL
 if "menu_ikl" not in st.session_state: 
@@ -254,18 +226,14 @@ else:
 st.markdown("<br>", unsafe_allow_html=True)
 col_nav1, col_nav2, col_nav3 = st.columns(3)
 
-# Memuat gambar aset navigasi sebagai background
 nav_bg_path = "assets/selected_mode_display.png"
 nav_bg_base64 = image_to_base64(nav_bg_path) if os.path.exists(nav_bg_path) else ""
 
-# Render tombol dengan susunan dinamis
 with col_nav1:
     if st.button(susunan[0], use_container_width=True): st.session_state['menu_ikl'] = susunan[0]; st.rerun()
 with col_nav2:
-    # Trik CSS Absolute: Memaksa background melebar 200% menembus batas kolom
     html_nav_active = f"""
     <div style="position: relative; margin-top: -5px; padding: 12px 0; text-align: center;">
-        <!-- Layer Background -->
         <div style="position: absolute; top: 0; left: -50%; width: 200%; height: 100%; 
                     background-image: url('data:image/png;base64,{nav_bg_base64}'); 
                     background-size: 100% 100%; 
@@ -273,7 +241,6 @@ with col_nav2:
                     background-position: center; 
                     z-index: 0;">
         </div>
-        <!-- Layer Teks -->
         <span style="position: relative; z-index: 1; color: white; font-weight: 800; font-size: 18px;">
             {susunan[1]}
         </span>
@@ -457,9 +424,10 @@ def get_signature_combos(tim_target):
 # region HALAMAN 1: KLASEMEN, PLAYOFFS & HIGHLIGHTS
 if menu_utama == "🏆 Klasemen & Playoffs":
     
+    # === 1. LEAGUE INFO (LOGO KIRI, TEKS KANAN) ===
     st.markdown("### Indonesia Kings Laga (IKL)")
-    col_logo, col_teks = st.columns([1, 3.5])
     
+    col_logo, col_teks = st.columns([1, 3.5])
     with col_logo:
         logo_ikl_path = "assets/ikl_gold.png"
         if os.path.exists(logo_ikl_path):
@@ -468,30 +436,38 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             </div>""", unsafe_allow_html=True)
             
     with col_teks:
+        # 1. Hitung Total Tim Musim Ini
         tim_biru_curr = set(df_master['Team_(Blue)'].dropna().unique())
         tim_merah_curr = set(df_master['Opponent_(Red)'].dropna().unique())
         tim_musim_ini = tim_biru_curr.union(tim_merah_curr)
         total_team = len(tim_musim_ini)
         
+        # 2. Setup Variabel Sejarah Musim
         total_musim_berjalan = len(daftar_musim)
         idx_musim_ini = daftar_musim.index(musim_pilihan)
         musim_pertama = daftar_musim[-1]
         is_musim_pertama = (musim_pilihan == musim_pertama)
         
+        # 3. Mencari Tim Baru
         tim_baru_list = []
         if not is_musim_pertama:
+            # Ambil semua tim dari semua musim SEBELUM musim pilihan ini
             musim_sebelumnya_all = daftar_musim[idx_musim_ini + 1:]
             df_past = df_csv[df_csv['Season'].isin(musim_sebelumnya_all)]
             tim_past = set(df_past['Team_(Blue)'].dropna().unique()).union(set(df_past['Opponent_(Red)'].dropna().unique()))
+            
+            # Tim baru = Tim musim ini yang TIDAK ADA di tim masa lalu
             tim_baru_set = tim_musim_ini - tim_past
             tim_baru_list = list(tim_baru_set)
         
+        # Format teks tim baru
         teks_tim_baru = ""
         if len(tim_baru_list) > 0:
             teks_tim_baru = f" dengan <span class='highlight-text'>{len(tim_baru_list)} tim baru</span> di antaranya adalah {', '.join(tim_baru_list)}."
         elif not is_musim_pertama:
             teks_tim_baru = " tanpa ada penambahan tim baru dari musim sebelumnya."
             
+        # 4. Logika Juara Bertahan (Membaca Data Grand Final Musim Sebelumnya)
         teks_bertahan = ""
         if not is_musim_pertama:
             musim_lalu = daftar_musim[idx_musim_ini + 1]
@@ -499,22 +475,29 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             df_gr_lalu = df_lalu[df_lalu['Week'] == 'Gr'].dropna(subset=['Result'])
             
             if not df_gr_lalu.empty:
+                # Ambil dua tim yang bertanding di Grand Final
                 tim_gr_1 = df_gr_lalu.iloc[0]['Team_(Blue)']
                 tim_gr_2 = df_gr_lalu.iloc[0]['Opponent_(Red)']
+                
+                # Hitung Skor
                 skor_1, skor_2 = 0, 0
                 for _, g in df_gr_lalu.iterrows():
                     if (g['Team_(Blue)'] == tim_gr_1 and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_gr_1 and g['Result'] == 0.0):
                         skor_1 += 1
                     elif (g['Team_(Blue)'] == tim_gr_2 and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_gr_2 and g['Result'] == 0.0):
                         skor_2 += 1
+                
+                # Tentukan Juara
                 if skor_1 > skor_2:
                     juara, runner_up, skor_juara, skor_runner = tim_gr_1, tim_gr_2, skor_1, skor_2
                 else:
                     juara, runner_up, skor_juara, skor_runner = tim_gr_2, tim_gr_1, skor_2, skor_1
+                
                 teks_bertahan = f", dengan <span class='highlight-text'><b>{juara}</b></span> sebagai juara bertahan dari {musim_lalu} setelah melawan {runner_up} dengan skor <b>{skor_juara}-{skor_runner}</b>."
             else:
                 teks_bertahan = f", melanjutkan tensi kompetisi dari {musim_lalu}."
         
+        # 5. Merangkai Narasi HTML Akhir
         narasi = f"""
         <div class="esports-text">
         Indonesia Kings Laga atau IKL adalah liga esports nasional untuk game Honor of Kings di Indonesia. 
@@ -579,6 +562,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up1:
                  for _, row_data in df_hari_1.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
+                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
                      
          # Render Kolom Kanan (Hari Kedua, jika ada)
          if len(tanggal_unik) > 1:
@@ -587,6 +571,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up2:
                  for _, row_data in df_hari_2.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
+                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari di hari berikutnya</p>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
