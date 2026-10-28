@@ -646,7 +646,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
     # 4. BRACKET PLAYOFFS
-    st.markdown("###Playoff###")
+    st.markdown("###Playoff")
     df_playoff = df_master[df_master['Week'].isin(['Pl', 'Up', 'Lw', 'Gr'])].copy()
     
     if df_playoff.empty:
@@ -721,31 +721,80 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
     st.markdown("---")
     
-    # 3. HIGHLIGHT & ANALITIK (GAYA ARTIKEL ONE-PAGER)
-    st.markdown("### 📰 Highlight & Analisis Kinerja")
+    # === 5. SEASON RECAP (HIGHLIGHTS) ===
+    st.markdown("### 📰 Season Recap")
     
-    # Bagian 1: MVP & Winstreak
-    st.markdown("#### 🌟 Top Players & Teams")
-    col_t1, col_t2 = st.columns(2)
-    with col_t1:
-        st.caption("🎖️ MVP Leaderboard")
-        mvp_counts = df_history['MVP'].dropna().value_counts().head(5).reset_index()
-        mvp_counts.columns = ['Player', 'Total MVP']
-        st.dataframe(mvp_counts, use_container_width=True, hide_index=True)
+    # --- A. MOST EXCITING MATCH ---
+    st.markdown("#### ⚔️ Most Exciting Match")
+    col_e1, col_e2, col_e3 = st.columns(3)
+    
+    if not df_history.empty:
+        df_hist_view = df_history.copy()
+        df_hist_view['Total_Kills'] = df_hist_view['T_Kill'] + df_hist_view['O_Kill']
         
-    with col_t2:
-        st.caption("🔥 Longest Winstreak")
-        winstreak_record = {}
-        for team in df_long['Team'].unique():
-            wins = df_long[df_long['Team'] == team]['Win'].tolist()
-            max_st, curr_st = 0, 0
-            for w in wins:
-                if w == 1: curr_st += 1; max_st = max(max_st, curr_st)
-                else: curr_st = 0
-            winstreak_record[team] = max_st
-        ws_df = pd.DataFrame(list(winstreak_record.items()), columns=['Team', 'Max Winstreak']).sort_values('Max Winstreak', ascending=False).head(5)
-        st.dataframe(ws_df, use_container_width=True, hide_index=True)
+        if df_hist_view['Total_Kills'].sum() > 0:
+            bloodiest = df_hist_view.loc[df_hist_view['Total_Kills'].idxmax()]
+            longest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).idxmax()]
+            fastest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).replace(0, np.nan).idxmin()]
+            
+            def render_epic_card(row_data, title, metric_label, metric_value, color_hex):
+                tim_a, tim_b = str(row_data['Team_(Blue)']), str(row_data['Opponent_(Red)'])
+                logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
+                logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
+                vs_logo = "assets/Match/vs_outline_gold.png" 
+                
+                html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 40px; object-fit: contain;'>" if logo_a else f"<span style='color: white; font-weight: bold;'>{tim_a}</span>"
+                html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 40px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold;'>{tim_b}</span>"
+                
+                html = f"<div style='background-color: #1a1a24; border-top: 4px solid {color_hex}; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);'>"
+                html += f"<div style='text-align: center; color: {color_hex}; font-weight: 800; font-size: 16px; margin-bottom: 15px;'>{title}</div>"
+                html += f"<div style='display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px;'>"
+                html += f"<div style='width: 35%; text-align: right;'>{html_a}</div>"
+                html += f"<img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 25px;'>"
+                html += f"<div style='width: 35%; text-align: left;'>{html_b}</div></div>"
+                html += f"<div style='text-align: center; background-color: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;'>"
+                html += f"<span style='color: gray; font-size: 12px;'>{metric_label}:</span> <span style='color: white; font-weight: bold; font-size: 14px;'>{metric_value}</span><br>"
+                html += f"<span style='color: #888; font-size: 10px;'>W{row_data['Week']} - Day {row_data['Day']} - Match {row_data['Match']}</span></div></div>"
+                return html
 
+            with col_e1:
+                st.markdown(render_epic_card(bloodiest, "🩸 Bloodbath Match", "Total Kills", int(bloodiest['Total_Kills']), "#ff4b4b"), unsafe_allow_html=True)
+            with col_e2:
+                st.markdown(render_epic_card(longest, "⏳ Longest Match", "Duration", bloodiest['Duration_min'], "#ffb800"), unsafe_allow_html=True)
+            with col_e3:
+                st.markdown(render_epic_card(fastest, "⚡ Fastest Match", "Duration", fastest['Duration_min'], "#00d2ff"), unsafe_allow_html=True)
+        else:
+            st.info("Data Kill dan Durasi belum mencukupi untuk menampilkan Epic Matches.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- B. MVP OF THE SEASON ---
+    st.markdown("#### 🎖️ MVP of The Season")
+    
+    mvp_counts = df_history['MVP'].dropna().value_counts().head(4).reset_index()
+    mvp_counts.columns = ['Player', 'Total MVP']
+    
+    if not mvp_counts.empty:
+        # Bikin 4 kolom untuk 4 MVP teratas
+        cols_mvp = st.columns(4)
+        
+        for idx, row in mvp_counts.iterrows():
+            with cols_mvp[idx]:
+                # Card MVP bergaya Esports
+                html_mvp = f"""
+                <div style='background: linear-gradient(180deg, #1a1a24 0%, #0e1117 100%); border: 1px solid #333; border-radius: 8px; padding: 15px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px;'>
+                    <div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 12px; padding: 2px 8px; border-radius: 4px;'>{row['Total MVP']}</div>
+                    <div style='height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;'>
+                        <span style='font-size: 60px;'>👤</span> <!-- Placeholder siluet pemain -->
+                    </div>
+                    <div style='color: white; font-weight: 800; font-size: 18px; letter-spacing: 1px;'>{row['Player']}</div>
+                    <div style='color: #00d2ff; font-size: 11px; font-weight: bold; margin-top: 5px;'>IKL STAR PLAYER</div>
+                </div>
+                """
+                st.markdown(html_mvp, unsafe_allow_html=True)
+    else:
+        st.info("Data MVP belum tersedia untuk musim ini.")
+        
     st.markdown("<br>", unsafe_allow_html=True)
     
     # Bagian 2: Meta & Draft
