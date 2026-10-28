@@ -833,10 +833,10 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html_mvp += f"<div style='position: absolute; top: 3%; left: 3%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
                 
                 # Siluet Player Placeholder di tengah atas
-                html_mvp += f"<div style='position: absolute; top: 18%; width: 200%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
+                html_mvp += f"<div style='position: absolute; top: 18%; width: 150%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
                 
                 # Nama Pemain di atas area hero
-                html_mvp += f"<div style='position: absolute; bottom: 30%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
+                html_mvp += f"<div style='position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
                 
                 # Baris 3 Hero di bagian paling bawah kartu
                 html_mvp += hero_html
