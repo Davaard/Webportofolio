@@ -737,38 +737,39 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             longest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).idxmax()]
             fastest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).replace(0, np.nan).idxmin()]
             
-            def render_epic_card_with_bg(row_data, bg_filename, metric_value, font_class):
+            def render_epic_card_full_img(row_data, bg_filename, metric_value, font_class):
                 tim_a, tim_b = str(row_data['Team_(Blue)']), str(row_data['Opponent_(Red)'])
                 logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
                 logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
                 bg_path = f"assets/Recap/{bg_filename}"
-                
-                html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 40px; width: 40px; object-fit: contain;'>" if logo_a else f"<div style='height: 40px; display: flex; align-items: center;'><span style='color: white; font-weight: bold; font-size: 11px;'>{tim_a}</span></div>"
-                html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 40px; width: 40px; object-fit: contain;'>" if logo_b else f"<div style='height: 40px; display: flex; align-items: center;'><span style='color: white; font-weight: bold; font-size: 11px;'>{tim_b}</span></div>"
                 bg_b64 = image_to_base64(bg_path)
                 
-                # Container Utama: Ukuran Fix (Tinggi 230px) dengan Border Emas, Anchor Background di kiri-bawah
-                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: bottom left; border: 1.5px solid #d4af37; border-radius: 8px; margin-bottom: 20px; height: 230px; position: relative; overflow: hidden;\">"
+                html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 38px; width: 38px; object-fit: contain;'>" if logo_a else f"<span style='color: white; font-weight: bold; font-size: 11px;'>{tim_a}</span>"
+                html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 38px; width: 38px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold; font-size: 11px;'>{tim_b}</span>"
                 
-                # Logo A dipaku 15px dari bawah, 15px dari kiri
-                html += f"<div style='position: absolute; bottom: 15px; left: 15px;'>{html_a}</div>"
+                # Menggunakan tag <img> penuh agar ukuran asli gambar tidak rusak/berantakan
+                html = f"<div style='position: relative; width: 100%; margin-bottom: 20px;'>"
+                html += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
-                # Logo B dipaku 15px dari bawah, 95px dari kiri (menyisakan ruang 40px untuk tulisan VS dari gambar)
-                html += f"<div style='position: absolute; bottom: 15px; left: 95px;'>{html_b}</div>"
+                # Logo Tim Kiri (Menyesuaikan posisi di sebelah kiri tulisan VS)
+                html += f"<div style='position: absolute; bottom: 12%; left: 13%;'>{html_a}</div>"
                 
-                # Teks Metrik dan Match ID dipaku 15px dari bawah, 15px dari kanan
-                html += f"<div style='position: absolute; bottom: 15px; right: 15px; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 4px;'>{metric_value}</div>"
-                html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
+                # Logo Tim Kanan (Menyesuaikan posisi di sebelah kanan tulisan VS)
+                html += f"<div style='position: absolute; bottom: 12%; left: 45%;'>{html_b}</div>"
+                
+                # Teks Metrik dan Match ID di pojok kanan bawah
+                html += f"<div style='position: absolute; bottom: 10%; right: 7%; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 2px;'>{metric_value}</div>"
+                html += f"<div style='color: #d1d1d1; font-size: 10px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
                 html += f"</div>"
                 
                 return html
 
             with col_e1:
-                st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.png", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_full_img(bloodiest, "bloodbath_art.png", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
             with col_e2:
-                st.markdown(render_epic_card_with_bg(longest, "longest_match_art.png", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_full_img(longest, "longest_match_art.png", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
             with col_e3:
-                st.markdown(render_epic_card_with_bg(fastest, "fastest_match_art.png", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_full_img(fastest, "fastest_match_art.png", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
         else:
             st.info("Data Kill dan Durasi belum mencukupi untuk menampilkan Epic Matches.")
 
@@ -815,34 +816,31 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                # Hero melayang di paling bawah (15px dari bawah), ukuran hero 45px
-                hero_html = "<div style='position: absolute; bottom: 15px; width: 100%; display: flex; gap: 8px; justify-content: center;'>"
+                hero_html = "<div style='position: absolute; bottom: 4%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
-                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 45px; width: 45px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); object-fit: cover;'>"
+                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 42px; width: 42px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover;'>"
                 hero_html += "</div>"
             except Exception as e:
                 hero_html = ""
 
             with cols_mvp[idx]:
-                # Container Utama MVP dengan Tinggi Statis 300px
-                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1.5px solid #d4af37; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 20px; height: 300px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);\">"
+                # Kartu MVP menggunakan gambar utuh (full <img>) agar rasionya tidak gepeng
+                html_mvp = f"<div style='position: relative; width: 100%; margin-bottom: 20px;'>"
+                html_mvp += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
-                # Overlay gelap agar elemen UI lebih menonjol
-                html_mvp += f"<div style=\"background-color: rgba(0,0,0,0.4); width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1;\"></div>"
+                # Badge Total MVP di kiri atas
+                html_mvp += f"<div style='position: absolute; top: 8%; left: 8%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
                 
-                # Badge MVP di kiri atas (Z-index tinggi agar tampil di atas overlay)
-                html_mvp += f"<div style='position: absolute; top: 12px; left: 12px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 4px 10px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 2;'>{total_mvp}</div>"
+                # Siluet Player Placeholder di tengah atas
+                html_mvp += f"<div style='position: absolute; top: 18%; width: 100%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
                 
-                # Siluet Pemain (roster_placeholder.png) ditempatkan statis dari atas
-                html_mvp += f"<div style='position: absolute; top: 40px; width: 100%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='height: 140px; object-fit: contain; opacity: 0.9;'></div>"
+                # Nama Pemain di atas area hero
+                html_mvp += f"<div style='position: absolute; bottom: 18%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
                 
-                # Nama Pemain dipaku 75px dari bawah agar berada tepat di atas hero
-                html_mvp += f"<div style='position: absolute; bottom: 75px; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 22px; text-shadow: 1px 1px 5px rgba(0,0,0,1); z-index: 2;'>{player_name}</div>"
-                
-                # Masukkan Barisan 3 Hero
-                html_mvp += f"<div style='z-index: 2;'>{hero_html}</div>"
-                html_mvp += "</div>"
+                # Baris 3 Hero di bagian paling bawah kartu
+                html_mvp += hero_html
+                html_mvp += f"</div>"
                 
                 st.markdown(html_mvp, unsafe_allow_html=True)
                 
