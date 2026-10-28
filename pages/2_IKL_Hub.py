@@ -1064,44 +1064,125 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             
     st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
-    # Bagian 2: Meta & Draft
-    st.markdown("#### 🦸 Meta & Draft")
-    col_m1, col_m2 = st.columns([1, 1.5])
-    with col_m1:
-        st.caption("☠️ Top Picked Heroes")
-        all_heroes_picked = df_long.explode('Heroes_List')['Heroes_List']
-        top_heroes = all_heroes_picked.value_counts().head(5).reset_index()
-        top_heroes.columns = ['Hero', 'Total Pick']
-        st.dataframe(top_heroes, use_container_width=True, hide_index=True)
+    #==========================================
+    # BAGIAN 2: META & DRAFT (MOST EFFECTIVE TACTIC)
+    # ==========================================
+    st.markdown("### 📊 Most Efective Tactic Available")
+    
+    # 1. PERSIAPAN DATA GLOBAL
+    # Global Picks (menggunakan data df_history untuk memastikan format Blue/Red utuh)
+    picks_b = df_history['Heroes_Picked'].dropna().astype(str).str.split(',').explode().str.strip()
+    picks_r = df_history['Opponent_Picked'].dropna().astype(str).str.split(',').explode().str.strip()
+    all_picks_global = pd.concat([picks_b, picks_r]).value_counts()
+    top_5_picks = all_picks_global.head(5)
+    
+    # Global Bans
+    bans_b_global = df_history['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+    bans_r_global = df_history['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+    all_bans_global = pd.concat([bans_b_global, bans_r_global]).value_counts()
+    top_5_bans = all_bans_global.head(5)
+    
+    # LOGIKA CERDAS: MENCARI COUNTER-PICK BERDASARKAN LANE
+    from collections import Counter
+    counter_pick_results = []
+    
+    for hero in top_5_picks.index:
+        counters = []
+        hero_total_matches = 0
         
-    with col_m2:
-        st.caption("🧩 Supreme Combinations (Global Meta)")
-        threshold_global = 5 
-        global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
-        g_combos_to_remove, g_red_combos = set(), set()
-        sorted_g_combos = sorted(list(global_valid.keys()), key=len, reverse=True)
+        for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
+            blue_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
+            red_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
+            
+            # Pastikan draft lengkap 5v5 untuk menghindari error indeks
+            if len(blue_draft) == 5 and len(red_draft) == 5:
+                # Jika hero dipakai Tim Biru
+                if hero in blue_draft:
+                    hero_total_matches += 1
+                    idx = blue_draft.index(hero)
+                    if idx in [0, 3]: # Clash (0) & Farm (3) -> Strict 1v1
+                        counters.append(red_draft[idx])
+                    elif idx in [1, 2, 4]: # Jungle (1), Mid (2), Roam (4) -> Flex
+                        counters.extend([red_draft[1], red_draft[2], red_draft[4]])
+                        
+                # Jika hero dipakai Tim Merah
+                elif hero in red_draft:
+                    hero_total_matches += 1
+                    idx = red_draft.index(hero)
+                    if idx in [0, 3]: # Clash & Farm
+                        counters.append(blue_draft[idx])
+                    elif idx in [1, 2, 4]: # Jungle, Mid, Roam
+                        counters.extend([blue_draft[1], blue_draft[2], blue_draft[4]])
+                        
+        if counters:
+            most_counter = Counter(counters).most_common(1)[0]
+            counter_hero = most_counter[0]
+            counter_pct = (most_counter[1] / max(hero_total_matches, 1)) * 100
+        else:
+            counter_hero = "-"
+            counter_pct = 0
+            
+        counter_pick_results.append({
+            'Target': hero,
+            'Counter': counter_hero,
+            'Pct': counter_pct
+        })
+    
+    # Fungsi pembantu untuk HTML baris
+    def render_meta_row(hero_name, metric_text, is_ban=False):
+        h_path = get_hero_path(hero_name)
+        border_color = get_border_color(hero_name) # Warna otomatis mengikuti Meta global
+        img_b64 = image_to_base64(h_path) if h_path else ""
         
-        for i in range(len(sorted_g_combos)):
-            c_large = sorted_g_combos[i]
-            if c_large in g_combos_to_remove: continue
-            for j in range(i + 1, len(sorted_g_combos)):
-                c_small = sorted_g_combos[j]
-                if c_small in g_combos_to_remove: continue
-                if set(c_small).issubset(set(c_large)):
-                    wr_l, wr_s = global_valid[c_large]['wr'], global_valid[c_small]['wr']
-                    if wr_s > wr_l: g_combos_to_remove.add(c_large); g_red_combos.add(c_small)
-                    elif wr_l > wr_s: g_combos_to_remove.add(c_small); g_red_combos.add(c_large)
-                    else:
-                        if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < threshold_global: g_combos_to_remove.add(c_small)
+        # Efek grayscale/gelap jika dia adalah hero yang di-banned
+        filter_css = "filter: grayscale(40%) brightness(80%);" if is_ban else ""
+        
+        if img_b64:
+            img_html = f"<img src='data:image/png;base64,{img_b64}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 6px; {filter_css}'>"
+        else:
+            img_html = f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero_name}</div>"
+            
+        return f"""
+        <div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-right: 20px;'>
+            {img_html}
+            <div style='color: white; font-weight: 800; font-size: 16px; font-family: "Montserrat", sans-serif;'>{metric_text}</div>
+        </div>
+        """
 
-        top_global = sorted({k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:2]
+    # 2. RENDER UI 
+    col_meta1, col_meta2 = st.columns([2.5, 1.2]) 
+    
+    with col_meta1:
+        # Kotak Kiri (Picks & Counters) dibungkus flexbox untuk menjajarkan 2 kolom
+        html_kiri = "<div style='background-color: #2a2a35; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex;'>"
         
-        if not top_global:
-            st.info("Belum ada kombinasi tim yang dimainkan minimal 5 kali.")
-        for combo, stats in top_global:
-            w, i, k = ("error", "🌟", "Supreme Meta") if combo in g_red_combos else ("warning", "🔥", "Global Meta")
-            render_combo_card(combo, w, i, f"**{' & '.join(combo)}**\nPick: **{stats['freq']}x** | WR: **{stats['wr']:.0f}%**")
-
+        # Sub-kolom Most Picks (Target)
+        html_kiri += "<div style='flex: 1; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px;'>"
+        html_kiri += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Picks</h4>"
+        for hero, count in top_5_picks.items():
+            html_kiri += render_meta_row(hero, f"{count}x")
+        html_kiri += "</div>"
+        
+        # Sub-kolom Counter Picks (Jawaban / Relasi)
+        html_kiri += "<div style='flex: 1; padding-left: 20px;'>"
+        html_kiri += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Counter Picks</h4>"
+        for data in counter_pick_results:
+            html_kiri += render_meta_row(data['Counter'], f"{data['Pct']:.0f}%")
+        html_kiri += "</div>"
+        
+        html_kiri += "</div>"
+        st.markdown(html_kiri, unsafe_allow_html=True)
+        
+    with col_meta2:
+        # Kotak Kanan (Bans)
+        html_kanan = "<div style='background-color: #2a2a35; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+        html_kanan += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Banned Hero</h4>"
+        for hero, count in top_5_bans.items():
+            html_kanan += render_meta_row(hero, f"{count}x", is_ban=True)
+        html_kanan += "</div>"
+        
+        st.markdown(html_kanan, unsafe_allow_html=True)
+        
     st.markdown("<br>", unsafe_allow_html=True)
     
     # Bagian 3: Epic Matches
