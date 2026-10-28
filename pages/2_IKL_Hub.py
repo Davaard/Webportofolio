@@ -38,7 +38,7 @@ st.markdown("""
     /* 3. KELAS FONT UNTUK RECAP */
     .recap-kill {
         font-family: 'Condiment', system-ui;
-        font-size: 35px;
+        font-size: 30px;
         color: transparent;
         -webkit-text-stroke: 1.5px #ffffff;
     }
