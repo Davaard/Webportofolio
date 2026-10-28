@@ -747,29 +747,29 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 45px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold;'>{tim_b}</span>"
                 bg_b64 = image_to_base64(bg_path)
                 
-                # Container Utama: Gambar dari Canva menjadi base layer
-                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: 100% 100%; background-position: center; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3); aspect-ratio: 1.25/1; position: relative; overflow: hidden;\">"
+                # Container Utama (Background posisi di-lock ke bottom left)
+                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: bottom left; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3); min-height: 220px; position: relative; overflow: hidden;\">"
                 
-                # Overlay Kiri: Logo A diletakkan persis di sebelah kiri logo VS bawaan gambar (Sekitar 15% dari kiri, 15% dari bawah)
-                html += f"<div style='position: absolute; bottom: 15%; left: 15%;'>{html_a}</div>"
+                # Logo A dipaku 15px dari bawah, 20px dari kiri
+                html += f"<div style='position: absolute; bottom: 15px; left: 20px;'>{html_a}</div>"
                 
-                # Overlay Tengah-Kanan: Logo B diletakkan persis di sebelah kanan logo VS bawaan gambar (Sekitar 50% dari kiri)
-                html += f"<div style='position: absolute; bottom: 15%; left: 52%;'>{html_b}</div>"
+                # Logo B dipaku 15px dari bawah, 110px dari kiri (menyisakan ruang 90px untuk logo VS bawaan gambar)
+                html += f"<div style='position: absolute; bottom: 15px; left: 110px;'>{html_b}</div>"
                 
-                # Overlay Kanan Bawah: Teks Metrik dan Match ID didorong ke pojok kanan bawah
-                html += f"<div style='position: absolute; bottom: 12%; right: 8%; text-align: right;'><div class='{font_class}' style='line-height: 1;'>{metric_value}</div>"
+                # Teks Metrik dan Match ID dipaku 15px dari bawah, 20px dari tepi kanan
+                html += f"<div style='position: absolute; bottom: 15px; right: 20px; text-align: right;'><div class='{font_class}' style='line-height: 1;'>{metric_value}</div>"
                 html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif; text-shadow: 1px 1px 3px black;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
                 html += f"</div>"
                 
                 return html
 
             with col_e1:
-                # Perhatikan: Ekstensi harus sesuai dengan file aslimu (sekarang memakai .jpg berdasarkan screenshot)
-                st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.jpg", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
+                # Memastikan ekstensi file kembali menjadi .png sesuai dataset asetmu
+                st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.png", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
             with col_e2:
-                st.markdown(render_epic_card_with_bg(longest, "longest_match_art.jpg", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_with_bg(longest, "longest_match_art.png", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
             with col_e3:
-                st.markdown(render_epic_card_with_bg(fastest, "fastest_match_art.jpg", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_with_bg(fastest, "fastest_match_art.png", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
         else:
             st.info("Data Kill dan Durasi belum mencukupi untuk menampilkan Epic Matches.")
 
@@ -793,9 +793,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 path = os.path.join("assets", "Recap", "logo_background", bg_filename)
                 if os.path.exists(path): return path
             return "assets/Recap/logo_background/roster_placeholder.png"
-            
-        player_avatar_path = "assets/Recap/logo_background/roster_placeholder.png"
-        player_avatar_b64 = image_to_base64(player_avatar_path)
         
         for idx, row in mvp_counts.iterrows():
             player_name = row['Player']
@@ -816,27 +813,27 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                hero_html = "<div style='display: flex; gap: 8px; justify-content: center; position: absolute; bottom: 8%; width: 100%;'>"
+                # Wadah landscape di bawah untuk hero andalan, ukuran hero diperbesar jadi 45px
+                hero_html = "<div style='display: flex; gap: 10px; justify-content: center; padding: 15px 0 10px 0; background-color: #1a1a24; border-top: 1px solid #333;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
-                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 35px; width: 35px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);'>"
+                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 45px; width: 45px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); object-fit: cover;'>"
                 hero_html += "</div>"
             except Exception as e:
                 hero_html = ""
 
             with cols_mvp[idx]:
-                # Container Utama (Portrait)
-                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: 100% 100%; background-position: center; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.72/1; box-shadow: 0 4px 6px rgba(0,0,0,0.3);\">"
+                # Wadah Utama (Menghapus placeholder avatar karena sudah ada di background)
+                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1.5px solid #d4af37; border-radius: 8px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;\">"
                 
                 # Badge MVP di kiri atas
                 html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 2;'>{total_mvp}</div>"
                 
-                # Nama Pemain melayang di area kosong bawah (sekitar 25% dari bawah)
-                html_mvp += f"<div style='position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 20px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); z-index: 2;'>{player_name}</div>"
+                # Nama Pemain (Diletakkan di bagian bawah area potret)
+                html_mvp += f"<div style='margin-top: auto; margin-bottom: 15px; color: white; font-weight: 800; font-size: 22px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 2;'>{player_name}</div>"
                 
-                # Hero melayang di paling bawah (8% dari bawah, dirender dari variabel hero_html)
+                # Hero (Kotak Landscape Bawah)
                 html_mvp += hero_html
-                
                 html_mvp += "</div>"
                 
                 st.markdown(html_mvp, unsafe_allow_html=True)
