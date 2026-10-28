@@ -70,6 +70,33 @@ st.markdown("""
         color: #00d2ff;
         font-weight: 600;
     }
+    
+    /* 4. KUSTOMISASI TOMBOL NAVIGASI MENU (DESAIN CANVA) */
+    div.stButton > button {
+        background-color: transparent !important;
+        border: none !important;
+        color: gray !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease-in-out;
+        opacity: 0.6; /* Tambahkan ini agar menu di kiri/kanan sedikit redup */
+    }
+    div.stButton > button:hover {
+        color: white !important;
+        opacity: 1; /* Menyala saat di-hover */
+    }
+    
+    /* Membuat kelas palsu di Streamlit untuk tombol aktif lewat markdown container */
+    .menu-active {
+        color: white !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+        text-shadow: 0px 0px 15px rgba(0, 0, 255, 0.8), 0px 0px 30px rgba(0, 210, 255, 0.6) !important;
+        border-bottom: 3px solid #00d2ff !important;
+        padding-bottom: 5px !important;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 # =========================================
@@ -121,12 +148,35 @@ with col_season:
 # ==================================================
 
 # region NAVIGASI INTERNAL IKL
-if "menu_ikl" not in st.session_state: st.session_state['menu_ikl'] = "🏆 Klasemen & Playoffs"
-col_nav1, col_nav2, col_nav3 = st.columns(3)
-if col_nav1.button("🏆 Klasemen & Playoffs", use_container_width=True): st.session_state['menu_ikl'] = "🏆 Klasemen & Playoffs"
-if col_nav2.button("🛡️ Team Profiling", use_container_width=True): st.session_state['menu_ikl'] = "🛡️ Team Profiling"
-if col_nav3.button("⚔️ Versus Mode (H2H)", use_container_width=True): st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)"
+if "menu_ikl" not in st.session_state: 
+    st.session_state['menu_ikl'] = "🏆 Klasemen & Playoffs"
+
 menu_utama = st.session_state['menu_ikl']
+
+# Daftar menu yang tersedia
+list_menu = ["🛡️ Team Profiling", "🏆 Klasemen & Playoffs", "⚔️ Versus Mode (H2H)"]
+
+# Logika rotasi: Yang aktif dipaksa ke index 1 (Tengah)
+if menu_utama == "🏆 Klasemen & Playoffs":
+    susunan = ["🛡️ Team Profiling", "🏆 Klasemen & Playoffs", "⚔️ Versus Mode (H2H)"]
+elif menu_utama == "🛡️ Team Profiling":
+    susunan = ["⚔️ Versus Mode (H2H)", "🛡️ Team Profiling", "🏆 Klasemen & Playoffs"]
+else: # Versus Mode
+    susunan = ["🏆 Klasemen & Playoffs", "⚔️ Versus Mode (H2H)", "🛡️ Team Profiling"]
+
+st.markdown("<br>", unsafe_allow_html=True)
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+
+# Render tombol dengan susunan dinamis
+with col_nav1:
+    if st.button(susunan[0], use_container_width=True): st.session_state['menu_ikl'] = susunan[0]; st.rerun()
+with col_nav2:
+    # Menu di tengah selalu diberi penanda khusus (bisa diakali dengan st.markdown untuk glow)
+    st.markdown(f"<div style='text-align: center;'><span class='menu-active'>{susunan[1]}</span></div>", unsafe_allow_html=True)
+with col_nav3:
+    if st.button(susunan[2], use_container_width=True): st.session_state['menu_ikl'] = susunan[2]; st.rerun()
+
+st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 10px; margin-bottom: 30px;'>", unsafe_allow_html=True)
 # endregion
 
 # (Pre-processing Data - Berjalan senyap di latar belakang)
@@ -362,109 +412,138 @@ def render_logo_card(logo_path, team_name):
 # region HALAMAN 1: KLASEMEN, PLAYOFFS & HIGHLIGHTS
 if menu_utama == "🏆 Klasemen & Playoffs":
     
-    # 1. KLASEMEN REGULAR SEASON & OVERVIEW/UPCOMING
-    col_kiri, col_kanan = st.columns([1.5, 1])
-    with col_kiri:
-        st.markdown(f"### 📊 Standings Regular Season")
-        df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
-        if not df_reguler.empty:
-            df_match = df_reguler.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(Game_W=('Win', 'sum'), Game_L=('Win', lambda x: (x == 0).sum())).reset_index()
-            df_match['Match_W'] = np.where(df_match['Game_W'] > df_match['Game_L'], 1, 0)
-            df_match['Match_L'] = np.where(df_match['Game_W'] < df_match['Game_L'], 1, 0)
-            
-            klasemen_baru = df_match.groupby('Team').agg(Match=('Match', 'count'), M_W=('Match_W', 'sum'), M_L=('Match_L', 'sum'), G_W=('Game_W', 'sum'), G_L=('Game_L', 'sum')).reset_index()
-            klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(int).astype(str) + "-" + klasemen_baru['M_L'].astype(int).astype(str)
-            klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(int).astype(str) + "-" + klasemen_baru['G_L'].astype(int).astype(str)
-            klasemen_baru['Net Point'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
-            klasemen_baru['Rank'] = klasemen_baru['Net Point'].rank(method='min', ascending=False).astype(int)
-            
-            # JANGAN gunakan set_index('Rank') agar terhindar dari Error Indeks Kembar
-            df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']]
-            
-            # Kembalikan indeks ke angka normal (0, 1, 2, 3) 
-            df_tampil = df_tampil.reset_index(drop=True)
-            
-            # === LOGIKA PERCABANGAN FORMAT MUSIM (GROUP VS GLOBAL) ===
-            if "2025" in musim_pilihan:
-                st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Double Group Stage</p>", unsafe_allow_html=True)
-                
-                # Kamus Grup Dinamis
-                if musim_pilihan == "Spring 2025":
-                    grup_1_nama = "Group Tyrant"
-                    grup_1_tim = ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS']
-                    grup_2_nama = "Group Overlord"
-                    grup_2_tim = ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
-                else: # Fall 2025
-                    grup_1_nama = "Group Tyrant"
-                    grup_1_tim = ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'] 
-                    grup_2_nama = "Group Overlord"
-                    grup_2_tim = ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
-                
-                # Membelah DataFrame utama menjadi dua
-                df_grup1 = df_tampil[df_tampil['Team'].isin(grup_1_tim)].reset_index(drop=True)
-                df_grup2 = df_tampil[df_tampil['Team'].isin(grup_2_tim)].reset_index(drop=True)
-                
-                # Hitung ulang peringkat (1-5) di dalam masing-masing grup
-                df_grup1['Rank'] = df_grup1['Net Point'].rank(method='min', ascending=False).astype(int)
-                df_grup2['Rank'] = df_grup2['Net Point'].rank(method='min', ascending=False).astype(int)
-                
-                col_g1, col_g2 = st.columns(2)
-                with col_g1:
-                    st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>{grup_1_nama}</h5>", unsafe_allow_html=True)
-                    st.dataframe(df_grup1.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
-                with col_g2:
-                    st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>{grup_2_nama}</h5>", unsafe_allow_html=True)
-                    st.dataframe(df_grup2.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
-                    
-            else:
-                # Format 2026 (Single Global League)
-                st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Format 2026: Single Global League</p>", unsafe_allow_html=True)
-                st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
-            # =========================================================
-        else:
-            st.info("Data Regular Season belum tersedia.")
-
-    with col_kanan:
-        st.markdown(f"### 📋 Overview")
-        tot_tim = df_long['Team'].nunique()
-        tot_match = df_master['Match_ID'].nunique()
-        st.markdown(f"""
-        <div style='background: rgba(0, 180, 255, 0.1); border: 1px solid #00d2ff; padding: 10px; border-radius: 8px; margin-bottom: 15px;'>
-            <b>Tim Peserta:</b> {tot_tim} Tim<br>
-            <b>Total Seri:</b> {tot_match} Matches
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"### 📅 Upcoming Matches")
-        df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
-        if df_jadwal.empty:
-            st.info("Tidak ada jadwal tayang dalam waktu dekat.")
-        else:
-            dict_match = {'Pl St': 'Play-ins', 'Up Sf': 'UB Semifinal', 'Lw Sf': 'LB Semifinal', 'Up Fl': 'UB Final', 'Lw Fl': 'LB Final', 'Gr Fl': 'Grand Final'}
-            st.markdown("<hr style='margin: 0px; border-top: 2px solid #555;'>", unsafe_allow_html=True)
-            for idx, row in df_jadwal.drop_duplicates(subset=['Match_ID']).head(5).iterrows():
-                f_match = dict_match.get(f"{str(row['Week']).strip()} {str(row['Day']).strip()}", f"Week {row['Week']}")
-                waktu = f"{row['Time']}" if pd.notna(row['Time']) and row['Time'] != "" else "TBA"
-                tgl = f"{row['Date']} - {waktu}"
-                
-                tim_a = str(row['Team_(Blue)']) if str(row['Team_(Blue)']) != "nan" else "TBD"
-                tim_b = str(row['Opponent_(Red)']) if str(row['Opponent_(Red)']) != "nan" else "TBD"
-                
-                st.markdown(f"""
-                <div style='font-size: 13.5px; padding: 8px 0px;'>
-                    <div style='color: gray; font-size: 11px; margin-bottom: 2px;'>{tgl} | {f_match}</div>
-                    <div style='display: flex; justify-content: space-between;'>
-                        <div style='width: 45%; text-align: right; font-weight: bold;'>{tim_a}</div>
-                        <div style='width: 10%; text-align: center; color: #00d2ff;'>⚔️</div>
-                        <div style='width: 45%; text-align: left; font-weight: bold;'>{tim_b}</div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                st.markdown("<hr style='margin: 0px; border-top: 1px dashed #444;'>", unsafe_allow_html=True)
-
-    st.markdown("---")
+    # === 1. LEAGUE INFO (LOGO KIRI, TEKS KANAN) ===
+    st.markdown("### Indonesia Kings Laga (IKL)")
     
-    # 2. BRACKET PLAYOFFS
+    col_logo, col_teks = st.columns([1, 3.5])
+    with col_logo:
+        logo_ikl_path = "assets/ikl_gold.png"
+        if os.path.exists(logo_ikl_path):
+            st.markdown(f"""<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                <img src="data:image/png;base64,{image_to_base64(logo_ikl_path)}" style="width: 100%; max-width: 150px; object-fit: contain;">
+            </div>""", unsafe_allow_html=True)
+            
+    with col_teks:
+        total_team = df_master['Team_(Blue)'].dropna().unique().tolist() + df_master['Opponent_(Red)'].dropna().unique().tolist()
+        total_team = len(set(total_team))
+        
+        narasi = f"""
+        <div class="esports-text">
+        Indonesia Kings Laga atau IKL adalah liga esports nasional untuk game Honor of Kings di Indonesia. 
+        IKL pertama kali diadakan pada Tahun 2025, dan berhasil berjalan hingga musim ke-4. <br><br>
+        <span class="highlight-text">{musim_pilihan}</span> diikuti oleh total <span class="highlight-text">{total_team} tim</span>. 
+        Musim ini diadakan dengan dua format, 1. <b>Single Global League (Regular Season)</b> dan 2. <b>Double Elimination Bracket System (Playoffs)</b>, 
+        dengan juara bertahan dari musim sebelumnya yang bersiap mempertahankan tahtanya.
+        </div>
+        """
+        st.markdown(narasi, unsafe_allow_html=True)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    
+    # === 2. UPCOMING MATCH (GRID MENYAMPING) ===
+    st.markdown("### Upcoming Match")
+    
+    df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
+    if df_jadwal.empty:
+         st.markdown("<div style='text-align: center; color: gray; padding: 20px;'><i>Tidak ada jadwal pertandingan mendatang.</i></div>", unsafe_allow_html=True)
+    else:
+         df_up = df_jadwal.drop_duplicates(subset=['Match_ID']).head(4)
+         
+         # Membagi jadi 2 kolom besar (agar 4 match jadi formasi 2x2 seperti di Canva)
+         col_up1, col_up2 = st.columns(2)
+         
+         for idx, row in enumerate(df_up.iterrows()):
+             _, row_data = row
+             tim_biru = str(row_data['Team_(Blue)'])
+             tim_merah = str(row_data['Opponent_(Red)'])
+             logo_biru = get_logo_path(tim_biru) if tim_biru != "nan" else None
+             logo_merah = get_logo_path(tim_merah) if tim_merah != "nan" else None
+             vs_logo = "assets/Match/vs_outline_gold.png" 
+             
+             match_html = f"""
+             <div style="background-color: #1a1a24; border-radius: 8px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #2a2a35;">
+                 <div style="width: 30%; text-align: center;">
+                     <div style="font-size: 11px; color: gray; margin-bottom: 4px;">{row_data['Date']}</div>
+                     <img src="data:image/png;base64,{image_to_base64(logo_biru) if logo_biru else ''}" style="height: 40px; object-fit: contain;">
+                     <div style="font-size: 13px; color: white; margin-top: 4px; font-weight: bold;">{tim_biru if tim_biru != "nan" else "TBD"}</div>
+                 </div>
+                 <div style="width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                     <div style="font-size: 12px; color: #00d2ff; font-weight: bold; margin-bottom: 5px;">{row_data['Time'] if pd.notna(row_data['Time']) else 'TBA'}</div>
+                     <img src="data:image/png;base64,{image_to_base64(vs_logo)}" style="height: 30px;">
+                 </div>
+                 <div style="width: 30%; text-align: center;">
+                     <div style="font-size: 11px; color: gray; margin-bottom: 4px;">&nbsp;</div>
+                     <img src="data:image/png;base64,{image_to_base64(logo_merah) if logo_merah else ''}" style="height: 40px; object-fit: contain;">
+                     <div style="font-size: 13px; color: white; margin-top: 4px; font-weight: bold;">{tim_merah if tim_merah != "nan" else "TBD"}</div>
+                 </div>
+             </div>
+             """
+             # Distribusikan ke kolom kiri dan kanan secara selang-seling
+             if idx % 2 == 0:
+                 with col_up1: st.markdown(match_html, unsafe_allow_html=True)
+             else:
+                 with col_up2: st.markdown(match_html, unsafe_allow_html=True)
+                 
+    st.markdown("<hr style='border-color: #333; margin-top: 30px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+    
+    # === 3. REGULAR SEASON (KLASEMEN) ===
+    st.markdown("### Regular Season")
+    
+    df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
+    
+    if not df_reguler.empty:
+        # Hitung Win/Loss Game
+        df_match = df_reguler.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(Game_W=('Win', 'sum'), Game_L=('Win', lambda x: (x == 0).sum())).reset_index()
+        # Hitung Win/Loss Match (Seri)
+        df_match['Match_W'] = np.where(df_match['Game_W'] > df_match['Game_L'], 1, 0)
+        df_match['Match_L'] = np.where(df_match['Game_W'] < df_match['Game_L'], 1, 0)
+        
+        # Agregasi Total Klasemen
+        klasemen_baru = df_match.groupby('Team').agg(Match=('Match', 'count'), M_W=('Match_W', 'sum'), M_L=('Match_L', 'sum'), G_W=('Game_W', 'sum'), G_L=('Game_L', 'sum')).reset_index()
+        klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(int).astype(str) + "-" + klasemen_baru['M_L'].astype(int).astype(str)
+        klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(int).astype(str) + "-" + klasemen_baru['G_L'].astype(int).astype(str)
+        klasemen_baru['Net Point'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
+        klasemen_baru['Rank'] = klasemen_baru['Net Point'].rank(method='min', ascending=False).astype(int)
+        
+        # Susun kolom yang mau ditampilkan
+        df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']]
+        df_tampil = df_tampil.reset_index(drop=True)
+        
+        # Logika pembagian tabel berdasarkan Musim
+        if "2025" in musim_pilihan:
+            st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Double Group Stage</p>", unsafe_allow_html=True)
+            
+            if musim_pilihan == "Spring 2025":
+                grup_1_nama, grup_1_tim = "Group Tyrant", ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS']
+                grup_2_nama, grup_2_tim = "Group Overlord", ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
+            else: 
+                grup_1_nama, grup_1_tim = "Group Tyrant", ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'] 
+                grup_2_nama, grup_2_tim = "Group Overlord", ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
+            
+            df_grup1 = df_tampil[df_tampil['Team'].isin(grup_1_tim)].reset_index(drop=True)
+            df_grup2 = df_tampil[df_tampil['Team'].isin(grup_2_tim)].reset_index(drop=True)
+            
+            df_grup1['Rank'] = df_grup1['Net Point'].rank(method='min', ascending=False).astype(int)
+            df_grup2['Rank'] = df_grup2['Net Point'].rank(method='min', ascending=False).astype(int)
+            
+            # Khusus 2025, pecah jadi 2 tabel bersampingan
+            col_g1, col_g2 = st.columns(2)
+            with col_g1:
+                st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>{grup_1_nama}</h5>", unsafe_allow_html=True)
+                st.dataframe(df_grup1.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+            with col_g2:
+                st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>{grup_2_nama}</h5>", unsafe_allow_html=True)
+                st.dataframe(df_grup2.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+        else:
+            # Khusus 2026, jadikan 1 tabel penuh memanjang
+            st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Format 2026: Single Global League</p>", unsafe_allow_html=True)
+            st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+    else:
+        st.info("Data Regular Season belum tersedia.")
+
+    st.markdown("<hr style='border-color: #333; margin-top: 30px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+    
+    # 4. BRACKET PLAYOFFS
     st.markdown("### 🏆 Playoff Bracket")
     df_playoff = df_master[df_master['Week'].isin(['Pl', 'Up', 'Lw', 'Gr'])].copy()
     
