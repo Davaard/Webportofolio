@@ -716,7 +716,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
             
         with col_b4:
-            st.markdown("<div style='height: 80px;'></div>", unsafe_allow_html=True) # Memposisikan Grand Final di tengah
+            st.markdown("<div style='height: 90px;'></div>", unsafe_allow_html=True) # Memposisikan Grand Final di tengah
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final")
 
     st.markdown("---")
