@@ -747,30 +747,29 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 45px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold;'>{tim_b}</span>"
                 bg_b64 = image_to_base64(bg_path)
                 
-                # HTML dirangkai murni tanpa indentasi tab
-                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3);\">"
-                # Container padding top besar agar menyisakan ruang untuk gambar desain di atas
-                html += f"<div style=\"background-color: transparent; padding: 130px 20px 20px 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end;\">"
+                # Container Utama: Gambar dari Canva menjadi base layer
+                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: 100% 100%; background-position: center; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3); aspect-ratio: 1.25/1; position: relative; overflow: hidden;\">"
                 
-                # Flex Container untuk melempar Logo ke Kiri dan Teks ke Kanan
-                html += f"<div style='display: flex; justify-content: space-between; align-items: flex-end;'>"
+                # Overlay Kiri: Logo A diletakkan persis di sebelah kiri logo VS bawaan gambar (Sekitar 15% dari kiri, 15% dari bawah)
+                html += f"<div style='position: absolute; bottom: 15%; left: 15%;'>{html_a}</div>"
                 
-                # Sisi Kiri: Logo A - Ruang kosong 30px (untuk VS bawaan gambarmu) - Logo B
-                html += f"<div style='display: flex; align-items: center; gap: 5px;'>{html_a}<div style='width: 30px;'></div>{html_b}</div>"
+                # Overlay Tengah-Kanan: Logo B diletakkan persis di sebelah kanan logo VS bawaan gambar (Sekitar 50% dari kiri)
+                html += f"<div style='position: absolute; bottom: 15%; left: 52%;'>{html_b}</div>"
                 
-                # Sisi Kanan: Metric dan Match ID rata kanan
-                html += f"<div style='text-align: right;'><div class='{font_class}'>{metric_value}</div>"
+                # Overlay Kanan Bawah: Teks Metrik dan Match ID didorong ke pojok kanan bawah
+                html += f"<div style='position: absolute; bottom: 12%; right: 8%; text-align: right;'><div class='{font_class}' style='line-height: 1;'>{metric_value}</div>"
                 html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif; text-shadow: 1px 1px 3px black;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
-                html += f"</div></div></div>"
+                html += f"</div>"
                 
                 return html
 
             with col_e1:
-                st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.png", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
+                # Perhatikan: Ekstensi harus sesuai dengan file aslimu (sekarang memakai .jpg berdasarkan screenshot)
+                st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.jpg", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
             with col_e2:
-                st.markdown(render_epic_card_with_bg(longest, "longest_match_art.png", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_with_bg(longest, "longest_match_art.jpg", longest['Duration_min'], "recap-time"), unsafe_allow_html=True)
             with col_e3:
-                st.markdown(render_epic_card_with_bg(fastest, "fastest_match_art.png", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
+                st.markdown(render_epic_card_with_bg(fastest, "fastest_match_art.jpg", fastest['Duration_min'], "recap-time"), unsafe_allow_html=True)
         else:
             st.info("Data Kill dan Durasi belum mencukupi untuk menampilkan Epic Matches.")
 
@@ -817,30 +816,27 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                # Wadah landscape di bawah untuk hero andalan
-                hero_html = "<div style='display: flex; gap: 5px; justify-content: center; padding: 10px; background-color: #1a1a24; border: 1px solid #333; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;'>"
+                hero_html = "<div style='display: flex; gap: 8px; justify-content: center; position: absolute; bottom: 8%; width: 100%;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
-                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 35px; width: 35px; border-radius: 4px;'>"
+                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 35px; width: 35px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);'>"
                 hero_html += "</div>"
             except Exception as e:
                 hero_html = ""
 
             with cols_mvp[idx]:
-                # Wadah Utama: Memisahkan bagian atas (Portrait Player) dan bagian bawah (Landscape Heroes)
-                html_mvp = f"<div style='margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);'>"
+                # Container Utama (Portrait)
+                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: 100% 100%; background-position: center; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.72/1; box-shadow: 0 4px 6px rgba(0,0,0,0.3);\">"
                 
-                # Wadah Portrait Player (Atas)
-                html_mvp += f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1px solid #333; border-top-left-radius: 8px; border-top-right-radius: 8px; position: relative; text-align: center; overflow: hidden; min-height: 200px;\">"
+                # Badge MVP di kiri atas
+                html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 2;'>{total_mvp}</div>"
                 
-                # Overlay gelap agar teks/player menonjol
-                html_mvp += f"<div style=\"background-color: rgba(0,0,0,0.65); padding: 20px; height: 100%; box-sizing: border-box;\">"
-                html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px;'>{total_mvp}</div>"
-                html_mvp += f"<div style='margin-top: 20px; display: flex; justify-content: center;'><img src='data:image/png;base64,{player_avatar_b64}' style='height: 100px; object-fit: contain;'></div>"
-                html_mvp += f"<div style='color: white; font-weight: 800; font-size: 20px; margin-top: 10px;'>{player_name}</div></div></div>"
+                # Nama Pemain melayang di area kosong bawah (sekitar 25% dari bawah)
+                html_mvp += f"<div style='position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 20px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); z-index: 2;'>{player_name}</div>"
                 
-                # Gabungkan dengan wadah hero (Bawah)
+                # Hero melayang di paling bawah (8% dari bawah, dirender dari variabel hero_html)
                 html_mvp += hero_html
+                
                 html_mvp += "</div>"
                 
                 st.markdown(html_mvp, unsafe_allow_html=True)
