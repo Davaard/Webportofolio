@@ -40,7 +40,7 @@ st.markdown("""
         font-family: 'Condiment', system-ui;
         font-size: 35px;
         color: transparent;
-        -webkit-text-stroke: 1.5px #ffffff;
+        -webkit-text-stroke: 1px #ffffff;
         margin-bottom: -10px;
     }
     .recap-time {
