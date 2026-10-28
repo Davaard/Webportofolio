@@ -1184,7 +1184,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
     # ==========================================
     st.markdown("### 🌍 Most Favorite Heroes Combos")
-    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi meta global dengan prioritas sinergi 3+ hero berdasarkan rasio kelengketan (>25%).</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi meta global berdasarkan rasio keterikatan taktik (persentase) dan keragaman tim yang menggunakannya.</div>", unsafe_allow_html=True)
     
     if not df_history.empty:
         import itertools
@@ -1195,7 +1195,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         global_wins = {}
         combo_matches = {}
         
-        # 1. MESIN EKSTRAKSI FREKUENSI HERO INDIVIDU (Untuk Baseline Kelengketan)
+        # 1. MESIN EKSTRAKSI FREKUENSI HERO INDIVIDU
         for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
             b_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
             r_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
@@ -1224,7 +1224,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             process_draft(r_draft, str(row['Opponent_(Red)']), r_win)
 
         # 3. PENYARINGAN KELENGKETAN META (>25%) & MINIMAL PICK
-        threshold_global = 3 # Syarat minimal dimainkan 3x agar tidak bias
+        threshold_global = 3 
         global_valid = {}
         
         for combo, f in global_freq.items():
@@ -1249,7 +1249,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 if f >= 2 and combo not in global_valid:
                     global_valid[combo] = {'freq': f, 'wr': (global_wins[combo]/f)*100, 'rasio': 0, 'unique_teams': len(set(combo_matches[combo]))}
 
-        # 4. ELIMINASI SUBSET TINGKAT LANJUT (Melindungi Kombo Panjang)
+        # 4. ELIMINASI SUBSET CERDAS & PENENTUAN SUPREME META
         g_combos_to_remove, g_red_combos = set(), set()
         sorted_g_combos = sorted(list(global_valid.keys()), key=len, reverse=True)
         
@@ -1270,23 +1270,18 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 if c_small in g_combos_to_remove: continue
                 
                 if set(c_small).issubset(set(c_large)):
-                    wr_l, wr_s = global_valid[c_large]['wr'], global_valid[c_small]['wr']
-                    freq_l, freq_s = global_valid[c_large]['freq'], global_valid[c_small]['freq']
+                    freq_l = global_valid[c_large]['freq']
+                    freq_s = global_valid[c_small]['freq']
                     
-                    # Duo HANYA bisa membunuh Trio jika dimainkan jauh lebih sering (selisih >= 3) dan WR lebih tinggi
-                    if wr_s > wr_l and (freq_s - freq_l) >= 3: 
-                        g_combos_to_remove.add(c_large)
-                        g_red_combos.add(c_small)
-                    else:
-                        # Jika tidak memenuhi syarat ekstrem itu, kombo besar memakan kombo kecil
+                    # Logika Cerdas: Jika Duo cuma numpang di Trio (frekuensi mirip), HAPUS Duo-nya!
+                    # Tapi jika Duo punya nyawa sendiri (sering dipakai tanpa Trio), biarkan HIDUP!
+                    if (freq_s - freq_l) < 2: 
                         g_combos_to_remove.add(c_small)
-                        if wr_l > wr_s:
-                            g_red_combos.add(c_large)
 
-        # 5. SORTING PRIORITAS PANJANG (Length -> Unique Teams -> WR -> Freq)
+        # 5. SORTING PRIORITAS RASIO (Rasio -> Unique Teams -> WR -> Length)
         top_10_combos = sorted(
             {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
-            key=lambda x: (len(x[0]), x[1]['unique_teams'], x[1]['wr'], x[1]['freq']), 
+            key=lambda x: (x[1]['rasio'], x[1]['unique_teams'], x[1]['wr'], len(x[0])), 
             reverse=True
         )[:10]
         
