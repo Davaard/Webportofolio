@@ -19,6 +19,12 @@ st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_st
 # === SIHIR CSS: STICKY HEADER SEMPURNA ===
 st.markdown("""
     <style>
+    /* =========================================
+       1. IMPORT FONTS DARI GOOGLE FONTS (WAJIB PALING ATAS!)
+       ========================================= */
+    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
+
+    /* 2. Target spesifik HANYA untuk kontainer paling atas di halaman utama */
     .main .block-container > div:first-child {
         position: sticky;
         top: 2.875rem; 
@@ -29,27 +35,28 @@ st.markdown("""
         border-bottom: 1px solid rgba(255,255,255,0.1); 
     }
     
-    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
-
+    /* 3. KELAS FONT UNTUK RECAP */
     .recap-kill {
         font-family: 'Akronim', system-ui;
-        font-size: 55px;
+        font-size: 40px;
         color: transparent;
         -webkit-text-stroke: 1.5px #ff4b4b;
         margin-bottom: -10px;
     }
     .recap-time {
         font-family: 'Londrina Shadow', display;
-        font-size: 45px;
+        font-size: 35px;
         color: #4caf50; 
     }
-    .recap-match-id {
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 700;
-        font-size: 35px;
-        color: transparent;
-        -webkit-text-stroke: 1px #ffc107;
-        letter-spacing: 2px;
+    
+    .main .block-container > div:first-child {
+        position: sticky;
+        top: 2.875rem; 
+        z-index: 999;
+        background-color: #0e1117; 
+        padding-top: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1); 
     }
     
     .esports-title {
@@ -59,6 +66,7 @@ st.markdown("""
         font-size: 24px;
         margin-bottom: 5px;
     }
+
     .esports-text {
         font-family: 'Montserrat', sans-serif;
         font-weight: 400;
@@ -67,6 +75,7 @@ st.markdown("""
         line-height: 1.6;
         text-align: justify;
     }
+
     .highlight-text {
         color: #00d2ff;
         font-weight: 600;
