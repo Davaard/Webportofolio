@@ -37,7 +37,7 @@ st.markdown("""
     
     /* 3. KELAS FONT UNTUK RECAP */
     .recap-kill {
-        font-family: 'Ewert'
+        font-family: 'Ewert', system-ui;
         font-size: 40px;
         color: transparent;
         -webkit-text-stroke: 1.5px #ff4b4b;
