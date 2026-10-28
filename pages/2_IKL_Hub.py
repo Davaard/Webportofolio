@@ -816,7 +816,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
+                hero_html = "<div style='position: absolute; bottom: 6%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
                     if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 42px; width: 42px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover;'>"
@@ -833,7 +833,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html_mvp += f"<div style='position: absolute; top: 3%; left: 3%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
                 
                 # Siluet Player Placeholder di tengah atas
-                html_mvp += f"<div style='position: absolute; top: 18%; width: 150%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
+                html_mvp += f"<div style='position: absolute; top: 18%; width: 100%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
                 
                 # Nama Pemain di atas area hero
                 html_mvp += f"<div style='position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
