@@ -1184,7 +1184,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
     # ==========================================
     st.markdown("### 🌍 Most Favorite Heroes Combos")
-    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi global meta berdasarkan keragaman tim yang menggunakannya dan rasio kelengketan taktik (>25%).</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi meta global dengan prioritas sinergi 3+ hero berdasarkan rasio kelengketan (>25%).</div>", unsafe_allow_html=True)
     
     if not df_history.empty:
         import itertools
@@ -1229,7 +1229,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         
         for combo, f in global_freq.items():
             if f >= threshold_global:
-                # Kalkulasi Rasio Kelengketan sama persis seperti di Team Profile!
                 if len(combo) == 2:
                     g_base = min([hero_freq.get(h, 1) for h in combo])
                 else:
@@ -1237,22 +1236,20 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 
                 rasio = (f / g_base * 100) if g_base > 0 else 0
                 
-                # Hanya memasukkan kombo dengan rasio > 25% (Tervalidasi sebagai Global Meta)
                 if rasio > 25.0:
                     global_valid[combo] = {
                         'freq': f, 
                         'wr': (global_wins[combo]/f)*100,
                         'rasio': rasio,
-                        'unique_teams': len(set(combo_matches[combo])) # Menghitung keberagaman tim
+                        'unique_teams': len(set(combo_matches[combo])) 
                     }
                     
-        # Fallback jika ternyata data awal liga sangat sedikit
         if len(global_valid) < 10:
             for combo, f in global_freq.items():
                 if f >= 2 and combo not in global_valid:
                     global_valid[combo] = {'freq': f, 'wr': (global_wins[combo]/f)*100, 'rasio': 0, 'unique_teams': len(set(combo_matches[combo]))}
 
-        # 4. ELIMINASI SUBSET & PENENTUAN SUPREME META
+        # 4. ELIMINASI SUBSET TINGKAT LANJUT (Melindungi Kombo Panjang)
         g_combos_to_remove, g_red_combos = set(), set()
         sorted_g_combos = sorted(list(global_valid.keys()), key=len, reverse=True)
         
@@ -1260,7 +1257,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             c_large = sorted_g_combos[i]
             if c_large in g_combos_to_remove: continue
             
-            # Cek apakah kombo ini Supreme Meta (WR kombo ini > WR Subset-nya)
             wr_large = global_valid[c_large]['wr']
             if len(c_large) == 2:
                 max_trio_wr = max([0] + [(global_wins[gc]/global_freq[gc])*100 for gc in global_freq if len(gc)==3 and set(c_large).issubset(set(gc))])
@@ -1275,20 +1271,22 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 
                 if set(c_small).issubset(set(c_large)):
                     wr_l, wr_s = global_valid[c_large]['wr'], global_valid[c_small]['wr']
-                    if wr_s > wr_l: 
+                    freq_l, freq_s = global_valid[c_large]['freq'], global_valid[c_small]['freq']
+                    
+                    # Duo HANYA bisa membunuh Trio jika dimainkan jauh lebih sering (selisih >= 3) dan WR lebih tinggi
+                    if wr_s > wr_l and (freq_s - freq_l) >= 3: 
                         g_combos_to_remove.add(c_large)
                         g_red_combos.add(c_small)
-                    elif wr_l > wr_s: 
-                        g_combos_to_remove.add(c_small)
-                        g_red_combos.add(c_large)
                     else:
-                        if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < 3: 
-                            g_combos_to_remove.add(c_small)
+                        # Jika tidak memenuhi syarat ekstrem itu, kombo besar memakan kombo kecil
+                        g_combos_to_remove.add(c_small)
+                        if wr_l > wr_s:
+                            g_red_combos.add(c_large)
 
-        # 5. SORTING BERDASARKAN KEBERAGAMAN TIM (Unique Teams -> Length -> WR -> Freq)
+        # 5. SORTING PRIORITAS PANJANG (Length -> Unique Teams -> WR -> Freq)
         top_10_combos = sorted(
             {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
-            key=lambda x: (x[1]['unique_teams'], len(x[0]), x[1]['wr'], x[1]['freq']), 
+            key=lambda x: (len(x[0]), x[1]['unique_teams'], x[1]['wr'], x[1]['freq']), 
             reverse=True
         )[:10]
         
@@ -1301,7 +1299,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 combo_name = " & ".join(combo_tuple)
                 
                 is_supreme = combo_tuple in g_red_combos
-                border_color = "#ff4b4b" if is_supreme else "#ffc107" # Merah untuk Supreme, Kuning untuk Global
+                border_color = "#ff4b4b" if is_supreme else "#ffc107"
                 icon_meta = "🌟" if is_supreme else "🔥"
                 label_meta = "Supreme Meta" if is_supreme else "Global Meta"
                 teks_rasio = f" ({stats['rasio']:.0f}%)" if stats['rasio'] > 0 else ""
