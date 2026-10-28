@@ -1483,7 +1483,15 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             <td style='color: #a0a0a0;'>{tgl}</td>
             <td style='font-weight: 700; color: #d1d1d1; letter-spacing: 1px;'>{mid}</td>
             <td>{vs_col}</td>
-            <td style='
+            <td style='color: #a0a0a0;'>{durasi}</td>
+            <td style='font-weight: 800; color: white;'>{mvp}</td>
+        </tr>
+        """
+        
+    html_history += "</tbody></table>"
+    
+    st.markdown(html_history, unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
 
 # endregion
 
