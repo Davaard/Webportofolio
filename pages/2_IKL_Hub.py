@@ -738,38 +738,25 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             fastest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).replace(0, np.nan).idxmin()]
             
             def render_epic_card_with_bg(row_data, bg_filename, metric_value, font_class):
-                # Membaca data tim
                 tim_a, tim_b = str(row_data['Team_(Blue)']), str(row_data['Opponent_(Red)'])
                 logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
                 logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
                 vs_logo = "assets/Match/vs_outline_gold.png"
                 bg_path = f"assets/Recap/{bg_filename}"
                 
-                # Tag gambar atau placeholder teks
                 html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 45px; object-fit: contain;'>" if logo_a else f"<span style='color: white; font-weight: bold;'>{tim_a}</span>"
                 html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 45px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold;'>{tim_b}</span>"
                 bg_b64 = image_to_base64(bg_path)
                 
-                # HTML Card yang menyatukan background image dengan data
-                html = f"""
-                <div style="background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border-radius: 12px; padding: 20px; min-height: 180px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: flex-end;">
-                    
-                    <div style='display: flex; justify-content: space-between; align-items: flex-end;'>
-                        <div style='display: flex; align-items: center; gap: 10px;'>
-                            {html_a}
-                            <img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 25px;'>
-                            {html_b}
-                        </div>
-                        <div style='text-align: right;'>
-                            <div class="{font_class}">{metric_value}</div>
-                            <div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div>
-                        </div>
-                    </div>
-                </div>
-                """
+                # HTML dirangkai murni tanpa indentasi tab agar tidak terbaca sebagai Code Block
+                html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3);\">"
+                html += f"<div style=\"background-color: transparent; padding: 130px 20px 20px 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end;\">"
+                html += f"<div style='display: flex; justify-content: space-between; align-items: flex-end;'>"
+                html += f"<div style='display: flex; align-items: center; gap: 10px;'>{html_a}<img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 25px;'>{html_b}</div>"
+                html += f"<div style='text-align: right;'><div class='{font_class}'>{metric_value}</div>"
+                html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif; text-shadow: 1px 1px 3px black;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div></div></div></div>"
                 return html
 
-            # Merender kartu ke masing-masing kolom dengan aset gambar spesifik
             with col_e1:
                 st.markdown(render_epic_card_with_bg(bloodiest, "bloodbath_art.png", f"{int(bloodiest['Total_Kills'])} KILL", "recap-kill"), unsafe_allow_html=True)
             with col_e2:
@@ -790,81 +777,55 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     if not mvp_counts.empty:
         cols_mvp = st.columns(4)
         
-        # Fungsi pembantu untuk memodifikasi nama file logo menjadi versi "_bg"
         def get_team_bg_path(team_name):
             if team_name in TEAM_LOGO_MAP:
                 filename = str(TEAM_LOGO_MAP[team_name])
-                # Menyisipkan "_bg" sebelum .png atau .jpg
-                if filename.endswith(".png"):
-                    bg_filename = filename.replace(".png", "_bg.png")
-                elif filename.endswith(".jpg"):
-                    bg_filename = filename.replace(".jpg", "_bg.jpg")
-                else:
-                    bg_filename = filename
-                
+                if filename.endswith(".png"): bg_filename = filename.replace(".png", "_bg.png")
+                elif filename.endswith(".jpg"): bg_filename = filename.replace(".jpg", "_bg.jpg")
+                else: bg_filename = filename
                 path = os.path.join("assets", "Recap", "logo_background", bg_filename)
-                if os.path.exists(path):
-                    return path
-            # Fallback jika tidak ditemukan
+                if os.path.exists(path): return path
             return "assets/Recap/logo_background/roster_placeholder.png"
             
-        # Siluet 3D ungu untuk pemain
         player_avatar_path = "assets/Recap/logo_background/roster_placeholder.png"
         player_avatar_b64 = image_to_base64(player_avatar_path)
         
         for idx, row in mvp_counts.iterrows():
             player_name = row['Player']
             total_mvp = row['Total MVP']
-            
-            # Mencari tim dari pemain ini dengan melihat pertandingan di mana ia menjadi MVP
             tim_pemain = df_history[df_history['MVP'] == player_name].iloc[0]['Team_(Blue)']
             bg_path = get_team_bg_path(tim_pemain)
             bg_b64 = image_to_base64(bg_path)
             
-            # Mencari 3 hero andalan yang sering ia gunakan (opsional)
             hero_html = ""
             try:
-                # Kumpulkan semua hero yang dimainkan oleh pemain ini saat dia MVP
                 df_player_mvp = df_history[df_history['MVP'] == player_name]
                 heroes_list = []
                 for _, p_row in df_player_mvp.iterrows():
-                    # Memeriksa apakah dia di tim biru atau merah
-                    if p_row['Team_(Blue)'] == tim_pemain:
-                        h_pick = aman_split(p_row['Heroes_Picked'])
-                    else:
-                        h_pick = aman_split(p_row['Opponent_Picked'])
+                    if p_row['Team_(Blue)'] == tim_pemain: h_pick = aman_split(p_row['Heroes_Picked'])
+                    else: h_pick = aman_split(p_row['Opponent_Picked'])
                     heroes_list.extend(h_pick)
                 
-                # Hitung frekuensi dan ambil 3 teratas
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                # Rangkai HTML untuk 3 hero kecil di bawah
                 hero_html = "<div style='display: flex; gap: 5px; justify-content: center; margin-top: 15px;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
-                    if h_path:
-                        hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 30px; width: 30px; border-radius: 4px; border: 1px solid #555;'>"
+                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 30px; width: 30px; border-radius: 4px; border: 1px solid #555;'>"
                 hero_html += "</div>"
             except Exception as e:
-                hero_html = "" # Abaikan jika gagal memproses hero
+                hero_html = ""
 
             with cols_mvp[idx]:
-                html_mvp = f"""
-                <div style="background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1px solid #333; border-radius: 8px; padding: 20px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px;">
-                    <div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px;'>{total_mvp}</div>
-                    
-                    <div style='margin-top: 20px; display: flex; justify-content: center;'>
-                        <img src='data:image/png;base64,{player_avatar_b64}' style='height: 100px; object-fit: contain;'>
-                    </div>
-                    
-                    <div style='color: white; font-weight: 800; font-size: 20px; margin-top: 10px;'>{player_name}</div>
-                    {hero_html}
-                </div>
-                """
+                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1px solid #333; border-radius: 8px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px;\">"
+                html_mvp += f"<div style=\"background-color: rgba(0,0,0,0.6); padding: 20px; border-radius: 8px;\">"
+                html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px;'>{total_mvp}</div>"
+                html_mvp += f"<div style='margin-top: 20px; display: flex; justify-content: center;'><img src='data:image/png;base64,{player_avatar_b64}' style='height: 100px; object-fit: contain;'></div>"
+                html_mvp += f"<div style='color: white; font-weight: 800; font-size: 20px; margin-top: 10px;'>{player_name}</div>{hero_html}</div></div>"
                 st.markdown(html_mvp, unsafe_allow_html=True)
                 
-    st.markdown("<br>", unsafe_allow_html=True)   
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # Bagian 2: Meta & Draft
     st.markdown("#### 🦸 Meta & Draft")
