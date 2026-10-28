@@ -787,11 +787,12 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # --- B. MVP OF THE SEASON ---
     st.markdown("#### 🎖️ MVP of The Season")
     
+    # Mengambil top 5 MVP sesuai modifikasimu
     mvp_counts = df_history['MVP'].dropna().value_counts().head(5).reset_index()
     mvp_counts.columns = ['Player', 'Total MVP']
     
     if not mvp_counts.empty:
-        cols_mvp = st.columns(5)
+        cols_mvp = st.columns(5) # Modifikasi 5 kolom
         
         def get_team_bg_path(team_name):
             if team_name in TEAM_LOGO_MAP:
@@ -809,7 +810,18 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         for idx, row in mvp_counts.iterrows():
             player_name = row['Player']
             total_mvp = row['Total MVP']
-            tim_pemain = df_history[df_history['MVP'] == player_name].iloc[0]['Team_(Blue)']
+            
+            # --- PERBAIKAN LOGIKA TIM MVP ---
+            # Mencari tim pemain berdasarkan pertandingan di mana dia jadi MVP DAN timnya menang
+            tim_pemain_df = df_long[(df_long['MVP'] == player_name) & (df_long['Win'] == 1)]
+            if not tim_pemain_df.empty:
+                # Ambil tim yang paling sering muncul (berjaga-jaga jika ada salah input data)
+                tim_pemain = tim_pemain_df['Team'].mode()[0]
+            else:
+                # Fallback jika kebetulan MVP dari tim kalah
+                tim_pemain = df_long[df_long['MVP'] == player_name]['Team'].mode()[0]
+            # ---------------------------------
+            
             bg_path = get_team_bg_path(tim_pemain)
             bg_b64 = image_to_base64(bg_path)
             
@@ -818,6 +830,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 df_player_mvp = df_history[df_history['MVP'] == player_name]
                 heroes_list = []
                 for _, p_row in df_player_mvp.iterrows():
+                    # Ekstraksi hero juga otomatis benar karena tim_pemain sudah akurat
                     if p_row['Team_(Blue)'] == tim_pemain: h_pick = aman_split(p_row['Heroes_Picked'])
                     else: h_pick = aman_split(p_row['Opponent_Picked'])
                     heroes_list.extend(h_pick)
@@ -825,7 +838,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                hero_html = "<div style='position: absolute; bottom: 6%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
+                hero_html = "<div style='position: absolute; bottom: 4%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
                     if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 42px; width: 42px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover;'>"
@@ -834,20 +847,18 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 hero_html = ""
 
             with cols_mvp[idx]:
-                # Kartu MVP menggunakan gambar utuh (full <img>) agar rasionya tidak gepeng
                 html_mvp = f"<div style='position: relative; width: 100%; margin-bottom: 20px;'>"
                 html_mvp += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
-                # Badge Total MVP di kiri atas
+                # Badge sesuai koordinatmu
                 html_mvp += f"<div style='position: absolute; top: 3%; left: 3%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
                 
-                # Siluet Player Placeholder di tengah atas
+                # Placeholder merentang penuh di 75% area atas
                 html_mvp += f"<div style='position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 100%; height: 100%; object-fit: cover; opacity: 0.9;'></div>"
                 
-                # Nama Pemain di atas area hero
+                # Nama Pemain sesuai koordinatmu
                 html_mvp += f"<div style='position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
                 
-                # Baris 3 Hero di bagian paling bawah kartu
                 html_mvp += hero_html
                 html_mvp += f"</div>"
                 
