@@ -8,10 +8,67 @@ import plotly.graph_objects as go
 from itertools import combinations
 import base64
 
+# region UI HELPERS
+@st.cache_data
+def get_dynamic_logo_map(season):
+    if os.path.exists("IKL_Rosters.csv"):
+        df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
+        
+        # 1. Ambil logo fallback/global
+        df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
+        map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
+        
+        # 2. Ambil logo SPESIFIK untuk musim yang sedang dibuka pengguna
+        df_season = df_ros[df_ros['Season'] == season].drop_duplicates(subset=['Team'])
+        map_season = dict(zip(df_season['Team'], df_season['Logo_File']))
+        
+        # 3. Timpa logo global dengan logo spesifik musim tersebut
+        map_global.update(map_season)
+        return map_global
+    return {}
+
+TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
+
+def get_logo_path(team_name):
+    if team_name in TEAM_LOGO_MAP:
+        path = os.path.join("assets", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
+        if os.path.exists(path): return path
+    return None
+
+def get_hero_path(hero_name):
+    safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
+    for ext in ['.png', '.jpg', '.jpeg']:
+        if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
+    return None
+
+def render_combo_card(combo_tuple, warna, ikon, teks):
+    tema = {
+        "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
+        "warning": {"bg": "rgba(255, 190, 0, 0.15)", "border": "rgba(255, 190, 0, 1)"},
+        "success": {"bg": "rgba(9, 171, 59, 0.15)", "border": "rgba(9, 171, 59, 1)"}
+    }
+    bg, brdr = tema[warna]["bg"], tema[warna]["border"]
+    img_html = "<div style='display: flex; gap: 2%; margin-bottom: 12px;'>"
+    for i in range(5):
+        if i < len(combo_tuple):
+            p = get_hero_path(combo_tuple[i])
+            img_html += f"<img src='data:image/png;base64,{image_to_base64(p)}' style='width: 18.4%; border-radius: 8px; box-shadow: 1px 2px 5px rgba(0,0,0,0.3); aspect-ratio: 1/1;'>" if p else f"<div style='width: 18.4%; background: #444; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center; aspect-ratio: 1/1;'>{combo_tuple[i]}</div>"
+        else: img_html += "<div style='width: 18.4%; aspect-ratio: 1/1;'></div>"
+    img_html += "</div>"
+    st.markdown(f"<div style='background: {bg}; border-left: 5px solid {brdr}; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>{img_html}<div style='font-size: 14.5px; line-height: 1.5;'><b>{ikon}</b> {teks.replace(chr(10), '<br>')}</div></div>", unsafe_allow_html=True)
+
+def render_logo_card(logo_path, team_name):
+    if logo_path and os.path.exists(logo_path):
+        st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'><img src='data:image/png;base64,{image_to_base64(logo_path)}' style='max-width: 100%; max-height: 100%;'></div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px;'><span style='color: gray; font-weight: bold; font-size: 20px;'>{team_name}</span></div>", unsafe_allow_html=True)
+
 def image_to_base64(img_path):
     if img_path and os.path.exists(img_path):
         with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
+
+# endregion
 
 st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -204,15 +261,21 @@ nav_bg_base64 = image_to_base64(nav_bg_path) if os.path.exists(nav_bg_path) else
 with col_nav1:
     if st.button(susunan[0], use_container_width=True): st.session_state['menu_ikl'] = susunan[0]; st.rerun()
 with col_nav2:
+    # Trik CSS Absolute: Memaksa background melebar 200% menembus batas kolom
     html_nav_active = f"""
-    <div style="background-image: url('data:image/png;base64,{nav_bg_base64}'); 
-                background-size: 100% 100%; 
-                background-repeat: no-repeat; 
-                background-position: center; 
-                text-align: center; 
-                padding: 12px 0; 
-                margin-top: -5px;">
-        <span style="color: white; font-weight: 800; font-size: 18px;">{susunan[1]}</span>
+    <div style="position: relative; margin-top: -5px; padding: 12px 0; text-align: center;">
+        <!-- Layer Background -->
+        <div style="position: absolute; top: 0; left: -50%; width: 200%; height: 100%; 
+                    background-image: url('data:image/png;base64,{nav_bg_base64}'); 
+                    background-size: 100% 100%; 
+                    background-repeat: no-repeat; 
+                    background-position: center; 
+                    z-index: 0;">
+        </div>
+        <!-- Layer Teks -->
+        <span style="position: relative; z-index: 1; color: white; font-weight: 800; font-size: 18px;">
+            {susunan[1]}
+        </span>
     </div>
     """
     st.markdown(html_nav_active, unsafe_allow_html=True)
@@ -388,62 +451,6 @@ def get_signature_combos(tim_target):
             w, i, s = "success", "🌿", "Team Signature Pick"
         hasil_ui.append({"warna": w, "ikon": i, "teks": f"**{', '.join(combo[:-1])} & {combo[-1]}**\n\n🎯 Pick: **{stats['freq']}x** | WR: **{stats['wr']:.0f}%**\n📊 **{s}**", "combo": combo})
     return hasil_ui
-# endregion
-
-# region UI HELPERS
-@st.cache_data
-def get_dynamic_logo_map(season):
-    if os.path.exists("IKL_Rosters.csv"):
-        df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
-        
-        # 1. Ambil logo fallback/global
-        df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
-        map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
-        
-        # 2. Ambil logo SPESIFIK untuk musim yang sedang dibuka pengguna
-        df_season = df_ros[df_ros['Season'] == season].drop_duplicates(subset=['Team'])
-        map_season = dict(zip(df_season['Team'], df_season['Logo_File']))
-        
-        # 3. Timpa logo global dengan logo spesifik musim tersebut
-        map_global.update(map_season)
-        return map_global
-    return {}
-
-TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
-
-def get_logo_path(team_name):
-    if team_name in TEAM_LOGO_MAP:
-        path = os.path.join("assets", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
-        if os.path.exists(path): return path
-    return None
-
-def get_hero_path(hero_name):
-    safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
-    for ext in ['.png', '.jpg', '.jpeg']:
-        if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
-    return None
-
-def render_combo_card(combo_tuple, warna, ikon, teks):
-    tema = {
-        "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
-        "warning": {"bg": "rgba(255, 190, 0, 0.15)", "border": "rgba(255, 190, 0, 1)"},
-        "success": {"bg": "rgba(9, 171, 59, 0.15)", "border": "rgba(9, 171, 59, 1)"}
-    }
-    bg, brdr = tema[warna]["bg"], tema[warna]["border"]
-    img_html = "<div style='display: flex; gap: 2%; margin-bottom: 12px;'>"
-    for i in range(5):
-        if i < len(combo_tuple):
-            p = get_hero_path(combo_tuple[i])
-            img_html += f"<img src='data:image/png;base64,{image_to_base64(p)}' style='width: 18.4%; border-radius: 8px; box-shadow: 1px 2px 5px rgba(0,0,0,0.3); aspect-ratio: 1/1;'>" if p else f"<div style='width: 18.4%; background: #444; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center; aspect-ratio: 1/1;'>{combo_tuple[i]}</div>"
-        else: img_html += "<div style='width: 18.4%; aspect-ratio: 1/1;'></div>"
-    img_html += "</div>"
-    st.markdown(f"<div style='background: {bg}; border-left: 5px solid {brdr}; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>{img_html}<div style='font-size: 14.5px; line-height: 1.5;'><b>{ikon}</b> {teks.replace(chr(10), '<br>')}</div></div>", unsafe_allow_html=True)
-
-def render_logo_card(logo_path, team_name):
-    if logo_path and os.path.exists(logo_path):
-        st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'><img src='data:image/png;base64,{image_to_base64(logo_path)}' style='max-width: 100%; max-height: 100%;'></div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px;'><span style='color: gray; font-weight: bold; font-size: 20px;'>{team_name}</span></div>", unsafe_allow_html=True)
 # endregion
 
 # region HALAMAN 1: KLASEMEN, PLAYOFFS & HIGHLIGHTS
