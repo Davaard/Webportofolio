@@ -793,6 +793,9 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 path = os.path.join("assets", "Recap", "logo_background", bg_filename)
                 if os.path.exists(path): return path
             return "assets/Recap/logo_background/roster_placeholder.png"
+            
+        player_avatar_path = "assets/Recap/logo_background/roster_placeholder.png"
+        player_avatar_b64 = image_to_base64(player_avatar_path)
         
         for idx, row in mvp_counts.iterrows():
             player_name = row['Player']
@@ -813,7 +816,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                # Wadah landscape di bawah untuk hero andalan, ukuran hero diperbesar jadi 45px
+                # Wadah landscape di bawah untuk hero andalan (Ukuran hero diperbesar)
                 hero_html = "<div style='display: flex; gap: 10px; justify-content: center; padding: 15px 0 10px 0; background-color: #1a1a24; border-top: 1px solid #333;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
@@ -823,14 +826,17 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 hero_html = ""
 
             with cols_mvp[idx]:
-                # Wadah Utama (Menghapus placeholder avatar karena sudah ada di background)
+                # Container Utama menggunakan gambar background tim
                 html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1.5px solid #d4af37; border-radius: 8px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;\">"
                 
                 # Badge MVP di kiri atas
                 html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 2;'>{total_mvp}</div>"
                 
-                # Nama Pemain (Diletakkan di bagian bawah area potret)
-                html_mvp += f"<div style='margin-top: auto; margin-bottom: 15px; color: white; font-weight: 800; font-size: 22px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 2;'>{player_name}</div>"
+                # Memanggil kembali siluet pemain (roster_placeholder.png)
+                html_mvp += f"<div style='margin-top: 30px; display: flex; justify-content: center;'><img src='data:image/png;base64,{player_avatar_b64}' style='height: 120px; object-fit: contain; opacity: 0.95; z-index: 1;'></div>"
+                
+                # Nama Pemain
+                html_mvp += f"<div style='margin-top: auto; margin-bottom: 15px; color: white; font-weight: 800; font-size: 22px; text-shadow: 1px 1px 5px rgba(0,0,0,1); z-index: 2;'>{player_name}</div>"
                 
                 # Hero (Kotak Landscape Bawah)
                 html_mvp += hero_html
