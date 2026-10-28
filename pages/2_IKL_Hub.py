@@ -1183,8 +1183,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # ==========================================
     # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
     # ==========================================
-    st.markdown("### 🌍 Most Favorite Heroes Combination")
-    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*menampilkan kombo dan pertandingan terbaru tim dengan kombo tersebut max 4 kombo dan 4 pertandingan</div>", unsafe_allow_html=True)
+    st.markdown("### 🌍 Most Favorite Bans & Picks")
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan kombinasi meta global dan tim yang paling sering menggunakannya.</div>", unsafe_allow_html=True)
     
     if not df_history.empty:
         import itertools
@@ -1194,7 +1194,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         global_wins = {}
         combo_matches = {}
         
-        # 1. MESIN EKSTRAKSI KOMBINASI HERO (Size 2 sampai 5)
+        # 1. MESIN EKSTRAKSI KOMBINASI HERO
         for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
             b_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
             r_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
@@ -1202,8 +1202,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             b_win = 1 if row['Result'] == 1.0 else 0
             r_win = 1 if row['Result'] == 0.0 else 0
             
-            def process_draft(draft, team, opp, win, tk, ok):
-                # Ekstraksi kombinasi 2 hingga 5 hero sekaligus
+            def process_draft(draft, team, opp, win):
                 for size in range(2, 6):
                     for cb in itertools.combinations(sorted(draft), size):
                         global_freq[cb] = global_freq.get(cb, 0) + 1
@@ -1211,28 +1210,16 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         
                         if cb not in combo_matches:
                             combo_matches[cb] = []
-                            
-                        match_label = f"W{row['Week']}D{row['Day']}G{row['Game']}".replace(".0", "")
-                        try:
-                            t_score = int(tk) if pd.notna(tk) else (1 if win else 0)
-                            o_score = int(ok) if pd.notna(ok) else (0 if win else 1)
-                        except:
-                            t_score, o_score = "-", "-"
-                            
-                        combo_matches[cb].append({
-                            'team': team, 'opp': opp,
-                            't_score': t_score, 'o_score': o_score,
-                            'id': match_label
-                        })
+                        # Menyimpan nama tim yang menggunakan kombo ini
+                        combo_matches[cb].append(team)
                         
-            process_draft(b_draft, str(row['Team_(Blue)']), str(row['Opponent_(Red)']), b_win, row.get('T_Kill'), row.get('O_Kill'))
-            process_draft(r_draft, str(row['Opponent_(Red)']), str(row['Team_(Blue)']), r_win, row.get('O_Kill'), row.get('T_Kill'))
+            process_draft(b_draft, str(row['Team_(Blue)']), str(row['Opponent_(Red)']), b_win)
+            process_draft(r_draft, str(row['Opponent_(Red)']), str(row['Team_(Blue)']), r_win)
 
-        # 2. LOGIKA PEMILIHAN META (Eliminasi Subset ala Supreme Meta)
+        # 2. LOGIKA PEMILIHAN META (Eliminasi Subset)
         threshold_global = 5 
         global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
         
-        # Fallback Cerdas: Jika turnamen baru mulai & data sedikit, turunkan syarat jadi 2
         if len(global_valid) < 4:
             threshold_global = 2
             global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
@@ -1247,7 +1234,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 c_small = sorted_g_combos[j]
                 if c_small in g_combos_to_remove: continue
                 
-                # Cek jika kombo kecil adalah bagian (subset) dari kombo besar
                 if set(c_small).issubset(set(c_large)):
                     wr_l, wr_s = global_valid[c_large]['wr'], global_valid[c_small]['wr']
                     if wr_s > wr_l: 
@@ -1260,7 +1246,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < threshold_global: 
                             g_combos_to_remove.add(c_small)
 
-        # Ambil Top 4 Kombo (Diutamakan yang panjang, win rate tinggi, dan frekuensi banyak)
         top_4_combos = sorted({k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
                               key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:4]
         
@@ -1272,57 +1257,52 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             for idx, (combo_tuple, stats) in enumerate(top_4_combos):
                 combo_name = " & ".join(combo_tuple)
                 
-                # Menentukan tema warna berdasarkan status Supreme/Global
                 is_supreme = combo_tuple in g_red_combos
                 border_color = "#ff4b4b" if is_supreme else "#4caf50"
                 icon_meta = "🌟" if is_supreme else "🔥"
                 
-                # --- Bagian A: Kartu Identitas Kombo ---
-                html = f"<div style='background-color: #24242e; border-top: 4px solid {border_color}; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+                # Menghitung Top 3 Tim yang menggunakan kombo ini
+                team_usage = Counter(combo_matches[combo_tuple])
+                top_3_teams = team_usage.most_common(3)
                 
-                # Deretan Foto Hero
-                html += "<div style='display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;'>"
+                # --- WADAH UTAMA (FLEXBOX KIRI-KANAN) ---
+                html = f"<div style='background-color: #24242e; border-left: 5px solid {border_color}; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: stretch;'>"
+                
+                # --- BAGIAN KIRI: FOTO HERO & STATS KOMBO ---
+                html += "<div style='flex: 1.2; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;'>"
+                html += "<div style='display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;'>"
                 for hero in combo_tuple:
                     h_path = get_hero_path(hero)
                     if h_path:
-                        html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 55px; height: 55px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);'>"
+                        html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);'>"
                     else:
-                        html += f"<div style='width: 55px; height: 55px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+                        html += f"<div style='width: 45px; height: 45px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
                 html += "</div>"
                 
-                # Keterangan Nama dan Win Rate
                 html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
-                html += f"<div style='font-size: 13px; margin-bottom: 4px;'><span style='color: #ffc107;'>{icon_meta}</span> <b>{combo_name}</b></div>"
+                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><span style='color: #ffc107;'>{icon_meta}</span> <b>{combo_name}</b></div>"
                 html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
-                html += f"</div></div>"
+                html += "</div></div>"
                 
-                # --- Bagian B: Grid Riwayat Match Terakhir (Max 4) ---
-                html += "<div style='display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 4%; margin-bottom: 30px;'>"
+                # --- BAGIAN KANAN: TOP USERS (TIM) ---
+                html += "<div style='flex: 1; padding-left: 15px; display: flex; flex-direction: column; justify-content: center;'>"
+                html += "<div style='font-size: 11px; color: #a0a0a0; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;'>Top Users</div>"
+                html += "<div style='display: flex; flex-direction: column; gap: 6px;'>"
                 
-                # Ambil 4 match TERAKHIR dari riwayat kombo ini
-                recent_matches = combo_matches[combo_tuple][::-1][:4]
-                
-                for m in recent_matches:
-                    logo_t = get_logo_path(m['team'])
-                    logo_o = get_logo_path(m['opp'])
-                    lt_b64 = image_to_base64(logo_t) if logo_t else ""
-                    lo_b64 = image_to_base64(logo_o) if logo_o else ""
+                for t_name, t_count in top_3_teams:
+                    t_logo = get_logo_path(t_name)
+                    t_b64 = image_to_base64(t_logo) if t_logo else ""
                     
-                    img_t = f"<img src='data:image/png;base64,{lt_b64}' style='height: 22px; object-fit: contain;'>" if lt_b64 else f"<span style='font-size:10px; color:white; font-weight:bold;'>{m['team']}</span>"
-                    img_o = f"<img src='data:image/png;base64,{lo_b64}' style='height: 22px; object-fit: contain;'>" if lo_b64 else f"<span style='font-size:10px; color:white; font-weight:bold;'>{m['opp']}</span>"
+                    html += "<div style='display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px;'>"
+                    html += "<div style='display: flex; align-items: center; gap: 8px;'>"
+                    if t_b64:
+                        html += f"<img src='data:image/png;base64,{t_b64}' style='height: 20px; width: 20px; object-fit: contain;'>"
+                    html += f"<span style='color: white; font-size: 13px; font-weight: 700;'>{t_name}</span></div>"
+                    html += f"<span style='color: {border_color}; font-size: 13px; font-weight: 800;'>{t_count}x</span>"
+                    html += "</div>"
                     
-                    html += f"<div style='width: 48%; margin-bottom: 5px;'>"
-                    # Kotak Skor dan Logo
-                    html += f"<div style='background-color: #3b3b4a; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);'>"
-                    html += f"<div style='background-color: #555; color: white; font-weight: 900; font-size: 14px; padding: 4px 10px; border-radius: 4px;'>{m['t_score']}</div>"
-                    html += f"<div style='display: flex; align-items: center; gap: 8px;'>{img_t}<span style='color: #ffc107; font-weight: 900; font-style: italic; font-size: 12px;'>VS</span>{img_o}</div>"
-                    html += f"<div style='background-color: #555; color: white; font-weight: 900; font-size: 14px; padding: 4px 10px; border-radius: 4px;'>{m['o_score']}</div>"
-                    html += f"</div>"
-                    # Teks Match ID
-                    html += f"<div style='text-align: center; color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 6px; letter-spacing: 1px;'>{m['id']}</div>"
-                    html += f"</div>"
-                    
-                html += "</div>" # Tutup flexbox grid match
+                html += "</div></div>"
+                html += "</div>" # Tutup Wadah Utama
                 
                 col_target = cols_combo[0] if idx % 2 == 0 else cols_combo[1]
                 with col_target:
