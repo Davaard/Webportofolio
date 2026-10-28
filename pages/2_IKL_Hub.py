@@ -40,13 +40,12 @@ st.markdown("""
         font-family: 'Condiment', system-ui;
         font-size: 35px;
         color: transparent;
-        -webkit-text-stroke: 1.5px #ffd700;
-        margin-bottom: -10px;
+        -webkit-text-stroke: 1.5px #ffffff;
     }
     .recap-time {
         font-family: 'Londrina Shadow', display;
         font-size: 35px;
-        color: #ffd700;
+        color: #ffffff;
     }
     
     .main .block-container > div:first-child {
