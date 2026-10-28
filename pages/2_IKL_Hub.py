@@ -6,6 +6,12 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from itertools import combinations
+import base64
+
+def image_to_base64(img_path):
+    if img_path and os.path.exists(img_path):
+        with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
+    return ""
 
 st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -195,12 +201,30 @@ else: # Versus Mode
 st.markdown("<br>", unsafe_allow_html=True)
 col_nav1, col_nav2, col_nav3 = st.columns(3)
 
+st.markdown("<br>", unsafe_allow_html=True)
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+
+# Memuat gambar aset navigasi sebagai background
+nav_bg_path = "assets/selected_mode_display.png"
+nav_bg_base64 = image_to_base64(nav_bg_path) if os.path.exists(nav_bg_path) else ""
+
 # Render tombol dengan susunan dinamis
 with col_nav1:
     if st.button(susunan[0], use_container_width=True): st.session_state['menu_ikl'] = susunan[0]; st.rerun()
 with col_nav2:
-    # Menu di tengah selalu diberi penanda khusus (bisa diakali dengan st.markdown untuk glow)
-    st.markdown(f"<div style='text-align: center;'><span class='menu-active'>{susunan[1]}</span></div>", unsafe_allow_html=True)
+    # Menu di tengah menggunakan background gambar aset dari Canva
+    html_nav_active = f"""
+    <div style="background-image: url('data:image/png;base64,{nav_bg_base64}'); 
+                background-size: 100% 100%; 
+                background-repeat: no-repeat; 
+                background-position: center; 
+                text-align: center; 
+                padding: 12px 0; 
+                margin-top: -5px;">
+        <span style="color: white; font-weight: 800; font-size: 18px;">{susunan[1]}</span>
+    </div>
+    """
+    st.markdown(html_nav_active, unsafe_allow_html=True)
 with col_nav3:
     if st.button(susunan[2], use_container_width=True): st.session_state['menu_ikl'] = susunan[2]; st.rerun()
 
@@ -408,12 +432,6 @@ def get_hero_path(hero_name):
         if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
     return None
 
-import base64
-def image_to_base64(img_path):
-    if img_path and os.path.exists(img_path):
-        with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
-    return ""
-
 def render_combo_card(combo_tuple, warna, ikon, teks):
     tema = {
         "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
@@ -452,16 +470,74 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             </div>""", unsafe_allow_html=True)
             
     with col_teks:
-        total_team = df_master['Team_(Blue)'].dropna().unique().tolist() + df_master['Opponent_(Red)'].dropna().unique().tolist()
-        total_team = len(set(total_team))
+        # 1. Hitung Total Tim Musim Ini
+        tim_biru_curr = set(df_master['Team_(Blue)'].dropna().unique())
+        tim_merah_curr = set(df_master['Opponent_(Red)'].dropna().unique())
+        tim_musim_ini = tim_biru_curr.union(tim_merah_curr)
+        total_team = len(tim_musim_ini)
         
+        # 2. Setup Variabel Sejarah Musim
+        total_musim_berjalan = len(daftar_musim)
+        idx_musim_ini = daftar_musim.index(musim_pilihan)
+        musim_pertama = daftar_musim[-1]
+        is_musim_pertama = (musim_pilihan == musim_pertama)
+        
+        # 3. Mencari Tim Baru
+        tim_baru_list = []
+        if not is_musim_pertama:
+            # Ambil semua tim dari semua musim SEBELUM musim pilihan ini
+            musim_sebelumnya_all = daftar_musim[idx_musim_ini + 1:]
+            df_past = df_csv[df_csv['Season'].isin(musim_sebelumnya_all)]
+            tim_past = set(df_past['Team_(Blue)'].dropna().unique()).union(set(df_past['Opponent_(Red)'].dropna().unique()))
+            
+            # Tim baru = Tim musim ini yang TIDAK ADA di tim masa lalu
+            tim_baru_set = tim_musim_ini - tim_past
+            tim_baru_list = list(tim_baru_set)
+        
+        # Format teks tim baru
+        teks_tim_baru = ""
+        if len(tim_baru_list) > 0:
+            teks_tim_baru = f" dengan <span class='highlight-text'>{len(tim_baru_list)} tim baru</span> di antaranya adalah {', '.join(tim_baru_list)}."
+        elif not is_musim_pertama:
+            teks_tim_baru = " tanpa ada penambahan tim baru dari musim sebelumnya."
+            
+        # 4. Logika Juara Bertahan (Membaca Data Grand Final Musim Sebelumnya)
+        teks_bertahan = ""
+        if not is_musim_pertama:
+            musim_lalu = daftar_musim[idx_musim_ini + 1]
+            df_lalu = df_csv[df_csv['Season'] == musim_lalu]
+            df_gr_lalu = df_lalu[df_lalu['Week'] == 'Gr'].dropna(subset=['Result'])
+            
+            if not df_gr_lalu.empty:
+                # Ambil dua tim yang bertanding di Grand Final
+                tim_gr_1 = df_gr_lalu.iloc[0]['Team_(Blue)']
+                tim_gr_2 = df_gr_lalu.iloc[0]['Opponent_(Red)']
+                
+                # Hitung Skor
+                skor_1, skor_2 = 0, 0
+                for _, g in df_gr_lalu.iterrows():
+                    if (g['Team_(Blue)'] == tim_gr_1 and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_gr_1 and g['Result'] == 0.0):
+                        skor_1 += 1
+                    elif (g['Team_(Blue)'] == tim_gr_2 and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_gr_2 and g['Result'] == 0.0):
+                        skor_2 += 1
+                
+                # Tentukan Juara
+                if skor_1 > skor_2:
+                    juara, runner_up, skor_juara, skor_runner = tim_gr_1, tim_gr_2, skor_1, skor_2
+                else:
+                    juara, runner_up, skor_juara, skor_runner = tim_gr_2, tim_gr_1, skor_2, skor_1
+                
+                teks_bertahan = f", dengan <span class='highlight-text'><b>{juara}</b></span> sebagai juara bertahan dari {musim_lalu} setelah melawan {runner_up} dengan skor <b>{skor_juara}-{skor_runner}</b>."
+            else:
+                teks_bertahan = f", melanjutkan tensi kompetisi dari {musim_lalu}."
+        
+        # 5. Merangkai Narasi HTML Akhir
         narasi = f"""
         <div class="esports-text">
         Indonesia Kings Laga atau IKL adalah liga esports nasional untuk game Honor of Kings di Indonesia. 
-        IKL pertama kali diadakan pada Tahun 2025, dan berhasil berjalan hingga musim ke-4. <br><br>
-        <span class="highlight-text">{musim_pilihan}</span> diikuti oleh total <span class="highlight-text">{total_team} tim</span>. 
-        Musim ini diadakan dengan dua format, 1. <b>Single Global League (Regular Season)</b> dan 2. <b>Double Elimination Bracket System (Playoffs)</b>, 
-        dengan juara bertahan dari musim sebelumnya yang bersiap mempertahankan tahtanya.
+        IKL pertama kali diadakan pada {musim_pertama}, dan berhasil berjalan hingga musim ke-{total_musim_berjalan}.<br><br>
+        <span class="highlight-text">{musim_pilihan}</span> diikuti oleh total <span class="highlight-text">{total_team} tim</span>{teks_tim_baru}<br><br>
+        Musim ini diadakan dengan dua format: <b>Single Global League (Regular Season)</b> dan <b>Double Elimination Bracket System (Playoffs)</b>{teks_bertahan}
         </div>
         """
         st.markdown(narasi, unsafe_allow_html=True)
