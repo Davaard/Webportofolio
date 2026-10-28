@@ -97,6 +97,34 @@ st.markdown("""
         padding-bottom: 5px !important;
     }
 
+    /* 5. KUSTOMISASI TABEL HTML (CLEAN HORIZONTAL LINES) */
+    .clean-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        text-align: center;
+    }
+    .clean-table th {
+        border-bottom: 2px solid #555;
+        padding: 12px 8px;
+        color: #b0b0b0;
+        font-weight: 600;
+    }
+    .clean-table td {
+        border-bottom: 1px solid #333;
+        padding: 12px 8px;
+        vertical-align: middle;
+    }
+    /* Kolom Tim rata kiri agar rapi */
+    .clean-table td.team-cell {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 # =========================================
@@ -440,108 +468,178 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # === 2. UPCOMING MATCH (GRID MENYAMPING) ===
+    # === 2. UPCOMING MATCH (LOGIKA HARI BERBEDA) ===
     st.markdown("### Upcoming Match")
     
     df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
     if df_jadwal.empty:
          st.markdown("<div style='text-align: center; color: gray; padding: 20px;'><i>Tidak ada jadwal pertandingan mendatang.</i></div>", unsafe_allow_html=True)
     else:
-         df_up = df_jadwal.drop_duplicates(subset=['Match_ID']).head(4)
+         df_up = df_jadwal.drop_duplicates(subset=['Match_ID'])
          
-         # Membagi jadi 2 kolom besar (agar 4 match jadi formasi 2x2 seperti di Canva)
+         # Ambil daftar hari (Date) unik yang tersisa
+         tanggal_unik = df_up['Date'].dropna().unique().tolist()
+         
          col_up1, col_up2 = st.columns(2)
          
-         for idx, row in enumerate(df_up.iterrows()):
-             _, row_data = row
-             tim_biru = str(row_data['Team_(Blue)'])
-             tim_merah = str(row_data['Opponent_(Red)'])
-             logo_biru = get_logo_path(tim_biru) if tim_biru != "nan" else None
-             logo_merah = get_logo_path(tim_merah) if tim_merah != "nan" else None
-             vs_logo = "assets/Match/vs_outline_gold.png" 
-             
-             match_html = f"""
-             <div style="background-color: #1a1a24; border-radius: 8px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #2a2a35;">
-                 <div style="width: 30%; text-align: center;">
-                     <div style="font-size: 11px; color: gray; margin-bottom: 4px;">{row_data['Date']}</div>
-                     <img src="data:image/png;base64,{image_to_base64(logo_biru) if logo_biru else ''}" style="height: 40px; object-fit: contain;">
-                     <div style="font-size: 13px; color: white; margin-top: 4px; font-weight: bold;">{tim_biru if tim_biru != "nan" else "TBD"}</div>
-                 </div>
-                 <div style="width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                     <div style="font-size: 12px; color: #00d2ff; font-weight: bold; margin-bottom: 5px;">{row_data['Time'] if pd.notna(row_data['Time']) else 'TBA'}</div>
-                     <img src="data:image/png;base64,{image_to_base64(vs_logo)}" style="height: 30px;">
-                 </div>
-                 <div style="width: 30%; text-align: center;">
-                     <div style="font-size: 11px; color: gray; margin-bottom: 4px;">&nbsp;</div>
-                     <img src="data:image/png;base64,{image_to_base64(logo_merah) if logo_merah else ''}" style="height: 40px; object-fit: contain;">
-                     <div style="font-size: 13px; color: white; margin-top: 4px; font-weight: bold;">{tim_merah if tim_merah != "nan" else "TBD"}</div>
-                 </div>
-             </div>
-             """
-             # Distribusikan ke kolom kiri dan kanan secara selang-seling
-             if idx % 2 == 0:
-                 with col_up1: st.markdown(match_html, unsafe_allow_html=True)
-             else:
-                 with col_up2: st.markdown(match_html, unsafe_allow_html=True)
-                 
-    st.markdown("<hr style='border-color: #333; margin-top: 30px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+         # Fungsi pembantu untuk menerjemahkan Week/Day
+         def get_match_phase(row_data):
+             w = str(row_data['Week']).strip()
+             d = str(row_data['Day']).strip()
+             fase_dict = {'Pl St': 'Play-ins', 'Up Sf': 'Upper Bracket\nSemifinal', 'Lw Sf': 'Lower Bracket\nSemifinal', 'Up Fl': 'Upper Bracket\nFinal', 'Lw Fl': 'Lower Bracket\nFinal', 'Gr Fl': 'Grand Final'}
+             return fase_dict.get(f"{w} {d}", f"Week {w}<br>Day {d}").replace('\n', '<br>')
+         
+         # Render Kolom Kiri (Hari Pertama)
+         if len(tanggal_unik) > 0:
+             hari_1 = tanggal_unik[0]
+             df_hari_1 = df_up[df_up['Date'] == hari_1].head(3) # Tampilkan max 3 per hari
+             with col_up1:
+                 for _, row_data in df_hari_1.iterrows():
+                     tim_biru = str(row_data['Team_(Blue)'])
+                     tim_merah = str(row_data['Opponent_(Red)'])
+                     logo_biru = get_logo_path(tim_biru) if tim_biru != "nan" else None
+                     logo_merah = get_logo_path(tim_merah) if tim_merah != "nan" else None
+                     vs_logo = "assets/Match/vs_outline_gold.png" 
+                     
+                     match_html = f"""
+                     <div style="padding: 15px 0px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between;">
+                         <!-- KIRI: Tanggal & Waktu -->
+                         <div style="width: 20%; text-align: left;">
+                             <div style="font-size: 11px; color: gray; font-weight: bold;">{row_data['Date']}</div>
+                             <div style="font-size: 16px; color: white; font-weight: 800;">{row_data['Time'] if pd.notna(row_data['Time']) else 'TBA'}</div>
+                         </div>
+                         <!-- TENGAH: Tim VS Tim -->
+                         <div style="width: 50%; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                             <div style="width: 40px; text-align: right; color: white; font-weight: bold;">
+                                 {"<img src='data:image/png;base64," + image_to_base64(logo_biru) + "' style='height: 35px; object-fit: contain;'>" if logo_biru else "{TBD}"}
+                             </div>
+                             <img src="data:image/png;base64,{image_to_base64(vs_logo)}" style="height: 25px;">
+                             <div style="width: 40px; text-align: left; color: white; font-weight: bold;">
+                                 {"<img src='data:image/png;base64," + image_to_base64(logo_merah) + "' style='height: 35px; object-fit: contain;'>" if logo_merah else "{TBD}"}
+                             </div>
+                         </div>
+                         <!-- KANAN: Keterangan Fase -->
+                         <div style="width: 30%; text-align: right; font-size: 11px; color: gray; line-height: 1.2;">
+                             {get_match_phase(row_data)}
+                         </div>
+                     </div>
+                     """
+                     st.markdown(match_html, unsafe_allow_html=True)
+                 st.markdown("<p style='text-align: center; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
+                     
+         # Render Kolom Kanan (Hari Kedua, jika ada)
+         if len(tanggal_unik) > 1:
+             hari_2 = tanggal_unik[1]
+             df_hari_2 = df_up[df_up['Date'] == hari_2].head(3)
+             with col_up2:
+                 for _, row_data in df_hari_2.iterrows():
+                     tim_biru = str(row_data['Team_(Blue)'])
+                     tim_merah = str(row_data['Opponent_(Red)'])
+                     logo_biru = get_logo_path(tim_biru) if tim_biru != "nan" else None
+                     logo_merah = get_logo_path(tim_merah) if tim_merah != "nan" else None
+                     vs_logo = "assets/Match/vs_outline_gold.png" 
+                     
+                     match_html = f"""
+                     <div style="padding: 15px 0px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between;">
+                         <div style="width: 20%; text-align: left;">
+                             <div style="font-size: 11px; color: gray; font-weight: bold;">{row_data['Date']}</div>
+                             <div style="font-size: 16px; color: white; font-weight: 800;">{row_data['Time'] if pd.notna(row_data['Time']) else 'TBA'}</div>
+                         </div>
+                         <div style="width: 50%; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                             <div style="width: 40px; text-align: right; color: white; font-weight: bold;">
+                                 {"<img src='data:image/png;base64," + image_to_base64(logo_biru) + "' style='height: 35px; object-fit: contain;'>" if logo_biru else "{TBD}"}
+                             </div>
+                             <img src="data:image/png;base64,{image_to_base64(vs_logo)}" style="height: 25px;">
+                             <div style="width: 40px; text-align: left; color: white; font-weight: bold;">
+                                 {"<img src='data:image/png;base64," + image_to_base64(logo_merah) + "' style='height: 35px; object-fit: contain;'>" if logo_merah else "{TBD}"}
+                             </div>
+                         </div>
+                         <div style="width: 30%; text-align: right; font-size: 11px; color: gray; line-height: 1.2;">
+                             {get_match_phase(row_data)}
+                         </div>
+                     </div>
+                     """
+                     st.markdown(match_html, unsafe_allow_html=True)
+                 st.markdown("<p style='text-align: center; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # === 3. REGULAR SEASON (KLASEMEN) ===
+    # === 3. REGULAR SEASON (KLASEMEN CLEAN HTML) ===
     st.markdown("### Regular Season")
     
     df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
     
+    # Kumpulan Nama Panjang Tim (Manual Mapping)
+    nama_panjang = {
+        "BTR": "Bigetron by Vitality", "RRQ": "Rex Regum Qeon", "DMT": "Dominator by Nemesis",
+        "AE": "Alter Ego", "ONIC": "ONIC Esports", "MHD": "Mahadewa", "VESA": "Vesakha Esports",
+        "KAGE": "Kagendra", "TLN.ID": "Talon Esports ID", "NMSS": "Team Nemesis", "RVM": "Revermoin Esports", "OG": "Carstensz DuskMaven"
+    }
+    
     if not df_reguler.empty:
-        # Hitung Win/Loss Game
         df_match = df_reguler.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(Game_W=('Win', 'sum'), Game_L=('Win', lambda x: (x == 0).sum())).reset_index()
-        # Hitung Win/Loss Match (Seri)
         df_match['Match_W'] = np.where(df_match['Game_W'] > df_match['Game_L'], 1, 0)
         df_match['Match_L'] = np.where(df_match['Game_W'] < df_match['Game_L'], 1, 0)
         
-        # Agregasi Total Klasemen
         klasemen_baru = df_match.groupby('Team').agg(Match=('Match', 'count'), M_W=('Match_W', 'sum'), M_L=('Match_L', 'sum'), G_W=('Game_W', 'sum'), G_L=('Game_L', 'sum')).reset_index()
-        klasemen_baru['Match (W-L)'] = klasemen_baru['M_W'].astype(int).astype(str) + "-" + klasemen_baru['M_L'].astype(int).astype(str)
-        klasemen_baru['Game (W-L)'] = klasemen_baru['G_W'].astype(int).astype(str) + "-" + klasemen_baru['G_L'].astype(int).astype(str)
-        klasemen_baru['Net Point'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
-        klasemen_baru['Rank'] = klasemen_baru['Net Point'].rank(method='min', ascending=False).astype(int)
+        klasemen_baru['Match_WL'] = klasemen_baru['M_W'].astype(int).astype(str) + " - " + klasemen_baru['M_L'].astype(int).astype(str)
+        klasemen_baru['Game_WL'] = klasemen_baru['G_W'].astype(int).astype(str) + " - " + klasemen_baru['G_L'].astype(int).astype(str)
+        klasemen_baru['Windiff'] = (klasemen_baru['G_W'] - klasemen_baru['G_L']).astype(int)
+        klasemen_baru['Rank'] = klasemen_baru['Windiff'].rank(method='min', ascending=False).astype(int)
         
-        # Susun kolom yang mau ditampilkan
-        df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match (W-L)', 'Game (W-L)', 'Net Point']]
-        df_tampil = df_tampil.reset_index(drop=True)
+        df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match_WL', 'Game_WL', 'Windiff']]
         
-        # Logika pembagian tabel berdasarkan Musim
+        def render_clean_table(df_data):
+            html_table = "<table class='clean-table'><thead><tr><th>Rank</th><th style='text-align: left;'>Team</th><th>Match</th><th>Match<br>W - L</th><th>Game<br>W - L</th><th>Windiff</th></tr></thead><tbody>"
+            for _, row in df_data.iterrows():
+                tim_singkat = row['Team']
+                logo_tim = get_logo_path(tim_singkat)
+                logo_tag = f"<img src='data:image/png;base64,{image_to_base64(logo_tim)}' style='height: 35px; width: 35px; object-fit: contain;'>" if logo_tim else f"<div style='width: 35px; height: 35px;'></div>"
+                tim_panjang = nama_panjang.get(tim_singkat, tim_singkat)
+                
+                html_table += f"""
+                <tr>
+                    <td style='font-weight: bold;'>{row['Rank']}</td>
+                    <td class='team-cell'>{logo_tag} <span style='font-weight: 600; font-size: 13px;'>{tim_panjang}</span></td>
+                    <td style='font-weight: bold; font-size: 16px;'>{row['Match']}</td>
+                    <td>{row['Match_WL']}</td>
+                    <td>{row['Game_WL']}</td>
+                    <td style='font-weight: bold; font-size: 16px;'>{row['Windiff']}</td>
+                </tr>
+                """
+            html_table += "</tbody></table>"
+            st.markdown(html_table, unsafe_allow_html=True)
+        
         if "2025" in musim_pilihan:
+            # (Tetap membagi grup kalau 2025)
             st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Double Group Stage</p>", unsafe_allow_html=True)
-            
             if musim_pilihan == "Spring 2025":
-                grup_1_nama, grup_1_tim = "Group Tyrant", ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS']
-                grup_2_nama, grup_2_tim = "Group Overlord", ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
+                grup_1_tim, grup_2_tim = ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS'], ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
             else: 
-                grup_1_nama, grup_1_tim = "Group Tyrant", ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'] 
-                grup_2_nama, grup_2_tim = "Group Overlord", ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
-            
+                grup_1_tim, grup_2_tim = ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'], ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
+                
             df_grup1 = df_tampil[df_tampil['Team'].isin(grup_1_tim)].reset_index(drop=True)
+            df_grup1['Rank'] = df_grup1['Windiff'].rank(method='min', ascending=False).astype(int)
+            df_grup1 = df_grup1.sort_values('Rank')
+            
             df_grup2 = df_tampil[df_tampil['Team'].isin(grup_2_tim)].reset_index(drop=True)
+            df_grup2['Rank'] = df_grup2['Windiff'].rank(method='min', ascending=False).astype(int)
+            df_grup2 = df_grup2.sort_values('Rank')
             
-            df_grup1['Rank'] = df_grup1['Net Point'].rank(method='min', ascending=False).astype(int)
-            df_grup2['Rank'] = df_grup2['Net Point'].rank(method='min', ascending=False).astype(int)
-            
-            # Khusus 2025, pecah jadi 2 tabel bersampingan
             col_g1, col_g2 = st.columns(2)
             with col_g1:
-                st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>{grup_1_nama}</h5>", unsafe_allow_html=True)
-                st.dataframe(df_grup1.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+                st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>Group Tyrant</h5>", unsafe_allow_html=True)
+                render_clean_table(df_grup1)
             with col_g2:
-                st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>{grup_2_nama}</h5>", unsafe_allow_html=True)
-                st.dataframe(df_grup2.sort_values('Rank').style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+                st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>Group Overlord</h5>", unsafe_allow_html=True)
+                render_clean_table(df_grup2)
         else:
-            # Khusus 2026, jadikan 1 tabel penuh memanjang
             st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Format 2026: Single Global League</p>", unsafe_allow_html=True)
-            st.dataframe(df_tampil.style.set_properties(**{'text-align': 'center'}), use_container_width=True, hide_index=True)
+            render_clean_table(df_tampil)
     else:
         st.info("Data Regular Season belum tersedia.")
 
-    st.markdown("<hr style='border-color: #333; margin-top: 30px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
     # 4. BRACKET PLAYOFFS
     st.markdown("### 🏆 Playoff Bracket")
