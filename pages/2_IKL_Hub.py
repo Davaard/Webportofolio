@@ -514,7 +514,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up1:
                  for _, row_data in df_hari_1.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
+                 #st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
                      
          # Render Kolom Kanan (Hari Kedua, jika ada)
          if len(tanggal_unik) > 1:
@@ -523,7 +523,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up2:
                  for _, row_data in df_hari_2.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari di hari berikutnya</p>", unsafe_allow_html=True)
+                 #st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari di hari berikutnya</p>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
