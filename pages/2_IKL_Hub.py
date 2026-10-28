@@ -759,7 +759,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 
                 # Teks Metrik dan Match ID di pojok kanan bawah
                 html += f"<div style='position: absolute; bottom: 10%; right: 15% ; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 2px;'>{metric_value}</div>"
-                html += f"<div style='color: #d1d1d1; font-size: 20px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
+                html += f"<div style='color: #d1d1d1; font-size: 14px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
                 html += f"</div>"
                 
                 return html
