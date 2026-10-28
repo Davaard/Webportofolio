@@ -562,8 +562,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up1:
                  for _, row_data in df_hari_1.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
-                     
+                                 
          # Render Kolom Kanan (Hari Kedua, jika ada)
          if len(tanggal_unik) > 1:
              hari_2 = tanggal_unik[1]
@@ -571,8 +570,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up2:
                  for _, row_data in df_hari_2.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari di hari berikutnya</p>", unsafe_allow_html=True)
-
+                 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
     # === 3. REGULAR SEASON (KLASEMEN CLEAN HTML) ===
@@ -654,64 +652,72 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     if df_playoff.empty:
         st.info("Babak Playoffs belum dimulai atau data belum tersedia.")
     else:
-        po_matches = df_playoff.drop_duplicates(subset=['Match_ID'])
         col_b1, col_b2, col_b3, col_b4 = st.columns(4)
         
-        # === FUNGSI BRACKET YANG SUDAH DIPERBAIKI (PER MATCH) ===
+        # === FUNGSI BRACKET CUSTOM CSS ===
         def render_bracket_box(df_match_filtered, title):
-            st.markdown(f"<div style='text-align: center; color: #00d2ff; font-size: 14px; font-weight: bold; margin-bottom: 5px;'>{title}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align: center; color: white; font-size: 15px; font-weight: bold; margin-bottom: 12px;'>{title}</div>", unsafe_allow_html=True)
+            
+            vs_logo = "assets/Match/vs_outline_gold.png" 
+            
+            # Jika belum ada data (TBD)
             if df_match_filtered.empty:
-                st.markdown("<div style='background: #222; border: 1px dashed #555; border-radius: 5px; padding: 10px; text-align: center; color: gray; margin-bottom: 15px;'>TBD</div>", unsafe_allow_html=True)
+                html = "<div style='display: flex; height: 45px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; border-left: 4px solid #d4af37; background-color: #3b3b40;'>"
+                html += "<div style='width: 20%; background-color: #55555d;'></div>"
+                html += f"<div style='width: 60%; display: flex; align-items: center; justify-content: center; gap: 10px;'><span style='color: gray; font-size: 11px; font-weight: bold;'>TBD</span><img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 20px;'><span style='color: gray; font-size: 11px; font-weight: bold;'>TBD</span></div>"
+                html += "<div style='width: 20%; background-color: #55555d;'></div></div>"
+                st.markdown(html, unsafe_allow_html=True)
                 return
                 
-            # Filter agar yang tampil HANYA 1 kotak per Match (Seri)
+            # Filter per Match (Seri)
             series_list = df_match_filtered.drop_duplicates(subset=['Week', 'Day', 'Match'])
             
             for idx, row in series_list.iterrows():
-                # Ambil semua game yang terjadi di dalam seri pertandingan ini
                 games = df_playoff[(df_playoff['Week'] == row['Week']) & (df_playoff['Day'] == row['Day']) & (df_playoff['Match'] == row['Match'])]
                 
-                # Tentukan tim kiri dan kanan dari game pertama
-                tim_a = str(row['Team_(Blue)']) if pd.notna(row['Team_(Blue)']) and str(row['Team_(Blue)']) != "nan" else "TBD"
-                tim_b = str(row['Opponent_(Red)']) if pd.notna(row['Opponent_(Red)']) and str(row['Opponent_(Red)']) != "nan" else "TBD"
+                tim_a = str(row['Team_(Blue)'])
+                tim_b = str(row['Opponent_(Red)'])
                 
-                skor = ""
-                # Kalkulasi skor jika pertandingan sudah berjalan
+                logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
+                logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
+                
+                html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 25px; object-fit: contain;'>" if logo_a else "<span style='color: gray; font-size: 11px; font-weight: bold;'>TBD</span>"
+                html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 25px; object-fit: contain;'>" if logo_b else "<span style='color: gray; font-size: 11px; font-weight: bold;'>TBD</span>"
+                
+                skor_a, skor_b = "", ""
                 if row['Status'] == 'History' or games['Result'].notna().any():
-                    win_a = 0
-                    win_b = 0
+                    win_a, win_b = 0, 0
                     for _, g in games.dropna(subset=['Result']).iterrows():
-                        if g['Team_(Blue)'] == tim_a and g['Result'] == 1.0: win_a += 1
-                        elif g['Team_(Blue)'] == tim_b and g['Result'] == 1.0: win_b += 1
-                        elif g['Opponent_(Red)'] == tim_a and g['Result'] == 0.0: win_a += 1
-                        elif g['Opponent_(Red)'] == tim_b and g['Result'] == 0.0: win_b += 1
-                        
-                    skor = f"<span style='float: right; color: #00d2ff;'>{win_a} - {win_b}</span>"
+                        if (g['Team_(Blue)'] == tim_a and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_a and g['Result'] == 0.0): win_a += 1
+                        elif (g['Team_(Blue)'] == tim_b and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_b and g['Result'] == 0.0): win_b += 1
+                    skor_a, skor_b = str(win_a), str(win_b)
                     
-                st.markdown(f"""
-                <div style='background: #222; border-left: 3px solid #00d2ff; border-radius: 5px; padding: 10px; margin-bottom: 15px;'>
-                    <div style='font-size: 13px;'><b>{tim_a}</b> vs <b>{tim_b}</b> {skor}</div>
-                    <div style='font-size: 10px; color: gray; margin-top: 5px;'>{row['Date']}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                # Rangkaian HTML Murni untuk membuat kotak skor
+                html = "<div style='display: flex; height: 45px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; border-left: 4px solid #d4af37; background-color: #3b3b40;'>"
+                html += f"<div style='width: 20%; background-color: #55555d; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;'>{skor_a}</div>"
+                html += f"<div style='width: 60%; display: flex; align-items: center; justify-content: center; gap: 10px;'>{html_a}<img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 20px;'>{html_b}</div>"
+                html += f"<div style='width: 20%; background-color: #55555d; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;'>{skor_b}</div></div>"
+                
+                st.markdown(html, unsafe_allow_html=True)
 
+        # === RENDER KOLOM BRACKET ===
         with col_b1:
-            render_bracket_box(df_playoff[df_playoff['Week'] == 'Pl'], "Play-In Stages")
+            render_bracket_box(df_playoff[df_playoff['Week'] == 'Pl'], "Play-in Stages")
             
         with col_b2:
-            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Sf')], "UB Semifinal")
-            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinal")
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Sf')], "UB Semifinals")
+            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True) # Spacer vertikal
+            render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinals")
             
         with col_b3:
-            # Berikan ruang kosong di atas Grand Final agar posisinya agak ke tengah
-            st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True) # Menurunkan posisi Final
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
+            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
             
         with col_b4:
-            # Berikan ruang kosong di atas Grand Final agar posisinya agak ke tengah
-            st.markdown("<div style='height: 90px;'></div>", unsafe_allow_html=True)
-            render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final 🏆")
+            st.markdown("<div style='height: 90px;'></div>", unsafe_allow_html=True) # Memposisikan Grand Final di tengah
+            render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final")
 
     st.markdown("---")
     
