@@ -752,10 +752,10 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
                 # Logo Tim Kiri (Menyesuaikan posisi di sebelah kiri tulisan VS)
-                html += f"<div style='position: absolute; bottom: 12%; left: 8%;'>{html_a}</div>"
+                html += f"<div style='position: absolute; bottom: 11%; left: 13%;'>{html_a}</div>"
                 
                 # Logo Tim Kanan (Menyesuaikan posisi di sebelah kanan tulisan VS)
-                html += f"<div style='position: absolute; bottom: 12%; left: 32%;'>{html_b}</div>"
+                html += f"<div style='position: absolute; bottom: 11%; left: 43%;'>{html_b}</div>"
                 
                 # Teks Metrik dan Match ID di pojok kanan bawah
                 html += f"<div style='position: absolute; bottom: 10%; right: 10; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 2px;'>{metric_value}</div>"
