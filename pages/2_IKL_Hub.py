@@ -1179,30 +1179,122 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         st.markdown(html_kanan, unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Bagian 3: Epic Matches
-    st.markdown("#### ⚔️ Epic Matches")
-    col_e1, col_e2, col_e3 = st.columns(3)
-    if not df_history.empty:
-        df_hist_view = df_history.copy()
-        df_hist_view['Total_Kills'] = df_hist_view['T_Kill'] + df_hist_view['O_Kill']
-        
-        if df_hist_view['Total_Kills'].sum() > 0:
-            bloodiest = df_hist_view.loc[df_hist_view['Total_Kills'].idxmax()]
-            longest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).idxmax()]
-            fastest = df_hist_view.loc[df_hist_view['Duration_min'].apply(konversi_waktu).replace(0, np.nan).idxmin()]
-            
-            with col_e1:
-                st.info(f"**🩸 Bloodbath Match**\n\n{bloodiest['Team_(Blue)']} vs {bloodiest['Opponent_(Red)']}\n\nTotal Kills: **{bloodiest['Total_Kills']}**\n\n(W{bloodiest['Week']} - Game {bloodiest['Game']})")
-            with col_e2:
-                st.warning(f"**⏳ Longest Match**\n\n{longest['Team_(Blue)']} vs {longest['Opponent_(Red)']}\n\nDurasi: **{longest['Duration_min']}**\n\n(W{longest['Week']} - Game {longest['Game']})")
-            with col_e3:
-                st.success(f"**⚡ Fastest Match**\n\n{fastest['Team_(Blue)']} vs {fastest['Opponent_(Red)']}\n\nDurasi: **{fastest['Duration_min']}**\n\n(W{fastest['Week']} - Game {fastest['Game']})")
-        else:
-            st.info("Data Kill dan Durasi belum mencukupi untuk menampilkan Epic Matches.")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # ==========================================
+    # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
+    # ==========================================
+    st.markdown("### 🌍 Most Favorite Heroes Combination")
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*menampilkan kombo dan pertandingan terbaru tim dengan kombo tersebut max 4 kombo dan 4 pertandingan</div>", unsafe_allow_html=True)
     
+    if not df_history.empty:
+        import itertools
+        from collections import Counter
+        
+        combo_dict = {}
+        
+        # 1. MESIN EKSTRAKSI KOMBINASI HERO
+        for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
+            b_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
+            r_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
+            
+            b_win = 1 if row['Result'] == 1.0 else 0
+            r_win = 1 if row['Result'] == 0.0 else 0
+            
+            # Helper untuk memproses draf tim biru & merah
+            def process_draft(draft, team, opp, win, tk, ok):
+                # Kita cari kombinasi 2 hero dan 3 hero
+                for size in [2, 3]:
+                    for cb in itertools.combinations(sorted(draft), size):
+                        if cb not in combo_dict:
+                            combo_dict[cb] = {'picks': 0, 'wins': 0, 'matches': []}
+                        combo_dict[cb]['picks'] += 1
+                        combo_dict[cb]['wins'] += win
+                        
+                        match_label = f"W{row['Week']}D{row['Day']}G{row['Game']}".replace(".0", "")
+                        
+                        # Ambil skor Kill (Jika tidak ada, fallback ke 1 (Menang) - 0 (Kalah))
+                        try:
+                            t_score = int(tk) if pd.notna(tk) else (1 if win else 0)
+                            o_score = int(ok) if pd.notna(ok) else (0 if win else 1)
+                        except:
+                            t_score, o_score = "-", "-"
+                            
+                        combo_dict[cb]['matches'].append({
+                            'team': team, 'opp': opp,
+                            't_score': t_score, 'o_score': o_score,
+                            'id': match_label
+                        })
+                        
+            process_draft(b_draft, str(row['Team_(Blue)']), str(row['Opponent_(Red)']), b_win, row.get('T_Kill'), row.get('O_Kill'))
+            process_draft(r_draft, str(row['Opponent_(Red)']), str(row['Team_(Blue)']), r_win, row.get('O_Kill'), row.get('T_Kill'))
+
+        # 2. FILTER & SORTING (Ambil Top 4 Kombo Tertinggi)
+        # Urutkan berdasarkan jumlah Pick terbanyak, lalu Win Rate tertinggi
+        sorted_combos = sorted(combo_dict.items(), key=lambda x: (x[1]['picks'], x[1]['wins']), reverse=True)
+        # Ambil 4 besar (Abaikan jika jumlah picks kurang dari 2 agar data bermakna)
+        top_4_combos = [c for c in sorted_combos if c[1]['picks'] >= 2][:4]
+        
+        # 3. RENDER UI 2 KOLOM
+        cols_combo = st.columns(2)
+        
+        for idx, (combo_tuple, data) in enumerate(top_4_combos):
+            combo_name = " & ".join(combo_tuple)
+            wr_pct = (data['wins'] / data['picks']) * 100
+            
+            # --- Bagian A: Kartu Identitas Kombo ---
+            html = f"<div style='background-color: #24242e; border-top: 4px solid #ff4b4b; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+            
+            # Deretan Foto Hero
+            html += "<div style='display: flex; gap: 8px; margin-bottom: 12px;'>"
+            for hero in combo_tuple:
+                h_path = get_hero_path(hero)
+                if h_path:
+                    html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 55px; height: 55px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);'>"
+                else:
+                    html += f"<div style='width: 55px; height: 55px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+            html += "</div>"
+            
+            # Keterangan Nama dan Win Rate
+            html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
+            html += f"<div style='font-size: 13px; margin-bottom: 4px;'><span style='color: #ffc107;'>🌟</span> <b>{combo_name}</b></div>"
+            html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{data['picks']}x</b> | WR: <b style='color: white;'>{wr_pct:.0f}%</b></div>"
+            html += f"</div></div>"
+            
+            # --- Bagian B: Grid Riwayat Match Terakhir (Max 4) ---
+            html += "<div style='display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 4%; margin-bottom: 30px;'>"
+            
+            # Ambil 4 match TERAKHIR dari riwayat kombo ini (menggunakan [::-1] agar dari yang terbaru)
+            recent_matches = data['matches'][::-1][:4]
+            
+            for m in recent_matches:
+                logo_t = get_logo_path(m['team'])
+                logo_o = get_logo_path(m['opp'])
+                lt_b64 = image_to_base64(logo_t) if logo_t else ""
+                lo_b64 = image_to_base64(logo_o) if logo_o else ""
+                
+                img_t = f"<img src='data:image/png;base64,{lt_b64}' style='height: 22px; object-fit: contain;'>" if lt_b64 else f"<span style='font-size:10px; color:white; font-weight:bold;'>{m['team']}</span>"
+                img_o = f"<img src='data:image/png;base64,{lo_b64}' style='height: 22px; object-fit: contain;'>" if lo_b64 else f"<span style='font-size:10px; color:white; font-weight:bold;'>{m['opp']}</span>"
+                
+                html += f"<div style='width: 48%; margin-bottom: 5px;'>"
+                # Kotak Skor dan Logo
+                html += f"<div style='background-color: #3b3b4a; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);'>"
+                html += f"<div style='background-color: #555; color: white; font-weight: 900; font-size: 14px; padding: 4px 10px; border-radius: 4px;'>{m['t_score']}</div>"
+                html += f"<div style='display: flex; align-items: center; gap: 8px;'>{img_t}<span style='color: #ffc107; font-weight: 900; font-style: italic; font-size: 12px;'>VS</span>{img_o}</div>"
+                html += f"<div style='background-color: #555; color: white; font-weight: 900; font-size: 14px; padding: 4px 10px; border-radius: 4px;'>{m['o_score']}</div>"
+                html += f"</div>"
+                # Teks Match ID
+                html += f"<div style='text-align: center; color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 6px; letter-spacing: 1px;'>{m['id']}</div>"
+                html += f"</div>"
+                
+            html += "</div>" # Tutup flexbox grid match
+            
+            # Distribusikan 4 kombo ini ke dalam 2 kolom (Kolom Kiri untuk kombo ke-1 dan ke-3, Kanan untuk ke-2 dan ke-4)
+            col_target = cols_combo[0] if idx % 2 == 0 else cols_combo[1]
+            with col_target:
+                st.markdown(html, unsafe_allow_html=True)
+
+    st.markdown("<hr style='border-color: #333; margin-top: 10px; margin-bottom: 40px;'>", unsafe_allow_html=True)
+
     # Bagian 4: Riwayat Pertandingan
     st.markdown("#### 📜 Riwayat Pertandingan")
     tim_filter = st.selectbox("Cari Jejak Tim:", ["Semua Tim"] + sorted(df_long['Team'].unique().tolist()))
