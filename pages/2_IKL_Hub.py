@@ -741,20 +741,28 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 tim_a, tim_b = str(row_data['Team_(Blue)']), str(row_data['Opponent_(Red)'])
                 logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
                 logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
-                vs_logo = "assets/Match/vs_outline_gold.png"
                 bg_path = f"assets/Recap/{bg_filename}"
                 
                 html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 45px; object-fit: contain;'>" if logo_a else f"<span style='color: white; font-weight: bold;'>{tim_a}</span>"
                 html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 45px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold;'>{tim_b}</span>"
                 bg_b64 = image_to_base64(bg_path)
                 
-                # HTML dirangkai murni tanpa indentasi tab agar tidak terbaca sebagai Code Block
+                # HTML dirangkai murni tanpa indentasi tab
                 html = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.3);\">"
+                # Container padding top besar agar menyisakan ruang untuk gambar desain di atas
                 html += f"<div style=\"background-color: transparent; padding: 130px 20px 20px 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end;\">"
+                
+                # Flex Container untuk melempar Logo ke Kiri dan Teks ke Kanan
                 html += f"<div style='display: flex; justify-content: space-between; align-items: flex-end;'>"
-                html += f"<div style='display: flex; align-items: center; gap: 10px;'>{html_a}<img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 25px;'>{html_b}</div>"
+                
+                # Sisi Kiri: Logo A - Ruang kosong 30px (untuk VS bawaan gambarmu) - Logo B
+                html += f"<div style='display: flex; align-items: center; gap: 5px;'>{html_a}<div style='width: 30px;'></div>{html_b}</div>"
+                
+                # Sisi Kanan: Metric dan Match ID rata kanan
                 html += f"<div style='text-align: right;'><div class='{font_class}'>{metric_value}</div>"
-                html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif; text-shadow: 1px 1px 3px black;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div></div></div></div>"
+                html += f"<div style='color: #d1d1d1; font-size: 11px; font-weight: bold; margin-top: 5px; font-family: sans-serif; text-shadow: 1px 1px 3px black;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
+                html += f"</div></div></div>"
+                
                 return html
 
             with col_e1:
@@ -809,20 +817,32 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                hero_html = "<div style='display: flex; gap: 5px; justify-content: center; margin-top: 15px;'>"
+                # Wadah landscape di bawah untuk hero andalan
+                hero_html = "<div style='display: flex; gap: 5px; justify-content: center; padding: 10px; background-color: #1a1a24; border: 1px solid #333; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
-                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 30px; width: 30px; border-radius: 4px; border: 1px solid #555;'>"
+                    if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 35px; width: 35px; border-radius: 4px;'>"
                 hero_html += "</div>"
             except Exception as e:
                 hero_html = ""
 
             with cols_mvp[idx]:
-                html_mvp = f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1px solid #333; border-radius: 8px; position: relative; text-align: center; overflow: hidden; margin-bottom: 20px;\">"
-                html_mvp += f"<div style=\"background-color: rgba(0,0,0,0.6); padding: 20px; border-radius: 8px;\">"
+                # Wadah Utama: Memisahkan bagian atas (Portrait Player) dan bagian bawah (Landscape Heroes)
+                html_mvp = f"<div style='margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);'>"
+                
+                # Wadah Portrait Player (Atas)
+                html_mvp += f"<div style=\"background-image: url('data:image/png;base64,{bg_b64}'); background-size: cover; background-position: center; border: 1px solid #333; border-top-left-radius: 8px; border-top-right-radius: 8px; position: relative; text-align: center; overflow: hidden; min-height: 200px;\">"
+                
+                # Overlay gelap agar teks/player menonjol
+                html_mvp += f"<div style=\"background-color: rgba(0,0,0,0.65); padding: 20px; height: 100%; box-sizing: border-box;\">"
                 html_mvp += f"<div style='position: absolute; top: 10px; left: 10px; background-color: white; color: black; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 4px;'>{total_mvp}</div>"
                 html_mvp += f"<div style='margin-top: 20px; display: flex; justify-content: center;'><img src='data:image/png;base64,{player_avatar_b64}' style='height: 100px; object-fit: contain;'></div>"
-                html_mvp += f"<div style='color: white; font-weight: 800; font-size: 20px; margin-top: 10px;'>{player_name}</div>{hero_html}</div></div>"
+                html_mvp += f"<div style='color: white; font-weight: 800; font-size: 20px; margin-top: 10px;'>{player_name}</div></div></div>"
+                
+                # Gabungkan dengan wadah hero (Bawah)
+                html_mvp += hero_html
+                html_mvp += "</div>"
+                
                 st.markdown(html_mvp, unsafe_allow_html=True)
                 
     st.markdown("<br>", unsafe_allow_html=True)
