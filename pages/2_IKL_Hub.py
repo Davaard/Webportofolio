@@ -1363,40 +1363,127 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     if tim_filter != "Semua Tim":
         hist_display = hist_display[(hist_display['Team_(Blue)'] == tim_filter) | (hist_display['Opponent_(Red)'] == tim_filter)]
+    
+    # 1. FORMAT TANGGAL CANTIK
+    hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce')
+    hist_display['Tanggal_Tampil'] = hist_display['Date_Sort'].dt.strftime('%d %b %Y').fillna(hist_display['Date'])
+    
+    # 2. LOGIKA KODE MATCH CERDAS
+    def format_match_id(row):
+        w = str(row['Week']).strip()
+        d = str(row['Day']).strip()
+        m = str(row['Match']).replace('.0', '').strip()
+        g = str(row['Game']).replace('.0', '').strip()
         
-    # Menggabungkan identitas match agar tabel lebih ringkas
-    hist_display['Match_ID'] = "W" + hist_display['Week'].astype(str) + " D" + hist_display['Day'].astype(str) + " M" + hist_display['Match'].astype(str).str.replace(".0", "") + " G" + hist_display['Game'].astype(str).str.replace(".0", "")
+        # Jika Week berupa angka (Reguler), pakai format W-D-M-G
+        if w.isdigit():
+            return f"W{w}D{d}M{m}G{g}"
+        # Jika Playoffs, singkirkan huruf W/D/M dan gabungkan langsung
+        else:
+            return f"{w}{d}{g}" 
+            
+    hist_display['Match_ID'] = hist_display.apply(format_match_id, axis=1)
     
-    # Visualisasi Hasil Pertandingan
-    hist_display['Result'] = hist_display['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
+    # Urutkan secara kronologis (Dari yang terbaru ke terlama)
+    hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False])
     
-    # Pemilihan dan pengurutan kolom akhir
-    hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+    # 3. RENDER CUSTOM HTML TABLE (DESAIN ESPORTS)
+    html_history = """
+    <style>
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        background-color: #24242e;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .history-table th {
+        background-color: #1a1a24;
+        color: #d4af37;
+        font-weight: 800;
+        padding: 15px 10px;
+        text-align: center;
+        border-bottom: 2px solid #333;
+    }
+    .history-table td {
+        padding: 12px 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: middle;
+    }
+    .history-table tr:hover {
+        background-color: #2a2a35;
+    }
+    </style>
+    <table class='history-table'>
+        <thead>
+            <tr>
+                <th style='width: 15%;'>Tanggal</th>
+                <th style='width: 10%;'>Match</th>
+                <th style='width: 45%;'>Pertandingan</th>
+                <th style='width: 10%;'>Durasi</th>
+                <th style='width: 20%;'>MVP</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
     
-    # Logika Pengurutan Murni (Tanggal terbaru di atas)
-    hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce', dayfirst=True)
-    hist_display = hist_display.sort_values(
-        by=['Date_Sort', 'Match_ID'], 
-        ascending=[False, False] 
-    ).drop(columns=['Date_Sort'])
-    
-    # Render tabel dengan konfigurasi lebar dinamis
-    st.dataframe(
-        hist_display, 
-        use_container_width=True, 
-        hide_index=True,
-        column_config={
-            "Date": st.column_config.TextColumn("Tanggal Pertandingan", width="medium"),
-            "Match_ID": st.column_config.TextColumn("Kode Match", width="small"),
-            "Team_(Blue)": st.column_config.TextColumn("Tim Biru (Blue)", width="medium"),
-            "Result": st.column_config.TextColumn("Hasil Pemenang", width="medium"),
-            "Opponent_(Red)": st.column_config.TextColumn("Tim Merah (Red)", width="medium"),
-            "Duration_min": st.column_config.TextColumn("Durasi", width="small"),
-            "MVP": st.column_config.TextColumn("MVP", width="medium")
-        }
-    )
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    for _, row in hist_display.iterrows():
+        tgl = row['Tanggal_Tampil']
+        mid = row['Match_ID']
+        t_biru = str(row['Team_(Blue)'])
+        t_merah = str(row['Opponent_(Red)'])
+        hasil = row['Result']
+        durasi = str(row['Duration_min']) if pd.notna(row['Duration_min']) else "-"
+        mvp = str(row['MVP']) if pd.notna(row['MVP']) else "-"
+        
+        # Tema Warna: Gold (Menang) vs Silver (Kalah)
+        color_win = "#d4af37" 
+        color_lose = "#888888" 
+        
+        if pd.isna(hasil): # TBD (Belum bertanding)
+            style_biru = "color: #a0a0a0;"
+            style_merah = "color: #a0a0a0;"
+            skor_biru, skor_merah = "-", "-"
+        elif hasil == 1.0: # Biru Menang
+            style_biru = f"color: {color_win}; font-weight: 800; text-shadow: 0 0 5px rgba(212,175,55,0.3);"
+            style_merah = f"color: {color_lose}; font-weight: 500;"
+            skor_biru, skor_merah = "1", "0"
+        else: # Merah Menang
+            style_biru = f"color: {color_lose}; font-weight: 500;"
+            style_merah = f"color: {color_win}; font-weight: 800; text-shadow: 0 0 5px rgba(212,175,55,0.3);"
+            skor_biru, skor_merah = "0", "1"
+            
+        logo_b = get_logo_path(t_biru)
+        logo_m = get_logo_path(t_merah)
+        
+        img_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 22px; vertical-align: middle; margin-right: 8px;'>" if logo_b else ""
+        img_m = f"<img src='data:image/png;base64,{image_to_base64(logo_m)}' style='height: 22px; vertical-align: middle; margin-left: 8px;'>" if logo_m else ""
+        
+        # Menyusun Kolom VS Mode
+        vs_col = f"""
+        <div style='display: flex; align-items: center; justify-content: center; gap: 15px;'>
+            <div style='width: 40%; text-align: right; {style_biru}'>{t_biru}{img_b}</div>
+            <div style='background-color: #111; border-radius: 4px; padding: 2px 10px; font-weight: bold; border: 1px solid #333; display: flex; gap: 8px;'>
+                <span style='{style_biru}'>{skor_biru}</span>
+                <span style='color: #555;'>-</span>
+                <span style='{style_merah}'>{skor_merah}</span>
+            </div>
+            <div style='width: 40%; text-align: left; {style_merah}'>{img_m}{t_merah}</div>
+        </div>
+        """
+        
+        # Render Baris Tabel
+        html_history += f"""
+        <tr>
+            <td style='color: #a0a0a0;'>{tgl}</td>
+            <td style='font-weight: 700; color: #d1d1d1; letter-spacing: 1px;'>{mid}</td>
+            <td>{vs_col}</td>
+            <td style='
 
 # endregion
 
