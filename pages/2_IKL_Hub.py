@@ -655,7 +655,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
     # 4. BRACKET PLAYOFFS
-    st.markdown("###Playoff")
+    st.markdown("### Playoff")
     df_playoff = df_master[df_master['Week'].isin(['Pl', 'Up', 'Lw', 'Gr'])].copy()
     
     if df_playoff.empty:
