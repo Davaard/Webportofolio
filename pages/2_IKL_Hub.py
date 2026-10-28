@@ -39,11 +39,11 @@ st.markdown("""
     .recap-kill {
         font-family: 'Condiment', system-ui;
         font-size: 30px;
-        color: transparent;
-        -webkit-text-stroke: 1.5px #ffffff;
+        color: #ffffff;
     }
+
     .recap-time {
-        font-family: 'Londrina Shadow', display;
+        font-family: 'Londrina Shadow', fantasy;
         font-size: 35px;
         color: #ffffff;
     }
