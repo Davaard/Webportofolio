@@ -1374,50 +1374,21 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         d = str(row['Day']).strip()
         m = str(row['Match']).replace('.0', '').strip()
         g = str(row['Game']).replace('.0', '').strip()
-        
-        # Jika Week berupa angka (Reguler), pakai format W-D-M-G
         if w.isdigit():
             return f"W{w}D{d}M{m}G{g}"
-        # Jika Playoffs, singkirkan huruf W/D/M dan gabungkan langsung
         else:
             return f"{w}{d}{g}" 
             
     hist_display['Match_ID'] = hist_display.apply(format_match_id, axis=1)
-    
-    # Urutkan secara kronologis (Dari yang terbaru ke terlama)
     hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False])
     
     # 3. RENDER CUSTOM HTML TABLE (DESAIN ESPORTS)
     html_history = """
     <style>
-    .history-table {
-        width: 100%;
-        border-collapse: collapse;
-        color: white;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 14px;
-        background-color: #24242e;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .history-table th {
-        background-color: #1a1a24;
-        color: #d4af37;
-        font-weight: 800;
-        padding: 15px 10px;
-        text-align: center;
-        border-bottom: 2px solid #333;
-    }
-    .history-table td {
-        padding: 12px 10px;
-        text-align: center;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        vertical-align: middle;
-    }
-    .history-table tr:hover {
-        background-color: #2a2a35;
-    }
+    .history-table { width: 100%; border-collapse: collapse; color: white; font-family: 'Montserrat', sans-serif; font-size: 14px; background-color: #24242e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .history-table th { background-color: #1a1a24; color: #d4af37; font-weight: 800; padding: 15px 10px; text-align: center; border-bottom: 2px solid #333; }
+    .history-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+    .history-table tr:hover { background-color: #2a2a35; }
     </style>
     <table class='history-table'>
         <thead>
@@ -1432,6 +1403,15 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         <tbody>
     """
     
+    # --- SISTEM TURBO CACHE UNTUK LOGO (Mencegah Ngelag) ---
+    logo_cache = {}
+    def get_cached_logo_b64(team_name):
+        if team_name not in logo_cache:
+            l_path = get_logo_path(team_name)
+            logo_cache[team_name] = image_to_base64(l_path) if l_path else ""
+        return logo_cache[team_name]
+    # -------------------------------------------------------
+
     for _, row in hist_display.iterrows():
         tgl = row['Tanggal_Tampil']
         mid = row['Match_ID']
@@ -1441,30 +1421,29 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         durasi = str(row['Duration_min']) if pd.notna(row['Duration_min']) else "-"
         mvp = str(row['MVP']) if pd.notna(row['MVP']) else "-"
         
-        # Tema Warna: Gold (Menang) vs Silver (Kalah)
         color_win = "#d4af37" 
         color_lose = "#888888" 
         
-        if pd.isna(hasil): # TBD (Belum bertanding)
+        if pd.isna(hasil):
             style_biru = "color: #a0a0a0;"
             style_merah = "color: #a0a0a0;"
             skor_biru, skor_merah = "-", "-"
-        elif hasil == 1.0: # Biru Menang
+        elif hasil == 1.0:
             style_biru = f"color: {color_win}; font-weight: 800; text-shadow: 0 0 5px rgba(212,175,55,0.3);"
             style_merah = f"color: {color_lose}; font-weight: 500;"
             skor_biru, skor_merah = "1", "0"
-        else: # Merah Menang
+        else:
             style_biru = f"color: {color_lose}; font-weight: 500;"
             style_merah = f"color: {color_win}; font-weight: 800; text-shadow: 0 0 5px rgba(212,175,55,0.3);"
             skor_biru, skor_merah = "0", "1"
             
-        logo_b = get_logo_path(t_biru)
-        logo_m = get_logo_path(t_merah)
+        # Menggunakan fungsi Cache, bukan memproses gambar ulang-ulang!
+        b64_b = get_cached_logo_b64(t_biru)
+        b64_m = get_cached_logo_b64(t_merah)
         
-        img_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 22px; vertical-align: middle; margin-right: 8px;'>" if logo_b else ""
-        img_m = f"<img src='data:image/png;base64,{image_to_base64(logo_m)}' style='height: 22px; vertical-align: middle; margin-left: 8px;'>" if logo_m else ""
+        img_b = f"<img src='data:image/png;base64,{b64_b}' style='height: 22px; vertical-align: middle; margin-right: 8px;'>" if b64_b else ""
+        img_m = f"<img src='data:image/png;base64,{b64_m}' style='height: 22px; vertical-align: middle; margin-left: 8px;'>" if b64_m else ""
         
-        # Menyusun Kolom VS Mode
         vs_col = f"""
         <div style='display: flex; align-items: center; justify-content: center; gap: 15px;'>
             <div style='width: 40%; text-align: right; {style_biru}'>{t_biru}{img_b}</div>
@@ -1477,16 +1456,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         </div>
         """
         
-        # Render Baris Tabel
-        html_history += f"""
-        <tr>
-            <td style='color: #a0a0a0;'>{tgl}</td>
-            <td style='font-weight: 700; color: #d1d1d1; letter-spacing: 1px;'>{mid}</td>
-            <td>{vs_col}</td>
-            <td style='color: #a0a0a0;'>{durasi}</td>
-            <td style='font-weight: 800; color: white;'>{mvp}</td>
-        </tr>
-        """
+        html_history += f"<tr><td style='color: #a0a0a0;'>{tgl}</td><td style='font-weight: 700; color: #d1d1d1; letter-spacing: 1px;'>{mid}</td><td>{vs_col}</td><td style='color: #a0a0a0;'>{durasi}</td><td style='font-weight: 800; color: white;'>{mvp}</td></tr>"
         
     html_history += "</tbody></table>"
     
