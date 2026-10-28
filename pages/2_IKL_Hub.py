@@ -1349,27 +1349,54 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
     st.markdown("<hr style='border-color: #333; margin-top: 10px; margin-bottom: 40px;'>", unsafe_allow_html=True)
 
-    # Bagian 4: Riwayat Pertandingan
-    st.markdown("#### 📜 Riwayat Pertandingan")
-    tim_filter = st.selectbox("Cari Jejak Tim:", ["Semua Tim"] + sorted(df_long['Team'].unique().tolist()))
+    # ==========================================
+    # BAGIAN 4: RIWAYAT PERTANDINGAN (MATCH HISTORY)
+    # ==========================================
+    st.markdown("### 📜 Riwayat Pertandingan")
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Rekam jejak seluruh pertandingan di musim ini.</div>", unsafe_allow_html=True)
+    
+    col_filter, col_kosong = st.columns([1, 3])
+    with col_filter:
+        tim_filter = st.selectbox("🔍 Cari Jejak Tim:", ["Semua Tim"] + sorted(df_long['Team'].dropna().unique().tolist()))
     
     hist_display = df_history[['Date', 'Week', 'Day', 'Match', 'Game', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']].copy()
+    
     if tim_filter != "Semua Tim":
         hist_display = hist_display[(hist_display['Team_(Blue)'] == tim_filter) | (hist_display['Opponent_(Red)'] == tim_filter)]
         
-    hist_display['Result'] = hist_display['Result'].apply(lambda x: "Blue Win" if x == 1 else "Red Win")
+    # Menggabungkan identitas match agar tabel lebih ringkas
+    hist_display['Match_ID'] = "W" + hist_display['Week'].astype(str) + " D" + hist_display['Day'].astype(str) + " M" + hist_display['Match'].astype(str).str.replace(".0", "") + " G" + hist_display['Game'].astype(str).str.replace(".0", "")
     
-    # [+] FIX: Ubah string menjadi datetime murni khusus untuk logika pengurutan
-    hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce')
+    # Visualisasi Hasil Pertandingan
+    hist_display['Result'] = hist_display['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
     
-    # Urutkan secara KRONOLOGIS murni (Tanggal terlama ke terbaru, lalu Match 1, 2, Game 1, 2)
-    # Jika ingin dari yang TERBARU (Hari ini) di atas, ganti ascending menjadi [False, False, True, True]
+    # Pemilihan dan pengurutan kolom akhir
+    hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+    
+    # Logika Pengurutan Murni (Tanggal terbaru di atas)
+    hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce', dayfirst=True)
     hist_display = hist_display.sort_values(
-        by=['Date_Sort', 'Week', 'Match', 'Game'], 
-        ascending=[False, False, False, True] 
+        by=['Date_Sort', 'Match_ID'], 
+        ascending=[False, False] 
     ).drop(columns=['Date_Sort'])
     
-    st.dataframe(hist_display, use_container_width=True, hide_index=True)
+    # Render tabel dengan konfigurasi lebar dinamis
+    st.dataframe(
+        hist_display, 
+        use_container_width=True, 
+        hide_index=True,
+        column_config={
+            "Date": st.column_config.TextColumn("Tanggal Pertandingan", width="medium"),
+            "Match_ID": st.column_config.TextColumn("Kode Match", width="small"),
+            "Team_(Blue)": st.column_config.TextColumn("Tim Biru (Blue)", width="medium"),
+            "Result": st.column_config.TextColumn("Hasil Pemenang", width="medium"),
+            "Opponent_(Red)": st.column_config.TextColumn("Tim Merah (Red)", width="medium"),
+            "Duration_min": st.column_config.TextColumn("Durasi", width="small"),
+            "MVP": st.column_config.TextColumn("MVP", width="medium")
+        }
+    )
+    
+    st.markdown("<br><br>", unsafe_allow_html=True)
 
 # endregion
 
