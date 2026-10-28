@@ -1368,17 +1368,15 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce')
     hist_display['Date'] = hist_display['Date_Sort'].dt.strftime('%d %b %Y').fillna(hist_display['Date'])
     
-    # 2. LOGIKA KODE MATCH CERDAS (Anti Aneh Saat Playoff)
+    # 2. LOGIKA KODE MATCH CERDAS
     def format_match_id(row):
         w = str(row['Week']).strip()
         d = str(row['Day']).strip()
         m = str(row['Match']).replace('.0', '').strip()
         g = str(row['Game']).replace('.0', '').strip()
         
-        # Jika Week berupa angka (Reguler), pakai format W-D-M-G lengkap
         if w.isdigit():
             return f"W{w}D{d}M{m}G{g}"
-        # Jika Playoffs, singkirkan huruf tambahan dan gabungkan langsung
         else:
             return f"{w}{d}{g}" 
             
@@ -1387,20 +1385,21 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # 3. Visualisasi Hasil Pertandingan Cepat
     hist_display['Result'] = hist_display['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
     
-    # PERBAIKAN BUG: Urutkan dulu datanya secara kronologis selagi kolom Date_Sort masih ada
+    # Urutkan secara kronologis
     hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False])
-    
-    # Setelah diurutkan, baru potong kolom akhirnya (kolom Date_Sort akan otomatis terbuang di sini)
     hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
     
-    # 4. RENDER TABEL BAWAAN STREAMLIT (Sangat Ringan & Cepat)
+    # 4. RENDER TABEL BAWAAN STREAMLIT (Dengan Styling Rata Tengah)
+    # Menyuntikkan Pandas Styler agar seluruh sel tabel menjadi rata tengah
+    styled_hist = hist_display.style.set_properties(**{'text-align': 'center'})
+    
     st.dataframe(
-        hist_display, 
+        styled_hist, 
         use_container_width=True, 
         hide_index=True,
         column_config={
             "Date": st.column_config.TextColumn("Tanggal", width="medium"),
-            "Match_ID": st.column_config.TextColumn("Kode Match", width="small"),
+            "Match_ID": st.column_config.TextColumn("Kode Match", width="medium"), # Ubah ke medium agar tidak sesak
             "Team_(Blue)": st.column_config.TextColumn("Tim Biru (Blue)", width="medium"),
             "Result": st.column_config.TextColumn("Hasil Pemenang", width="medium"),
             "Opponent_(Red)": st.column_config.TextColumn("Tim Merah (Red)", width="medium"),
