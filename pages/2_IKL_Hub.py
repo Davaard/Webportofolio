@@ -646,7 +646,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
     
     # 4. BRACKET PLAYOFFS
-    st.markdown("### 🏆 Playoff Bracket")
+    st.markdown("###Playoff###"
     df_playoff = df_master[df_master['Week'].isin(['Pl', 'Up', 'Lw', 'Gr'])].copy()
     
     if df_playoff.empty:
@@ -706,17 +706,17 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             
         with col_b2:
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Sf')], "UB Semifinals")
-            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True) # Spacer vertikal
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True) # Spacer vertikal
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinals")
             
         with col_b3:
             st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True) # Menurunkan posisi Final
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
-            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
             
         with col_b4:
-            st.markdown("<div style='height: 90px;'></div>", unsafe_allow_html=True) # Memposisikan Grand Final di tengah
+            st.markdown("<div style='height: 80px;'></div>", unsafe_allow_html=True) # Memposisikan Grand Final di tengah
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final")
 
     st.markdown("---")
