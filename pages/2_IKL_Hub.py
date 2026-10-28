@@ -1184,17 +1184,25 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
     # ==========================================
     st.markdown("### 🌍 Most Favorite Heroes Combos")
-    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi meta global dan tim yang paling sering menggunakannya.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi global meta berdasarkan keragaman tim yang menggunakannya dan rasio kelengketan taktik (>25%).</div>", unsafe_allow_html=True)
     
     if not df_history.empty:
         import itertools
         from collections import Counter
         
+        hero_freq = {}
         global_freq = {}
         global_wins = {}
         combo_matches = {}
         
-        # 1. MESIN EKSTRAKSI KOMBINASI HERO
+        # 1. MESIN EKSTRAKSI FREKUENSI HERO INDIVIDU (Untuk Baseline Kelengketan)
+        for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
+            b_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
+            r_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
+            for h in b_draft + r_draft:
+                hero_freq[h] = hero_freq.get(h, 0) + 1
+        
+        # 2. MESIN EKSTRAKSI KOMBINASI HERO
         for _, row in df_history.dropna(subset=['Heroes_Picked', 'Opponent_Picked']).iterrows():
             b_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
             r_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
@@ -1202,7 +1210,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             b_win = 1 if row['Result'] == 1.0 else 0
             r_win = 1 if row['Result'] == 0.0 else 0
             
-            def process_draft(draft, team, opp, win):
+            def process_draft(draft, team, win):
                 for size in range(2, 6):
                     for cb in itertools.combinations(sorted(draft), size):
                         global_freq[cb] = global_freq.get(cb, 0) + 1
@@ -1212,23 +1220,55 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                             combo_matches[cb] = []
                         combo_matches[cb].append(team)
                         
-            process_draft(b_draft, str(row['Team_(Blue)']), str(row['Opponent_(Red)']), b_win)
-            process_draft(r_draft, str(row['Opponent_(Red)']), str(row['Team_(Blue)']), r_win)
+            process_draft(b_draft, str(row['Team_(Blue)']), b_win)
+            process_draft(r_draft, str(row['Opponent_(Red)']), r_win)
 
-        # 2. LOGIKA PEMILIHAN META (Eliminasi Subset)
-        threshold_global = 5 
-        global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
+        # 3. PENYARINGAN KELENGKETAN META (>25%) & MINIMAL PICK
+        threshold_global = 3 # Syarat minimal dimainkan 3x agar tidak bias
+        global_valid = {}
         
+        for combo, f in global_freq.items():
+            if f >= threshold_global:
+                # Kalkulasi Rasio Kelengketan sama persis seperti di Team Profile!
+                if len(combo) == 2:
+                    g_base = min([hero_freq.get(h, 1) for h in combo])
+                else:
+                    g_base = max([0] + [global_freq.get(sc, 0) for sc in itertools.combinations(combo, len(combo)-1)])
+                
+                rasio = (f / g_base * 100) if g_base > 0 else 0
+                
+                # Hanya memasukkan kombo dengan rasio > 25% (Tervalidasi sebagai Global Meta)
+                if rasio > 25.0:
+                    global_valid[combo] = {
+                        'freq': f, 
+                        'wr': (global_wins[combo]/f)*100,
+                        'rasio': rasio,
+                        'unique_teams': len(set(combo_matches[combo])) # Menghitung keberagaman tim
+                    }
+                    
+        # Fallback jika ternyata data awal liga sangat sedikit
         if len(global_valid) < 10:
-            threshold_global = 2
-            global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
+            for combo, f in global_freq.items():
+                if f >= 2 and combo not in global_valid:
+                    global_valid[combo] = {'freq': f, 'wr': (global_wins[combo]/f)*100, 'rasio': 0, 'unique_teams': len(set(combo_matches[combo]))}
 
+        # 4. ELIMINASI SUBSET & PENENTUAN SUPREME META
         g_combos_to_remove, g_red_combos = set(), set()
         sorted_g_combos = sorted(list(global_valid.keys()), key=len, reverse=True)
         
         for i in range(len(sorted_g_combos)):
             c_large = sorted_g_combos[i]
             if c_large in g_combos_to_remove: continue
+            
+            # Cek apakah kombo ini Supreme Meta (WR kombo ini > WR Subset-nya)
+            wr_large = global_valid[c_large]['wr']
+            if len(c_large) == 2:
+                max_trio_wr = max([0] + [(global_wins[gc]/global_freq[gc])*100 for gc in global_freq if len(gc)==3 and set(c_large).issubset(set(gc))])
+                if wr_large > max_trio_wr: g_red_combos.add(c_large)
+            else:
+                g_base_wr = max([0] + [(global_wins.get(sc,0)/max(global_freq.get(sc,1),1))*100 for sc in itertools.combinations(c_large, len(c_large)-1)])
+                if wr_large > g_base_wr: g_red_combos.add(c_large)
+
             for j in range(i + 1, len(sorted_g_combos)):
                 c_small = sorted_g_combos[j]
                 if c_small in g_combos_to_remove: continue
@@ -1242,32 +1282,35 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         g_combos_to_remove.add(c_small)
                         g_red_combos.add(c_large)
                     else:
-                        if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < threshold_global: 
+                        if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < 3: 
                             g_combos_to_remove.add(c_small)
 
-        # MENGAMBIL TOP 10 KOMBO
-        top_10_combos = sorted({k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
-                              key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:10]
+        # 5. SORTING BERDASARKAN KEBERAGAMAN TIM (Unique Teams -> Length -> WR -> Freq)
+        top_10_combos = sorted(
+            {k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
+            key=lambda x: (x[1]['unique_teams'], len(x[0]), x[1]['wr'], x[1]['freq']), 
+            reverse=True
+        )[:10]
         
-        # 3. RENDER UI 2 KOLOM
+        # 6. RENDER UI 2 KOLOM
         if not top_10_combos:
-            st.info("Data pertandingan belum mencukupi untuk membentuk kombinasi hero.")
+            st.info("Data pertandingan belum mencukupi untuk membentuk kombinasi hero meta.")
         else:
             cols_combo = st.columns(2)
             for idx, (combo_tuple, stats) in enumerate(top_10_combos):
                 combo_name = " & ".join(combo_tuple)
                 
                 is_supreme = combo_tuple in g_red_combos
-                border_color = "#ff4b4b" if is_supreme else "#4caf50"
+                border_color = "#ff4b4b" if is_supreme else "#ffc107" # Merah untuk Supreme, Kuning untuk Global
                 icon_meta = "🌟" if is_supreme else "🔥"
+                label_meta = "Supreme Meta" if is_supreme else "Global Meta"
+                teks_rasio = f" ({stats['rasio']:.0f}%)" if stats['rasio'] > 0 else ""
                 
                 team_usage = Counter(combo_matches[combo_tuple])
                 top_3_teams = team_usage.most_common(3)
                 
-                # --- WADAH UTAMA ---
                 html = f"<div style='background-color: #24242e; border-left: 5px solid {border_color}; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: stretch;'>"
                 
-                # --- BAGIAN KIRI: FOTO HERO & STATS ---
                 html += "<div style='flex: 1.2; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;'>"
                 html += "<div style='display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;'>"
                 for hero in combo_tuple:
@@ -1279,16 +1322,15 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += "</div>"
                 
                 html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
-                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><span style='color: #ffc107;'>{icon_meta}</span> <b>{combo_name}</b></div>"
+                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><span style='color: {border_color};'>{icon_meta}</span> <b>{combo_name}</b></div>"
                 html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
+                html += f"<div style='font-size: 11px; font-weight: 800; color: {border_color}; margin-top: 4px;'>{label_meta}{teks_rasio}</div>"
                 html += "</div></div>"
                 
-                # --- BAGIAN KANAN: TOP USERS DENGAN SLOT KOSONG TETAP ---
                 html += "<div style='flex: 1; padding-left: 15px; display: flex; flex-direction: column; justify-content: center;'>"
                 html += "<div style='font-size: 11px; color: #a0a0a0; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;'>Top Users</div>"
                 html += "<div style='display: flex; flex-direction: column; gap: 6px;'>"
                 
-                # Selalu me-looping tepat 3 kali agar ukuran tinggi kartu konsisten!
                 for i in range(3):
                     if i < len(top_3_teams):
                         t_name, t_count = top_3_teams[i]
@@ -1303,7 +1345,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         html += f"<span style='color: {border_color}; font-size: 13px; font-weight: 800;'>{t_count}x</span>"
                         html += "</div>"
                     else:
-                        # SLOT KOSONG: Menjaga stabilitas tata letak (height sama persis)
                         html += "<div style='background: transparent; padding: 4px 8px; border-radius: 4px; height: 28px;'></div>"
                     
                 html += "</div></div>"
