@@ -22,7 +22,7 @@ st.markdown("""
     /* =========================================
        1. IMPORT FONTS DARI GOOGLE FONTS (WAJIB PALING ATAS!)
        ========================================= */
-    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Rubik Doodle Shadow&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
 
     /* 2. Target spesifik HANYA untuk kontainer paling atas di halaman utama */
     .main .block-container > div:first-child {
@@ -37,7 +37,7 @@ st.markdown("""
     
     /* 3. KELAS FONT UNTUK RECAP */
     .recap-kill {
-        font-family: 'Akronim', system-ui;
+        font-family: 'Rubik Doodle Shadow'
         font-size: 40px;
         color: transparent;
         -webkit-text-stroke: 1.5px #ff4b4b;
