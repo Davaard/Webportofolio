@@ -710,7 +710,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Sf')], "LB Semifinals")
             
         with col_b3:
-            st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True) # Menurunkan posisi Final
+            st.markdown("<div style='height: 35px;'></div>", unsafe_allow_html=True) # Menurunkan posisi Final
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Up') & (df_playoff['Day'] == 'Fl')], "UB Final")
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
             render_bracket_box(df_playoff[(df_playoff['Week'] == 'Lw') & (df_playoff['Day'] == 'Fl')], "LB Final")
