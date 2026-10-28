@@ -1183,8 +1183,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # ==========================================
     # BAGIAN 3: MOST FAVORITE BANS & PICKS (GLOBAL COMBOS)
     # ==========================================
-    st.markdown("### 🌍 Most Favorite Bans & Picks")
-    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan kombinasi meta global dan tim yang paling sering menggunakannya.</div>", unsafe_allow_html=True)
+    st.markdown("### 🌍 Most Favorite Heroes Combos")
+    st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan Top 10 kombinasi meta global dan tim yang paling sering menggunakannya.</div>", unsafe_allow_html=True)
     
     if not df_history.empty:
         import itertools
@@ -1210,7 +1210,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         
                         if cb not in combo_matches:
                             combo_matches[cb] = []
-                        # Menyimpan nama tim yang menggunakan kombo ini
                         combo_matches[cb].append(team)
                         
             process_draft(b_draft, str(row['Team_(Blue)']), str(row['Opponent_(Red)']), b_win)
@@ -1220,7 +1219,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         threshold_global = 5 
         global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
         
-        if len(global_valid) < 4:
+        if len(global_valid) < 10:
             threshold_global = 2
             global_valid = {combo: {'freq': f, 'wr': (global_wins[combo]/f)*100} for combo, f in global_freq.items() if f >= threshold_global}
 
@@ -1246,29 +1245,29 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                         if (global_valid[c_small]['freq'] - global_valid[c_large]['freq']) < threshold_global: 
                             g_combos_to_remove.add(c_small)
 
-        top_4_combos = sorted({k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
-                              key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:4]
+        # MENGAMBIL TOP 10 KOMBO
+        top_10_combos = sorted({k: v for k, v in global_valid.items() if k not in g_combos_to_remove}.items(), 
+                              key=lambda x: (len(x[0]), x[1]['wr'], x[1]['freq']), reverse=True)[:10]
         
         # 3. RENDER UI 2 KOLOM
-        if not top_4_combos:
+        if not top_10_combos:
             st.info("Data pertandingan belum mencukupi untuk membentuk kombinasi hero.")
         else:
             cols_combo = st.columns(2)
-            for idx, (combo_tuple, stats) in enumerate(top_4_combos):
+            for idx, (combo_tuple, stats) in enumerate(top_10_combos):
                 combo_name = " & ".join(combo_tuple)
                 
                 is_supreme = combo_tuple in g_red_combos
                 border_color = "#ff4b4b" if is_supreme else "#4caf50"
                 icon_meta = "🌟" if is_supreme else "🔥"
                 
-                # Menghitung Top 3 Tim yang menggunakan kombo ini
                 team_usage = Counter(combo_matches[combo_tuple])
                 top_3_teams = team_usage.most_common(3)
                 
-                # --- WADAH UTAMA (FLEXBOX KIRI-KANAN) ---
+                # --- WADAH UTAMA ---
                 html = f"<div style='background-color: #24242e; border-left: 5px solid {border_color}; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: stretch;'>"
                 
-                # --- BAGIAN KIRI: FOTO HERO & STATS KOMBO ---
+                # --- BAGIAN KIRI: FOTO HERO & STATS ---
                 html += "<div style='flex: 1.2; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px;'>"
                 html += "<div style='display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;'>"
                 for hero in combo_tuple:
@@ -1284,25 +1283,31 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
                 html += "</div></div>"
                 
-                # --- BAGIAN KANAN: TOP USERS (TIM) ---
+                # --- BAGIAN KANAN: TOP USERS DENGAN SLOT KOSONG TETAP ---
                 html += "<div style='flex: 1; padding-left: 15px; display: flex; flex-direction: column; justify-content: center;'>"
                 html += "<div style='font-size: 11px; color: #a0a0a0; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;'>Top Users</div>"
                 html += "<div style='display: flex; flex-direction: column; gap: 6px;'>"
                 
-                for t_name, t_count in top_3_teams:
-                    t_logo = get_logo_path(t_name)
-                    t_b64 = image_to_base64(t_logo) if t_logo else ""
-                    
-                    html += "<div style='display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px;'>"
-                    html += "<div style='display: flex; align-items: center; gap: 8px;'>"
-                    if t_b64:
-                        html += f"<img src='data:image/png;base64,{t_b64}' style='height: 20px; width: 20px; object-fit: contain;'>"
-                    html += f"<span style='color: white; font-size: 13px; font-weight: 700;'>{t_name}</span></div>"
-                    html += f"<span style='color: {border_color}; font-size: 13px; font-weight: 800;'>{t_count}x</span>"
-                    html += "</div>"
+                # Selalu me-looping tepat 3 kali agar ukuran tinggi kartu konsisten!
+                for i in range(3):
+                    if i < len(top_3_teams):
+                        t_name, t_count = top_3_teams[i]
+                        t_logo = get_logo_path(t_name)
+                        t_b64 = image_to_base64(t_logo) if t_logo else ""
+                        
+                        html += "<div style='display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; height: 28px;'>"
+                        html += "<div style='display: flex; align-items: center; gap: 8px;'>"
+                        if t_b64:
+                            html += f"<img src='data:image/png;base64,{t_b64}' style='height: 20px; width: 20px; object-fit: contain;'>"
+                        html += f"<span style='color: white; font-size: 13px; font-weight: 700;'>{t_name}</span></div>"
+                        html += f"<span style='color: {border_color}; font-size: 13px; font-weight: 800;'>{t_count}x</span>"
+                        html += "</div>"
+                    else:
+                        # SLOT KOSONG: Menjaga stabilitas tata letak (height sama persis)
+                        html += "<div style='background: transparent; padding: 4px 8px; border-radius: 4px; height: 28px;'></div>"
                     
                 html += "</div></div>"
-                html += "</div>" # Tutup Wadah Utama
+                html += "</div>"
                 
                 col_target = cols_combo[0] if idx % 2 == 0 else cols_combo[1]
                 with col_target:
