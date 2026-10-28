@@ -752,13 +752,13 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
                 # Logo Tim Kiri (Menyesuaikan posisi di sebelah kiri tulisan VS)
-                html += f"<div style='position: absolute; bottom: 12%; left: 13%;'>{html_a}</div>"
+                html += f"<div style='position: absolute; bottom: 12%; left: 10%;'>{html_a}</div>"
                 
                 # Logo Tim Kanan (Menyesuaikan posisi di sebelah kanan tulisan VS)
-                html += f"<div style='position: absolute; bottom: 12%; left: 45%;'>{html_b}</div>"
+                html += f"<div style='position: absolute; bottom: 12%; left: 35%;'>{html_b}</div>"
                 
                 # Teks Metrik dan Match ID di pojok kanan bawah
-                html += f"<div style='position: absolute; bottom: 10%; right: 7%; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 2px;'>{metric_value}</div>"
+                html += f"<div style='position: absolute; bottom: 10%; right: 10; text-align: right;'><div class='{font_class}' style='line-height: 1.1; margin-bottom: 2px;'>{metric_value}</div>"
                 html += f"<div style='color: #d1d1d1; font-size: 10px; font-weight: bold; font-family: sans-serif; letter-spacing: 1px;'>W{row_data['Week']}D{row_data['Day']}G{row_data['Game']}</div></div>"
                 html += f"</div>"
                 
@@ -830,13 +830,13 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html_mvp += f"<img src='data:image/png;base64,{bg_b64}' style='width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);'>"
                 
                 # Badge Total MVP di kiri atas
-                html_mvp += f"<div style='position: absolute; top: 8%; left: 8%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
+                html_mvp += f"<div style='position: absolute; top: 3%; left: 3%; background-color: white; color: black; font-weight: 900; font-size: 13px; padding: 2px 7px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.5); z-index: 3;'>{total_mvp}</div>"
                 
                 # Siluet Player Placeholder di tengah atas
                 html_mvp += f"<div style='position: absolute; top: 18%; width: 100%; text-align: center; z-index: 2;'><img src='data:image/png;base64,{player_avatar_b64}' style='width: 55%; object-fit: contain; opacity: 0.95;'></div>"
                 
                 # Nama Pemain di atas area hero
-                html_mvp += f"<div style='position: absolute; bottom: 18%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
+                html_mvp += f"<div style='position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 18px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); z-index: 3;'>{player_name}</div>"
                 
                 # Baris 3 Hero di bagian paling bawah kartu
                 html_mvp += hero_html
