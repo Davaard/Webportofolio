@@ -496,13 +496,19 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              logo_merah = get_logo_path(tim_merah) if tim_merah != "nan" else None
              vs_logo = "assets/Match/vs_outline_gold.png" 
              
-             html_biru = f"<img src='data:image/png;base64,{image_to_base64(logo_biru)}' style='height: 35px; object-fit: contain;'>" if logo_biru else "<span style='color: gray; font-weight: bold;'>TBA</span>"
-             html_merah = f"<img src='data:image/png;base64,{image_to_base64(logo_merah)}' style='height: 35px; object-fit: contain;'>" if logo_merah else "<span style='color: gray; font-weight: bold;'>TBA</span>"
-             waktu = row_data['Time'] if pd.notna(row_data['Time']) else 'TBA'
+             # Tim yang belum ada (TBD) akan menggunakan teks putih tegas
+             html_biru = f"<img src='data:image/png;base64,{image_to_base64(logo_biru)}' style='height: 35px; object-fit: contain;'>" if logo_biru else "<span style='color: white; font-weight: 800; font-size: 16px;'>TBD</span>"
+             html_merah = f"<img src='data:image/png;base64,{image_to_base64(logo_merah)}' style='height: 35px; object-fit: contain;'>" if logo_merah else "<span style='color: white; font-weight: 800; font-size: 16px;'>TBD</span>"
              
-             # Format HTML murni dirangkai satu baris agar tidak bocor jadi Code Block
+             # Logika Warna Waktu: Jika jam tersedia berwarna putih, jika TBA berwarna abu-abu
+             if pd.notna(row_data['Time']):
+                 waktu_html = f"<div style='font-size: 18px; color: white; font-weight: 800;'>{row_data['Time']}</div>"
+             else:
+                 waktu_html = f"<div style='font-size: 18px; color: gray; font-weight: 800;'>TBA</div>"
+             
+             # Format HTML murni dirangkai satu baris
              html = f"<div style='padding: 15px 0px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between;'>"
-             html += f"<div style='width: 25%; text-align: left;'><div style='font-size: 11px; color: gray; font-weight: bold;'>{row_data['Date']}</div><div style='font-size: 18px; color: white; font-weight: 800;'>{waktu}</div></div>"
+             html += f"<div style='width: 25%; text-align: left;'><div style='font-size: 11px; color: gray; font-weight: bold;'>{row_data['Date']}</div>{waktu_html}</div>"
              html += f"<div style='width: 45%; display: flex; justify-content: center; align-items: center; gap: 15px;'><div style='width: 40px; text-align: right;'>{html_biru}</div><img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 25px;'><div style='width: 40px; text-align: left;'>{html_merah}</div></div>"
              html += f"<div style='width: 30%; text-align: right; font-size: 11px; color: gray; line-height: 1.3; font-weight: 600;'>{get_match_phase(row_data)}</div></div>"
              return html
@@ -514,7 +520,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up1:
                  for _, row_data in df_hari_1.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 #st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari</p>", unsafe_allow_html=True)
                      
          # Render Kolom Kanan (Hari Kedua, jika ada)
          if len(tanggal_unik) > 1:
@@ -523,7 +528,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
              with col_up2:
                  for _, row_data in df_hari_2.iterrows():
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
-                 #st.markdown("<p style='text-align: right; font-size: 10px; color: gray; margin-top: 10px;'>*Hanya menampilkan jadwal berikutnya untuk satu hari di hari berikutnya</p>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
