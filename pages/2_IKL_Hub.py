@@ -22,6 +22,54 @@ st.markdown("""
         padding-bottom: 0.5rem;
         border-bottom: 1px solid rgba(255,255,255,0.1); /* Garis batas tipis nan elegan */
     }
+    
+    /* =========================================
+       1. IMPORT FONTS DARI GOOGLE FONTS (FASE 1)
+       ========================================= */
+    @import url('https://fonts.googleapis.com/css2?family=Akronim&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
+
+    /* 2. KELAS FONT UNTUK RECAP (Nanti dipakai di Fase 3) */
+    .recap-kill {
+        font-family: 'Akronim', system-ui;
+        font-size: 55px;
+        color: transparent;
+        -webkit-text-stroke: 1.5px #ff4b4b; /* Merah darah tegas */
+        margin-bottom: -10px;
+    }
+    .recap-time {
+        font-family: 'Londrina Shadow', display;
+        font-size: 45px;
+        color: #4caf50; /* Hijau */
+    }
+    .recap-match-id {
+        font-family: 'Rajdhani', sans-serif; /* Placeholder sementara yang kaku ala Esports */
+        font-weight: 700;
+        font-size: 35px;
+        color: transparent;
+        -webkit-text-stroke: 1px #ffc107; /* Outline Emas */
+        letter-spacing: 2px;
+    }
+    
+    /* 3. KELAS FONT UNTUK TEKS GENERAL (League Info dll) */
+    .esports-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    .esports-text {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 400;
+        color: #d1d1d1;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: justify;
+    }
+    .highlight-text {
+        color: #00d2ff;
+        font-weight: 600;
+    }
     </style>
 """, unsafe_allow_html=True)
 # =========================================
@@ -578,12 +626,23 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     st.markdown("#### 📜 Riwayat Pertandingan")
     tim_filter = st.selectbox("Cari Jejak Tim:", ["Semua Tim"] + sorted(df_long['Team'].unique().tolist()))
     
-    hist_display = df_history[['Date', 'Week', 'Match', 'Game', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']].copy()
+    hist_display = df_history[['Date', 'Week', 'Day', 'Match', 'Game', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']].copy()
     if tim_filter != "Semua Tim":
         hist_display = hist_display[(hist_display['Team_(Blue)'] == tim_filter) | (hist_display['Opponent_(Red)'] == tim_filter)]
         
     hist_display['Result'] = hist_display['Result'].apply(lambda x: "Blue Win" if x == 1 else "Red Win")
-    st.dataframe(hist_display.sort_values(by=['Date', 'Match', 'Game'], ascending=[False, False, True]), use_container_width=True, hide_index=True)
+    
+    # [+] FIX: Ubah string menjadi datetime murni khusus untuk logika pengurutan
+    hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce')
+    
+    # Urutkan secara KRONOLOGIS murni (Tanggal terlama ke terbaru, lalu Match 1, 2, Game 1, 2)
+    # Jika ingin dari yang TERBARU (Hari ini) di atas, ganti ascending menjadi [False, False, True, True]
+    hist_display = hist_display.sort_values(
+        by=['Date_Sort', 'Week', 'Match', 'Game'], 
+        ascending=[False, False, False, True] 
+    ).drop(columns=['Date_Sort'])
+    
+    st.dataframe(hist_display, use_container_width=True, hide_index=True)
 
 # endregion
 
