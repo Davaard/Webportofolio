@@ -1349,7 +1349,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
     st.markdown("<hr style='border-color: #333; margin-top: 10px; margin-bottom: 40px;'>", unsafe_allow_html=True)
 
-# ==========================================
+    # ==========================================
     # BAGIAN 4: RIWAYAT PERTANDINGAN (MATCH HISTORY)
     # ==========================================
     st.markdown("### 📜 Riwayat Pertandingan")
@@ -1387,11 +1387,11 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # 3. Visualisasi Hasil Pertandingan Cepat
     hist_display['Result'] = hist_display['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
     
-    # Pemilihan dan pengurutan kolom akhir
-    hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+    # PERBAIKAN BUG: Urutkan dulu datanya secara kronologis selagi kolom Date_Sort masih ada
+    hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False])
     
-    # Urutkan secara kronologis (Dari yang terbaru ke terlama)
-    hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False]).drop(columns=['Date_Sort'])
+    # Setelah diurutkan, baru potong kolom akhirnya (kolom Date_Sort akan otomatis terbuang di sini)
+    hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
     
     # 4. RENDER TABEL BAWAAN STREAMLIT (Sangat Ringan & Cepat)
     st.dataframe(
