@@ -1131,10 +1131,9 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     # Fungsi pembantu untuk HTML baris
     def render_meta_row(hero_name, metric_text, is_ban=False):
         h_path = get_hero_path(hero_name)
-        border_color = get_border_color(hero_name) # Warna otomatis mengikuti Meta global
+        border_color = get_border_color(hero_name)
         img_b64 = image_to_base64(h_path) if h_path else ""
         
-        # Efek grayscale/gelap jika dia adalah hero yang di-banned
         filter_css = "filter: grayscale(40%) brightness(80%);" if is_ban else ""
         
         if img_b64:
@@ -1142,12 +1141,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         else:
             img_html = f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero_name}</div>"
             
-        return f"""
-        <div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-right: 20px;'>
-            {img_html}
-            <div style='color: white; font-weight: 800; font-size: 16px; font-family: "Montserrat", sans-serif;'>{metric_text}</div>
-        </div>
-        """
+        # HTML ditulis dalam satu baris agar tidak memicu bug code block di Streamlit
+        return f"<div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-right: 20px;'>{img_html}<div style='color: white; font-weight: 800; font-size: 16px; font-family: \"Montserrat\", sans-serif;'>{metric_text}</div></div>"
 
     # 2. RENDER UI 
     col_meta1, col_meta2 = st.columns([2.5, 1.2]) 
