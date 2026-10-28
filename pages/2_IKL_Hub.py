@@ -862,7 +862,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 from collections import Counter
                 top_3_heroes = [h[0] for h in Counter(heroes_list).most_common(3)]
                 
-                hero_html = "<div style='position: absolute; bottom: 4%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
+                hero_html = "<div style='position: absolute; bottom: 6%; width: 100%; display: flex; gap: 8px; justify-content: center; z-index: 3;'>"
                 for h in top_3_heroes:
                     h_path = get_hero_path(h)
                     if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='height: 42px; width: 42px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover;'>"
