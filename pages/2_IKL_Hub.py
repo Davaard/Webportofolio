@@ -254,10 +254,11 @@ else:
 st.markdown("<br>", unsafe_allow_html=True)
 col_nav1, col_nav2, col_nav3 = st.columns(3)
 
-# Pastikan path ini benar mengarah ke gambarmu
+# Memuat gambar aset navigasi sebagai background
 nav_bg_path = "assets/selected_mode_display.png"
 nav_bg_base64 = image_to_base64(nav_bg_path) if os.path.exists(nav_bg_path) else ""
 
+# Render tombol dengan susunan dinamis
 with col_nav1:
     if st.button(susunan[0], use_container_width=True): st.session_state['menu_ikl'] = susunan[0]; st.rerun()
 with col_nav2:
