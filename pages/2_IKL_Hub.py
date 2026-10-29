@@ -1133,7 +1133,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             'Pct': counter_pct
         })
 
-    # 2. RENDER UI CUSTOM (Sesuai Mockup Desain Fiks - Tanpa Indentasi)
+    # 2. RENDER UI CUSTOM (Desain Card Gradasi + Border Gradasi)
     col_meta1, col_meta2 = st.columns([2.5, 1.2]) 
     
     vs_logo_path = "assets/Match/vs_full_gold.png"
@@ -1158,7 +1158,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             c_img = f"<img src='data:image/png;base64,{image_to_base64(c_path)}' style='width: 50px; height: 50px; border: 2px solid #d4af37; border-radius: 6px; object-fit: cover;'>" if c_path else f"<div style='width: 50px; height: 50px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{counter_hero}</div>"
             vs_img = f"<img src='data:image/png;base64,{vs_b64}' style='height: 38px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));'>" if vs_b64 else "<span style='color:#d4af37; font-weight:900; font-style:italic;'>VS</span>"
 
-            html_kiri += f"<div style='background: linear-gradient(135deg, #020147 35%, #430000 65%); border: 2px solid #d4af37; border-radius: 8px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><div style='display: flex; align-items: center; justify-content: space-between; width: 42%;'><div style='display: flex; align-items: center; gap: 15px;'>{t_img}<span style='color: white; font-weight: 700; font-size: 17px; letter-spacing: 0.5px;'>{target_hero}</span></div><span style='color: white; font-weight: 800; font-size: 17px;'>{pick_count}x</span></div><div style='width: 10%; text-align: center; display: flex; align-items: center; justify-content: center;'>{vs_img}</div><div style='display: flex; align-items: center; justify-content: space-between; width: 42%;'><span style='color: white; font-weight: 800; font-size: 17px;'>{pct:.0f}%</span><div style='display: flex; align-items: center; gap: 15px;'><span style='color: white; font-weight: 700; font-size: 17px; letter-spacing: 0.5px;'>{counter_hero}</span>{c_img}</div></div></div>"
+            # Trik Wrapper untuk Border Gradasi (merah tua ke biru) & flex: 1 text-align: center untuk nama
+            html_kiri += f"<div style='background: linear-gradient(to right, #7a0b0b, #10105c); padding: 2px; border-radius: 9px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><div style='background: linear-gradient(135deg, #020147 35%, #430000 65%); border-radius: 7px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center; width: 42%;'>{t_img}<div style='flex: 1; text-align: center;'><span style='color: white; font-weight: 700; font-size: 19px; letter-spacing: 0.5px;'>{target_hero}</span></div><span style='color: white; font-weight: 800; font-size: 19px;'>{pick_count}x</span></div><div style='width: 10%; text-align: center; display: flex; align-items: center; justify-content: center;'>{vs_img}</div><div style='display: flex; align-items: center; width: 42%;'><span style='color: white; font-weight: 800; font-size: 19px;'>{pct:.0f}%</span><div style='flex: 1; text-align: center;'><span style='color: white; font-weight: 700; font-size: 19px; letter-spacing: 0.5px;'>{counter_hero}</span></div>{c_img}</div></div></div>"
             
         html_kiri += "</div>"
         st.markdown(html_kiri, unsafe_allow_html=True)
@@ -1174,7 +1175,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             else:
                 h_img = f"<div style='position: relative; width: 50px; height: 50px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'><img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>{hero}</div>"
 
-            html_kanan += f"<div style='background-color: #24242e; border: 2px solid #d4af37; border-radius: 8px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><div style='display: flex; align-items: center; gap: 15px;'>{h_img}<span style='color: white; font-weight: 700; font-size: 17px; letter-spacing: 0.5px;'>{hero}</span></div><span style='color: white; font-weight: 800; font-size: 17px;'>{count}x</span></div>"
+            html_kanan += f"<div style='background-color: #24242e; border: 2px solid #8c3636; border-radius: 8px; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><div style='display: flex; align-items: center; gap: 15px;'>{h_img}<span style='color: white; font-weight: 700; font-size: 19px; letter-spacing: 0.5px;'>{hero}</span></div><span style='color: white; font-weight: 800; font-size: 19px;'>{count}x</span></div>"
             
         html_kanan += "</div>"
         st.markdown(html_kanan, unsafe_allow_html=True)
