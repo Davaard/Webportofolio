@@ -1168,7 +1168,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
             # Sintaks Gradasi Miring: linear-gradient(135deg, warna_biru 35%, warna_merah 65%)
             html_kiri += f"""
-            <div style="background: linear-gradient(135deg, #020097 35%, #a50101 65%); border: 2px solid #d4af37; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <div style="background: linear-gradient(135deg, #020070 35%, #750000 65%); border: 2px solid #d4af37; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                 <!-- Kiri: Pick -->
                 <div style="display: flex; align-items: center; gap: 15px; width: 35%;">
                     {t_img}
