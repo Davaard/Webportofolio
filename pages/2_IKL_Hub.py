@@ -196,21 +196,32 @@ def get_hero_path(hero_name):
         if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
     return None
 
-def render_combo_card(combo_tuple, warna, ikon, teks):
+def render_combo_card(combo_tuple, warna, freq, wr, label):
     tema = {
-        "error": {"bg": "rgba(255, 75, 75, 0.15)", "border": "rgba(255, 75, 75, 1)"},
-        "warning": {"bg": "rgba(255, 190, 0, 0.15)", "border": "rgba(255, 190, 0, 1)"},
-        "success": {"bg": "rgba(9, 171, 59, 0.15)", "border": "rgba(9, 171, 59, 1)"}
+        "error": {"border": "#ff4b4b"},
+        "warning": {"border": "#ffc107"},
+        "success": {"border": "#4caf50"}
     }
-    bg, brdr = tema[warna]["bg"], tema[warna]["border"]
-    img_html = "<div style='display: flex; gap: 2%; margin-bottom: 12px;'>"
-    for i in range(5):
-        if i < len(combo_tuple):
-            p = get_hero_path(combo_tuple[i])
-            img_html += f"<img src='data:image/png;base64,{image_to_base64(p)}' style='width: 18.4%; border-radius: 8px; box-shadow: 1px 2px 5px rgba(0,0,0,0.3); aspect-ratio: 1/1;'>" if p else f"<div style='width: 18.4%; background: #444; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center; aspect-ratio: 1/1;'>{combo_tuple[i]}</div>"
-        else: img_html += "<div style='width: 18.4%; aspect-ratio: 1/1;'></div>"
-    img_html += "</div>"
-    st.markdown(f"<div style='background: {bg}; border-left: 5px solid {brdr}; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>{img_html}<div style='font-size: 14.5px; line-height: 1.5;'><b>{ikon}</b> {teks.replace(chr(10), '<br>')}</div></div>", unsafe_allow_html=True)
+    brdr = tema.get(warna, {"border": "#4caf50"})["border"]
+    combo_name = " & ".join(combo_tuple)
+    
+    html = f"<div style='background-color: #24242e; border-left: 5px solid {brdr}; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+    html += "<div style='display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;'>"
+    for hero in combo_tuple:
+        h_path = get_hero_path(hero)
+        if h_path:
+            html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);'>"
+        else:
+            html += f"<div style='width: 45px; height: 45px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+    html += "</div>"
+    
+    html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
+    html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><b>{combo_name}</b></div>"
+    html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{freq}x</b> | WR: <b style='color: white;'>{wr:.0f}%</b></div>"
+    html += f"<div style='font-size: 11px; font-weight: 800; color: {brdr}; margin-top: 4px;'>{label}</div>"
+    html += "</div></div>"
+    
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_logo_card(logo_path, team_name):
     if logo_path and os.path.exists(logo_path):
@@ -422,11 +433,15 @@ def get_signature_combos(tim_target):
             g_base_wr = max([0] + [(global_wins.get(sc,0)/max(global_freq.get(sc,1),1))*100 for sc in combinations(combo, len(combo)-1)])
             is_red = g_wr > g_base_wr
         rasio = (g_freq / g_base * 100) if g_base > 0 else 0
+        
+        # Emoji dihapus dan output diubah menjadi variabel mentah
         if rasio > 25.0:
-            w, i, s = ("error", "🌟", f"Supreme Meta ({rasio:.0f}%)") if is_red else ("warning", "🔥", f"Global Meta ({rasio:.0f}%)")
+            w, s = ("error", f"Supreme Meta ({rasio:.0f}%)") if is_red else ("warning", f"Global Meta ({rasio:.0f}%)")
         else:
-            w, i, s = "success", "🌿", "Team Signature Pick"
-        hasil_ui.append({"warna": w, "ikon": i, "teks": f"**{', '.join(combo[:-1])} & {combo[-1]}**\n\n🎯 Pick: **{stats['freq']}x** | WR: **{stats['wr']:.0f}%**\n📊 **{s}**", "combo": combo})
+            w, s = ("success", "Team Signature Pick")
+            
+        hasil_ui.append({"warna": w, "freq": stats['freq'], "wr": stats['wr'], "label": s, "combo": combo})
+        
     return hasil_ui
 # endregion
 
@@ -970,11 +985,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         most_mvp_player = mvp_team.idxmax() if not mvp_team.empty else "Pemain Kunci"
         
         kombo_andalan = get_signature_combos(tim_unstoppable)
-        top_combo_count = 0
-        if kombo_andalan:
-            import re
-            match_freq = re.search(r'Pick:\s*\*\*(\d+)x\*\*', kombo_andalan[0]['teks'])
-            if match_freq: top_combo_count = match_freq.group(1)
         
         # 2. LOGIKA WARNA BORDER (GLOBAL PRESENCE) & DATA DRAFT
         total_global_matches = len(df_history)
@@ -1030,7 +1040,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 cols_k = st.columns(3)
                 for i, k in enumerate(kombo_andalan[:3]):
                     with cols_k[i]:
-                        render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+                        render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                         
             html_pb = "<div style='display: flex; gap: 20px; margin-top: 10px;'>"
             
@@ -1295,7 +1305,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 
                 is_supreme = combo_tuple in g_red_combos
                 border_color = "#ff4b4b" if is_supreme else "#ffc107"
-                icon_meta = "🌟" if is_supreme else "🔥"
                 label_meta = "Supreme Meta" if is_supreme else "Global Meta"
                 teks_rasio = f" ({stats['rasio']:.0f}%)" if stats['rasio'] > 0 else ""
                 
@@ -1315,7 +1324,8 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += "</div>"
                 
                 html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
-                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><span style='color: {border_color};'>{icon_meta}</span> <b>{combo_name}</b></div>"
+                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><b>{combo_name}</b></div>"
+                html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
                 html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
                 html += f"<div style='font-size: 11px; font-weight: 800; color: {border_color}; margin-top: 4px;'>{label_meta}{teks_rasio}</div>"
                 html += "</div></div>"
@@ -1489,7 +1499,7 @@ elif menu_utama == "🛡️ Team Profiling":
             cols = st.columns(len(kombo_A))
             for idx, k in enumerate(kombo_A):
                 with cols[idx]:
-                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+                    render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
 # endregion
 
 # region H2H
@@ -1613,7 +1623,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 st.info("Belum ada kombinasi andalan.")
             else:
                 for k in kombo_A:
-                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+                    render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                 
         with divider:
             st.markdown("<div style='border-left: 2px solid gray; height: 100%; min-height: 250px;'></div>", unsafe_allow_html=True)
@@ -1624,5 +1634,5 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 st.info("Belum ada kombinasi andalan.")
             else:
                 for k in kombo_B:
-                    render_combo_card(k["combo"], k["warna"], k["ikon"], k["teks"])
+                    render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
 # endregion
