@@ -1326,7 +1326,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
                 html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><b>{combo_name}</b></div>"
                 html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
-                html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{stats['freq']}x</b> | WR: <b style='color: white;'>{stats['wr']:.0f}%</b></div>"
                 html += f"<div style='font-size: 11px; font-weight: 800; color: {border_color}; margin-top: 4px;'>{label_meta}{teks_rasio}</div>"
                 html += "</div></div>"
                 
