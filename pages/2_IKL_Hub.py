@@ -1104,24 +1104,21 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             blue_draft = [h.strip() for h in str(row['Heroes_Picked']).split(',')]
             red_draft = [h.strip() for h in str(row['Opponent_Picked']).split(',')]
             
-            # Pastikan draft lengkap 5v5 untuk menghindari error indeks
             if len(blue_draft) == 5 and len(red_draft) == 5:
-                # Jika hero dipakai Tim Biru
                 if hero in blue_draft:
                     hero_total_matches += 1
                     idx = blue_draft.index(hero)
-                    if idx in [0, 3]: # Clash (0) & Farm (3) -> Strict 1v1
+                    if idx in [0, 3]: 
                         counters.append(red_draft[idx])
-                    elif idx in [1, 2, 4]: # Jungle (1), Mid (2), Roam (4) -> Flex
+                    elif idx in [1, 2, 4]: 
                         counters.extend([red_draft[1], red_draft[2], red_draft[4]])
                         
-                # Jika hero dipakai Tim Merah
                 elif hero in red_draft:
                     hero_total_matches += 1
                     idx = red_draft.index(hero)
-                    if idx in [0, 3]: # Clash & Farm
+                    if idx in [0, 3]: 
                         counters.append(blue_draft[idx])
-                    elif idx in [1, 2, 4]: # Jungle, Mid, Roam
+                    elif idx in [1, 2, 4]: 
                         counters.extend([blue_draft[1], blue_draft[2], blue_draft[4]])
                         
         if counters:
@@ -1137,53 +1134,76 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             'Counter': counter_hero,
             'Pct': counter_pct
         })
-    
-    # Fungsi pembantu untuk HTML baris
-   # Fungsi pembantu untuk HTML baris (DIREVISI: Border warna gold seragam)
-    def render_meta_row(hero_name, metric_text, is_ban=False):
-        h_path = get_hero_path(hero_name)
-        border_color = "#d4af37" # Menggunakan warna emas statis agar seragam
-        img_b64 = image_to_base64(h_path) if h_path else ""
-        
-        filter_css = "filter: grayscale(40%) brightness(80%);" if is_ban else ""
-        
-        if img_b64:
-            img_html = f"<img src='data:image/png;base64,{img_b64}' style='width: 48px; height: 48px; object-fit: cover; border: 2.5px solid {border_color}; border-radius: 6px; {filter_css}'>"
-        else:
-            img_html = f"<div style='width: 48px; height: 48px; background: #444; border: 2.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero_name}</div>"
-            
-        return f"<div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-right: 20px;'>{img_html}<div style='color: white; font-weight: 800; font-size: 16px; font-family: \"Montserrat\", sans-serif;'>{metric_text}</div></div>"
 
-    # 2. RENDER UI 
+    # 2. RENDER UI CUSTOM (Desain Card Gradasi)
     col_meta1, col_meta2 = st.columns([2.5, 1.2]) 
     
+    # Memuat logo VS dari aset (Pastikan kamu punya file ini!)
+    vs_logo_path = "assets/Match/vs_outline_gold.png"
+    vs_b64 = image_to_base64(vs_logo_path)
+    
     with col_meta1:
-        # Kotak Kiri (Picks & Counters) dibungkus flexbox untuk menjajarkan 2 kolom
-        html_kiri = "<div style='background-color: #2a2a35; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex;'>"
-        
-        # Sub-kolom Most Picks (Target)
-        html_kiri += "<div style='flex: 1; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px;'>"
-        html_kiri += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Picks</h4>"
-        for hero, count in top_5_picks.items():
-            html_kiri += render_meta_row(hero, f"{count}x")
+        html_kiri = "<div style='padding-right: 10px;'>"
+        html_kiri += "<div style='display: flex; justify-content: space-between; padding: 0 20px; margin-bottom: 12px;'>"
+        html_kiri += "<h4 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Picks</h4>"
+        html_kiri += "<h4 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Counter Picks</h4>"
         html_kiri += "</div>"
         
-        # Sub-kolom Counter Picks (Jawaban / Relasi)
-        html_kiri += "<div style='flex: 1; padding-left: 20px;'>"
-        html_kiri += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Counter Picks</h4>"
+        # Iterasi pembuatan Card Pick vs Counter
         for data in counter_pick_results:
-            html_kiri += render_meta_row(data['Counter'], f"{data['Pct']:.0f}%")
-        html_kiri += "</div>"
-        
+            target_hero = data['Target']
+            counter_hero = data['Counter']
+            pct = data['Pct']
+            pick_count = top_5_picks.get(target_hero, 0)
+            
+            t_path = get_hero_path(target_hero)
+            c_path = get_hero_path(counter_hero)
+            
+            # Foto Hero
+            t_img = f"<img src='data:image/png;base64,{image_to_base64(t_path)}' style='width: 48px; height: 48px; border: 2px solid #d4af37; border-radius: 6px; object-fit: cover;'>" if t_path else f"<div style='width: 48px; height: 48px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{target_hero}</div>"
+            c_img = f"<img src='data:image/png;base64,{image_to_base64(c_path)}' style='width: 48px; height: 48px; border: 2px solid #d4af37; border-radius: 6px; object-fit: cover;'>" if c_path else f"<div style='width: 48px; height: 48px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{counter_hero}</div>"
+            
+            # Logo VS
+            vs_img = f"<img src='data:image/png;base64,{vs_b64}' style='height: 32px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));'>" if vs_b64 else "<span style='color:#d4af37; font-weight:900; font-style:italic;'>VS</span>"
+
+            # Sintaks Gradasi Miring: linear-gradient(135deg, warna_biru 35%, warna_merah 65%)
+            html_kiri += f"""
+            <div style="background: linear-gradient(135deg, #020097 35%, #a50101 65%); border: 2px solid #d4af37; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                <!-- Kiri: Pick -->
+                <div style="display: flex; align-items: center; gap: 15px; width: 35%;">
+                    {t_img}
+                    <span style="color: white; font-weight: 800; font-size: 16px;">{pick_count}x</span>
+                </div>
+                <!-- Tengah: VS -->
+                <div style="width: 20%; text-align: center; display: flex; align-items: center; justify-content: center;">
+                    {vs_img}
+                </div>
+                <!-- Kanan: Counter -->
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 15px; width: 35%;">
+                    {c_img}
+                    <span style="color: white; font-weight: 800; font-size: 16px;">{pct:.0f}%</span>
+                </div>
+            </div>
+            """
+            
         html_kiri += "</div>"
         st.markdown(html_kiri, unsafe_allow_html=True)
         
     with col_meta2:
-        # Kotak Kanan (Bans)
-        html_kanan = "<div style='background-color: #2a2a35; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
-        html_kanan += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif;'>Most Banned Hero</h4>"
+        # Kotak Kanan (Bans) dengan latar belakang gelap pekat sesuai desain
+        html_kanan = "<div style='background-color: #1a1a24; border-radius: 12px; padding: 25px 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); height: 100%; display: flex; flex-direction: column; align-items: center;'>"
+        html_kanan += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif; font-size: 15px; text-align: center;'>Most Banned Hero</h4>"
+        
         for hero, count in top_5_bans.items():
-            html_kanan += render_meta_row(hero, f"{count}x", is_ban=True)
+            h_path = get_hero_path(hero)
+            h_img = f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); filter: grayscale(20%);'>" if h_path else f"<div style='width: 48px; height: 48px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+            
+            html_kanan += f"""
+            <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 16px; justify-content: center;'>
+                {h_img}
+                <span style='color: white; font-weight: 800; font-size: 16px; width: 40px;'>{count}x</span>
+            </div>
+            """
         html_kanan += "</div>"
         
         st.markdown(html_kanan, unsafe_allow_html=True)
