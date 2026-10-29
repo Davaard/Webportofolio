@@ -1080,13 +1080,11 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     st.markdown("### 📊 Most Efective Tactic Available")
     
     # 1. PERSIAPAN DATA GLOBAL
-    # Global Picks (menggunakan data df_history untuk memastikan format Blue/Red utuh)
     picks_b = df_history['Heroes_Picked'].dropna().astype(str).str.split(',').explode().str.strip()
     picks_r = df_history['Opponent_Picked'].dropna().astype(str).str.split(',').explode().str.strip()
     all_picks_global = pd.concat([picks_b, picks_r]).value_counts()
     top_5_picks = all_picks_global.head(5)
     
-    # Global Bans
     bans_b_global = df_history['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
     bans_r_global = df_history['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
     all_bans_global = pd.concat([bans_b_global, bans_r_global]).value_counts()
@@ -1135,18 +1133,20 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             'Pct': counter_pct
         })
 
-    # 2. RENDER UI CUSTOM (Desain Card Gradasi)
+    # 2. RENDER UI CUSTOM (Sesuai Mockup Desain Fiks)
     col_meta1, col_meta2 = st.columns([2.5, 1.2]) 
     
-    # Memuat logo VS dari aset (Pastikan kamu punya file ini!)
-    vs_logo_path = "assets/Match/vs_outline_gold.png"
+    # Memuat logo VS dan logo Banned dari aset 
+    vs_logo_path = "assets/Match/vs_full_gold.png"
     vs_b64 = image_to_base64(vs_logo_path)
+    
+    banned_logo_path = "assets/Match/banned.png"
+    banned_b64 = image_to_base64(banned_logo_path)
     
     with col_meta1:
         html_kiri = "<div style='padding-right: 10px;'>"
-        html_kiri += "<div style='display: flex; justify-content: space-between; padding: 0 20px; margin-bottom: 12px;'>"
-        html_kiri += "<h4 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Picks</h4>"
-        html_kiri += "<h4 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Counter Picks</h4>"
+        html_kiri += "<div style='padding: 0 5px; margin-bottom: 12px;'>"
+        html_kiri += "<h4 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Picked Heroes and its counter pick</h4>"
         html_kiri += "</div>"
         
         # Iterasi pembuatan Card Pick vs Counter
@@ -1159,29 +1159,32 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             t_path = get_hero_path(target_hero)
             c_path = get_hero_path(counter_hero)
             
-            # Foto Hero
             t_img = f"<img src='data:image/png;base64,{image_to_base64(t_path)}' style='width: 48px; height: 48px; border: 2px solid #d4af37; border-radius: 6px; object-fit: cover;'>" if t_path else f"<div style='width: 48px; height: 48px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{target_hero}</div>"
             c_img = f"<img src='data:image/png;base64,{image_to_base64(c_path)}' style='width: 48px; height: 48px; border: 2px solid #d4af37; border-radius: 6px; object-fit: cover;'>" if c_path else f"<div style='width: 48px; height: 48px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{counter_hero}</div>"
-            
-            # Logo VS
-            vs_img = f"<img src='data:image/png;base64,{vs_b64}' style='height: 32px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));'>" if vs_b64 else "<span style='color:#d4af37; font-weight:900; font-style:italic;'>VS</span>"
+            vs_img = f"<img src='data:image/png;base64,{vs_b64}' style='height: 38px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));'>" if vs_b64 else "<span style='color:#d4af37; font-weight:900; font-style:italic;'>VS</span>"
 
-            # Sintaks Gradasi Miring: linear-gradient(135deg, warna_biru 35%, warna_merah 65%)
+            # Sintaks Gradasi Miring sesuai parameter desain: linear-gradient(135deg, #020147, #430000)
             html_kiri += f"""
-            <div style="background: linear-gradient(135deg, #020070 35%, #750000 65%); border: 2px solid #d4af37; border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <div style="background: linear-gradient(135deg, #020147 35%, #430000 65%); border: 2px solid #d4af37; border-radius: 8px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                 <!-- Kiri: Pick -->
-                <div style="display: flex; align-items: center; gap: 15px; width: 35%;">
-                    {t_img}
-                    <span style="color: white; font-weight: 800; font-size: 16px;">{pick_count}x</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        {t_img}
+                        <span style="color: white; font-weight: 700; font-size: 15px;">{target_hero}</span>
+                    </div>
+                    <span style="color: white; font-weight: 800; font-size: 15px;">{pick_count}x</span>
                 </div>
                 <!-- Tengah: VS -->
-                <div style="width: 20%; text-align: center; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 10%; text-align: center; display: flex; align-items: center; justify-content: center;">
                     {vs_img}
                 </div>
                 <!-- Kanan: Counter -->
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 15px; width: 35%;">
-                    {c_img}
-                    <span style="color: white; font-weight: 800; font-size: 16px;">{pct:.0f}%</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
+                    <span style="color: white; font-weight: 800; font-size: 15px;">{pct:.0f}%</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="color: white; font-weight: 700; font-size: 15px;">{counter_hero}</span>
+                        {c_img}
+                    </div>
                 </div>
             </div>
             """
@@ -1190,18 +1193,31 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         st.markdown(html_kiri, unsafe_allow_html=True)
         
     with col_meta2:
-        # Kotak Kanan (Bans) dengan latar belakang gelap pekat sesuai desain
-        html_kanan = "<div style='background-color: #1a1a24; border-radius: 12px; padding: 25px 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); height: 100%; display: flex; flex-direction: column; align-items: center;'>"
-        html_kanan += "<h4 style='color: white; margin-top: 0; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif; font-size: 15px; text-align: center;'>Most Banned Hero</h4>"
+        # Kotak Kanan (Bans) dengan border emas
+        html_kanan = "<div style='background-color: #1a1a24; border: 2px solid #d4af37; border-radius: 8px; padding: 25px 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); height: 100%; display: flex; flex-direction: column;'>"
+        html_kanan += "<h4 style='color: white; margin-top: -10px; margin-bottom: 25px; font-family: \"Montserrat\", sans-serif; font-size: 15px;'>Most Banned Hero</h4>"
         
         for hero, count in top_5_bans.items():
             h_path = get_hero_path(hero)
-            h_img = f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); filter: grayscale(20%);'>" if h_path else f"<div style='width: 48px; height: 48px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
             
+            # Efek overlay banned dan penurunan blacks/whites via CSS filter
+            if h_path:
+                h_img = f"""
+                <div style='position: relative; width: 48px; height: 48px;'>
+                    <img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 100%; height: 100%; border-radius: 6px; object-fit: cover; border: 2px solid #d4af37; filter: contrast(0.6) brightness(0.85);'>
+                    <img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>
+                </div>
+                """
+            else:
+                h_img = f"<div style='position: relative; width: 48px; height: 48px; background: #444; border: 2px solid #d4af37; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'><img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>{hero}</div>"
+
             html_kanan += f"""
-            <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 16px; justify-content: center;'>
-                {h_img}
-                <span style='color: white; font-weight: 800; font-size: 16px; width: 40px;'>{count}x</span>
+            <div style='display: flex; align-items: center; justify-content: space-between; padding: 0 10px; margin-bottom: 18px;'>
+                <div style='display: flex; align-items: center; gap: 15px;'>
+                    {h_img}
+                    <span style='color: white; font-weight: 700; font-size: 15px;'>{hero}</span>
+                </div>
+                <span style='color: white; font-weight: 800; font-size: 15px;'>{count}x</span>
             </div>
             """
         html_kanan += "</div>"
