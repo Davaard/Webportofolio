@@ -11,7 +11,7 @@ import re
 # ==========================================
 # 1. KONFIGURASI UTAMA
 # ==========================================
-TAHUN = "2025"
+TAHUN = "2026"
 MUSIM = "Fall"
 HALAMAN_DASAR = f"Indonesia_Kings_Laga/{TAHUN}/{MUSIM}"
 SEASON_NAME = f"{MUSIM} {TAHUN}"
