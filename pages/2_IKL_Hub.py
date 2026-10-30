@@ -139,6 +139,15 @@ def load_and_preprocess_data(filepath):
 
 df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
 
+# Load konfigurasi musim
+@st.cache_data
+def load_season_config():
+    if os.path.exists("IKL_Seasons.csv"):
+        return pd.read_csv("IKL_Seasons.csv")
+    return pd.DataFrame(columns=['Season', 'Group_Names', 'Group_Teams'])
+
+df_seasons = load_season_config()
+
 def urutkan_musim(s):
     bagian = str(s).strip().split()
     if len(bagian) == 2 and bagian[1].isdigit():
@@ -158,9 +167,16 @@ with col_season:
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
         
-        if musim_pilihan == "Fall 2025":
-            df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace({'VIT': 'BTR'})
-            df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace({'VIT': 'BTR'})
+        # === MESIN TRANSLASI REBRANDING TIM ===
+        if os.path.exists("IKL_Rebrands.csv"):
+            df_rebrand = pd.read_csv("IKL_Rebrands.csv")
+            # Filter aturan ganti nama HANYA untuk musim yang sedang dipilih
+            rebrand_musim = df_rebrand[df_rebrand['Season'] == musim_pilihan]
+            
+            if not rebrand_musim.empty:
+                map_rebrand = dict(zip(rebrand_musim['Old_Name'], rebrand_musim['New_Name']))
+                df_master['Team_(Blue)'] = df_master['Team_(Blue)'].replace(map_rebrand)
+                df_master['Opponent_(Red)'] = df_master['Opponent_(Red)'].replace(map_rebrand)
     else:
         st.error("Kolom 'Season' tidak ditemukan!")
         st.stop()
@@ -183,6 +199,21 @@ def get_dynamic_logo_map(season):
     return {}
 
 TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
+
+# === MESIN PEMBACA PROFIL TIM (NAMA PANJANG, WARNA, & GRUP) ===
+@st.cache_data
+def get_team_data():
+    if os.path.exists("IKL_Teams.csv"):
+        df_teams = pd.read_csv("IKL_Teams.csv")
+        # Ambil data paling baru untuk setiap tim agar nama & warna selalu up-to-date
+        df_global = df_teams.drop_duplicates(subset=['Team'], keep='last')
+        map_nama = dict(zip(df_global['Team'], df_global['Full_Name']))
+        map_warna = dict(zip(df_global['Team'], df_global['Color_Hex']))
+        return df_teams, map_nama, map_warna
+    return pd.DataFrame(), {}, {}
+
+DF_TEAMS_MASTER, TEAM_FULLNAME_MAP, TEAM_COLOR_MAP = get_team_data()
+# ==============================================================
 
 def get_logo_path(team_name):
     if team_name in TEAM_LOGO_MAP:
@@ -602,13 +633,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
     
-    # Kumpulan Nama Panjang Tim (Manual Mapping)
-    nama_panjang = {
-        "BTR": "Bigetron by Vitality", "RRQ": "Rex Regum Qeon", "DMT": "Dominator by Nemesis",
-        "AE": "Alter Ego", "ONIC": "ONIC Esports", "MHD": "Mahadewa", "VESA": "Vesakha Esports",
-        "KAGE": "Kagendra", "TLN.ID": "Talon Esports ID", "NMSS": "Team Nemesis", "RVM": "Revermoin Esports", "OG": "Carstensz DuskMaven"
-    }
-    
     if not df_reguler.empty:
         df_match = df_reguler.groupby(['Week', 'Day', 'Match', 'Team'], sort=False).agg(Game_W=('Win', 'sum'), Game_L=('Win', lambda x: (x == 0).sum())).reset_index()
         df_match['Match_W'] = np.where(df_match['Game_W'] > df_match['Game_L'], 1, 0)
@@ -629,7 +653,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 tim_singkat = row['Team']
                 logo_tim = get_logo_path(tim_singkat)
                 logo_tag = f"<img src='data:image/png;base64,{image_to_base64(logo_tim)}' style='height: 35px; width: 35px; object-fit: contain;'>" if logo_tim else f"<div style='width: 35px; height: 35px;'></div>"
-                tim_panjang = nama_panjang.get(tim_singkat, tim_singkat)
+                tim_panjang = TEAM_FULLNAME_MAP.get(tim_singkat, tim_singkat)
                 
                 html_table += f"<tr><td style='font-weight: bold;'>{row['Rank']}</td>"
                 html_table += f"<td class='team-cell'>{logo_tag} <span style='font-weight: 600; font-size: 13px;'>{tim_panjang}</span></td>"
@@ -639,31 +663,42 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             html_table += "</tbody></table>"
             st.markdown(html_table, unsafe_allow_html=True)
         
-        if "2025" in musim_pilihan:
-            st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Double Group Stage</p>", unsafe_allow_html=True)
-            if musim_pilihan == "Spring 2025":
-                grup_1_tim, grup_2_tim = ['DMT', 'KAGE', 'RRQ', 'AE', 'NMSS'], ['BTR', 'TLN.ID', 'ONIC', 'MHD', 'VESA']
-            else: 
-                grup_1_tim, grup_2_tim = ['VESA', 'MHD', 'RRQ', 'AE', 'ONIC'], ['BTR', 'TLN.ID', 'RVM', 'DMT', 'KAGE']
+        # === SISTEM KLASEMEN MULTI-GRUP OTOMATIS ===
+        if not DF_TEAMS_MASTER.empty:
+            # Ambil daftar tim khusus untuk musim yang sedang dipilih
+            df_season_teams = DF_TEAMS_MASTER[DF_TEAMS_MASTER['Season'] == musim_pilihan]
+            
+            # Cari tahu ada grup apa saja di musim ini (Abaikan yang kosong/NaN)
+            grup_unik = df_season_teams['Group'].dropna().unique()
+            
+            if len(grup_unik) > 0:
+                st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: {len(grup_unik)} Group Stage</p>", unsafe_allow_html=True)
                 
-            df_grup1 = df_tampil[df_tampil['Team'].isin(grup_1_tim)].reset_index(drop=True)
-            df_grup1['Rank'] = df_grup1['Windiff'].rank(method='min', ascending=False).astype(int)
-            df_grup1 = df_grup1.sort_values('Rank')
-            
-            df_grup2 = df_tampil[df_tampil['Team'].isin(grup_2_tim)].reset_index(drop=True)
-            df_grup2['Rank'] = df_grup2['Windiff'].rank(method='min', ascending=False).astype(int)
-            df_grup2 = df_grup2.sort_values('Rank')
-            
-            col_g1, col_g2 = st.columns(2)
-            with col_g1:
-                st.markdown(f"<h5 style='text-align: center; color: #00d2ff;'>Group Tyrant</h5>", unsafe_allow_html=True)
-                render_clean_table(df_grup1)
-            with col_g2:
-                st.markdown(f"<h5 style='text-align: center; color: #ff4b4b;'>Group Overlord</h5>", unsafe_allow_html=True)
-                render_clean_table(df_grup2)
+                # Buat kolom sejajar otomatis sebanyak jumlah grup
+                kolom_grup = st.columns(len(grup_unik))
+                
+                for idx, nama_grup in enumerate(grup_unik):
+                    # Cari siapa saja tim yang masuk di grup ini
+                    tim_di_grup = df_season_teams[df_season_teams['Group'] == nama_grup]['Team'].tolist()
+                    
+                    df_grup = df_tampil[df_tampil['Team'].isin(tim_di_grup)].reset_index(drop=True)
+                    df_grup['Rank'] = df_grup['Windiff'].rank(method='min', ascending=False).astype(int)
+                    df_grup = df_grup.sort_values('Rank')
+                    
+                    warna_judul = ["#00d2ff", "#ff4b4b", "#4caf50", "#ffc107"][idx % 4]
+                    
+                    with kolom_grup[idx]:
+                        st.markdown(f"<h5 style='text-align: center; color: {warna_judul};'>Group {nama_grup}</h5>", unsafe_allow_html=True)
+                        render_clean_table(df_grup)
+            else:
+                # Jika kolom Group kosong semua, jadikan Single League
+                st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Single Global League</p>", unsafe_allow_html=True)
+                render_clean_table(df_tampil)
         else:
-            st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Format 2026: Single Global League</p>", unsafe_allow_html=True)
+            # Fallback jika CSV belum dibuat
+            st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Format {musim_pilihan}: Single Global League</p>", unsafe_allow_html=True)
             render_clean_table(df_tampil)
+
     else:
         st.info("Data Regular Season belum tersedia.")
 
@@ -1015,7 +1050,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         with col_u1:
             logo_path = get_logo_path(tim_unstoppable)
             logo_b64 = image_to_base64(logo_path) if logo_path else ""
-            tim_panjang = nama_panjang.get(tim_unstoppable, tim_unstoppable)
+            tim_panjang = TEAM_FULLNAME_MAP.get(tim_unstoppable, tim_unstoppable)
             
             html_team = f"""
             <div style="text-align: center; margin-top: 20px;">
