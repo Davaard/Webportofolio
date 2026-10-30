@@ -1587,15 +1587,16 @@ elif menu_utama == "🛡️ Team Profiling":
         bg_path = get_team_bg_path(tim_pilihan)
         bg_b64 = image_to_base64(bg_path)
         
-        col_map, col_staff = st.columns([2.5, 1.5])
+        # Rasio kolom 2:1 (Map mengambil 2/3 alias 66% layar, Staff mengambil 1/3)
+        col_map, col_staff = st.columns([2, 1])
         
         with col_map:
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # Kita bangun struktur HTML utama (Wadah Map)
+            # max-width dinaikkan menjadi 850px agar map bisa membesar memakan ruang layar
             html_container = f"""
-            <div id='map_container' style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;'>
+            <div id='map_container' style='position: relative; width: 100%; max-width: 850px; aspect-ratio: 1/1; margin: 0 auto;'>
                 <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
             """
             
@@ -1669,7 +1670,7 @@ elif menu_utama == "🛡️ Team Profiling":
             
             # Kita gunakan st.components.v1.html agar HTML utuh dan tidak terpotong!
             import streamlit.components.v1 as components
-            components.html(html_container, height=650)
+            components.html(html_container, height=870)
             
         with col_staff:
             st.markdown("#### Staff & Coach")
