@@ -1515,41 +1515,33 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
                 st.rerun()
                 
-        # (Lanjutan dari kode tombol kembali / bandingkan)
         with col_nav3:
             st.markdown(f"### Analisis Mendalam: {tim_pilihan}")
         
         st.markdown("---")
         
-        # === 1. HEADER PROFIL TIM (LOGO & NARASI) ===
+        # === 1. HEADER PROFIL TIM (LOGO MURNI & NARASI) ===
         col_prof_logo, col_prof_desc = st.columns([1, 3.5])
         
-        # Ambil data background dan logo tim
-        bg_path = get_team_bg_path(tim_pilihan)
-        bg_b64 = image_to_base64(bg_path) # <--- TAMBAHKAN BARIS INI
         logo_path = get_logo_path(tim_pilihan)
         tim_panjang = TEAM_FULLNAME_MAP.get(tim_pilihan, tim_pilihan)
         
         with col_prof_logo:
             if logo_path:
+                # LOGO DITAMPILKAN MURNI TANPA BACKGROUND & BORDER
                 st.markdown(f"""
-                <div style="position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; border: 3px solid #d4af37; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                    <img src="data:image/png;base64,{image_to_base64(bg_path)}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7);">
-                    <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; object-fit: contain; z-index: 2;">
+                <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="width: 100%; max-width: 180px; object-fit: contain;">
                 </div>
                 <h3 style="text-align: center; color: white; margin-top: 15px; font-family: 'Montserrat', sans-serif; font-weight: 800; line-height: 1.2;">{tim_panjang}</h3>
                 """, unsafe_allow_html=True)
                 
         with col_prof_desc:
-            # Mengambil metrik untuk narasi cerdas
             data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
-            
-            # Hitung rekor keseluruhan
             df_hist_tim = df_long[df_long['Team'] == tim_pilihan]
             total_wins = int(df_hist_tim['Win'].sum())
             total_losses = len(df_hist_tim) - total_wins
             
-            # Kategori tim berdasarkan Dominance Skor
             dom_score = data_tim['Dominance_100']
             if dom_score > 75: kasta = "tim papan atas (Raksasa Liga)"
             elif dom_score > 40: kasta = "tim papan tengah (Kuda Hitam)"
@@ -1559,13 +1551,16 @@ elif menu_utama == "🛡️ Team Profiling":
             best_win = df_hist_tim[df_hist_tim['Win'] == 1]['O_Rank'].min()
             lawan_terkuat = df_long[(df_long['Team'] == tim_pilihan) & (df_long['O_Rank'] == best_win)]['Opponent'].mode()[0] if total_wins > 0 else "-"
             
+            # WARNA LAWAN TERKUAT DINAMIS BERDASARKAN CSV
+            lawan_color = TEAM_COLOR_MAP.get(lawan_terkuat, "#ff4b4b")
+            
             narasi_profil = f"""
             <div style="color: #d1d1d1; font-family: 'Montserrat', sans-serif; font-size: 15px; line-height: 1.8; text-align: justify; padding: 10px 20px;">
                 Pada musim ini, <b style="color: white;">{tim_panjang} ({tim_pilihan})</b> tergolong dalam kelompok <b style="color: #d4af37;">{kasta}</b>. 
                 Mereka mencatatkan rekor <b style="color: white;">{total_wins} Kemenangan</b> dan <b>{total_losses} Kekalahan</b> di sepanjang turnamen, 
                 dengan rata-rata durasi pertandingan yang dihabiskan selama <b>{avg_durasi:.1f} menit</b> per game.
                 <br><br>
-                Pencapaian terbesar mereka musim ini adalah saat berhasil menumbangkan <b style="color: #ff4b4b;">{lawan_terkuat}</b> (salah satu tim dengan peringkat tertinggi di klasemen) 
+                Pencapaian terbesar mereka musim ini adalah saat berhasil menumbangkan <b style="color: {lawan_color};">{lawan_terkuat}</b> (salah satu tim dengan peringkat tertinggi di klasemen) 
                 dalam sebuah pertarungan yang sangat krusial.
             </div>
             """
@@ -1576,9 +1571,12 @@ elif menu_utama == "🛡️ Team Profiling":
         # === 2. TEAM LINE UP (LAYERED MAP) & STAFF ===
         st.markdown("### 🗺️ Team Line Up")
         
-        # Load Data Roster
         df_roster = pd.read_csv("IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan]
+        
+        # Ambil background tim untuk disisipkan di belakang foto pemain
+        bg_path = get_team_bg_path(tim_pilihan)
+        bg_b64 = image_to_base64(bg_path)
         
         col_map, col_staff = st.columns([2.5, 1.5])
         
@@ -1586,11 +1584,10 @@ elif menu_utama == "🛡️ Team Profiling":
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # HTML Base untuk Peta
-            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; border: 2px solid #d4af37; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); overflow: hidden; margin: 0 auto;'>"
-            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: cover; opacity: 0.8;'>"
+            # PETA MURNI TANPA BORDER EMAS CSS
+            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; overflow: hidden; margin: 0 auto;'>"
+            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: cover;'>"
             
-            # Loop Pemain Utama (Line Up)
             for role, coords in MAP_COORDINATES.items():
                 pemain_data = df_roster_tim[(df_roster_tim['Role'] == role) & (df_roster_tim['Status'] == 'Active')]
                 if not pemain_data.empty:
@@ -1599,7 +1596,6 @@ elif menu_utama == "🛡️ Team Profiling":
                     foto_b64 = image_to_base64(foto_path)
                     icon_role_b64 = image_to_base64(f"assets/{ROLE_ICONS.get(role)}")
                     
-                    # Layering CSS Absolute
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
@@ -1621,7 +1617,6 @@ elif menu_utama == "🛡️ Team Profiling":
             
         with col_staff:
             st.markdown("#### Staff & Coach")
-            # --- Rendering Staff bisa dilanjutkan nanti (agar kode ini tidak terpotong) ---
             st.info("Ruang untuk foto Staff & Substitusi (Akan kita rakit setelah map ini tampil sempurna).")
             
         st.markdown("<br><br>", unsafe_allow_html=True)
