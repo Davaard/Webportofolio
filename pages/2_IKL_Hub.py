@@ -125,7 +125,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # =========================================
 
-@st.cache_data
+@st.cache_data(ttl=60)
 def load_and_preprocess_data(filepath):
     df = pd.read_csv(filepath)
     df['Week_str'] = df['Week'].fillna('').astype(str)
@@ -140,7 +140,7 @@ def load_and_preprocess_data(filepath):
 df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
 
 # Load konfigurasi musim
-@st.cache_data
+@st.cache_data(ttl=86400)
 def load_season_config():
     if os.path.exists("IKL_Seasons.csv"):
         return pd.read_csv("IKL_Seasons.csv")
@@ -184,7 +184,7 @@ with col_season:
 
 # region UI HELPERS
 # UI Helpers dikembalikan ke bawah musim_pilihan agar tidak NameError
-@st.cache_data
+@st.cache_data(ttl=60)
 def get_dynamic_logo_map(season):
     if os.path.exists("IKL_Rosters.csv"):
         df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
@@ -201,7 +201,7 @@ def get_dynamic_logo_map(season):
 TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
 
 # === MESIN PEMBACA PROFIL TIM (NAMA PANJANG, WARNA, & GRUP) ===
-@st.cache_data
+@st.cache_data(ttl=86400)
 def get_team_data():
     if os.path.exists("IKL_Teams.csv"):
         df_teams = pd.read_csv("IKL_Teams.csv")
