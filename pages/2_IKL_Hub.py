@@ -1630,35 +1630,33 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    # 1. RENDER HERO FAVORIT (Disusun Horizontal di bagian bawah)
-                    hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
+                    # 1. RENDER HERO FAVORIT (Diperkecil menjadi 14px agar pas di dalam frame BG)
+                    hero_html = "<div style='position: absolute; bottom: 6%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
                         if h_path:
-                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 17px; height: 17px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
+                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 14px; height: 14px; border-radius: 2px; border: 0.5px solid rgba(255,255,255,0.5); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
                     hero_html += "</div>"
                     
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # 2. SATU PAKET KARTU UTUH (Gaya MVP Card Mini) DITAMBAHKAN KE Wadah Map
+                    # 2. SATU PAKET KARTU UTUH (Ukuran Master 55px, Proporsi In-Frame)
                     html_container += f"""
-                    <div style="position: absolute; {style_pos} width: 62px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
-                        <!-- Alas (Background Tim) -->
-                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 6px; filter: brightness(0.65);">
+                    <div style="position: absolute; {style_pos} width: 55px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
+                        <!-- Alas (Background Tim utuh) -->
+                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.7);">
                         
-                        <!-- Icon Role -->
-                        <div style="position: absolute; top: -3px; left: -3px; background-color: #222; padding: 3px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.6); z-index: 4; border: 1px solid #d4af37; display: flex; align-items: center; justify-content: center;">
-                            <img src="data:image/png;base64,{icon_role_b64}" style="width: 14px; height: 14px; filter: drop-shadow(1px 1px 1px black);">
-                        </div>
+                        <!-- Icon Role MURNI (Tanpa Background) -->
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                         
-                        <!-- Foto Pemain -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 6px 6px 0 0;">
-                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.95;">
+                        <!-- Foto Pemain (Diberi jarak tepi 5% agar tidak menutupi frame bawaan BG) -->
+                        <div style="position: absolute; top: 5%; left: 5%; width: 90%; height: 60%; z-index: 2; overflow: hidden;">
+                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: bottom; opacity: 0.95;">
                         </div>
                         
                         <!-- Nama Pemain -->
-                        <div style="position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; letter-spacing: 0.5px;">
+                        <div style="position: absolute; bottom: 23%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
                         
