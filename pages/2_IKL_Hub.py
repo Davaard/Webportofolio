@@ -1682,8 +1682,117 @@ elif menu_utama == "🛡️ Team Profiling":
             components.html(html_container, height=870)
             
         with col_staff:
-            st.markdown("#### Staff & Coach")
-            st.info("Ruang untuk foto Staff & Substitusi (Akan kita rakit setelah map ini tampil sempurna).")
+            # 1. PERSIAPAN BACKGROUND CARD
+            path_bg_staff = "assets/Recap/logo_background/IKL_bg.png"
+            path_bg_subs = "assets/Recap/logo_background/IKL_bgs.png"
+            # Fallback (Jaga-jaga jika IKL_bg.png tidak ketemu, pakai warna abu-abu polos)
+            b64_bg_staff = image_to_base64(path_bg_staff) if os.path.exists(path_bg_staff) else "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" 
+            b64_bg_subs = image_to_base64(path_bg_subs) if os.path.exists(path_bg_subs) else "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+
+            # ==========================================
+            # A. BAGIAN STAFF & MANAGEMENT
+            # ==========================================
+            st.markdown("<h4 style='color: #d4af37; font-family: \"Montserrat\", sans-serif; margin-bottom: 10px;'>👔 Management & Staff</h4>", unsafe_allow_html=True)
+            
+            # Filter hanya Staff
+            df_staff = df_roster_tim[df_roster_tim['Status'].astype(str).str.strip().str.lower() == 'staff'].copy()
+            
+            # Logika Cerdas: Jika hanya ada 1 coach, paksa menjadi Head Coach
+            mask_coach = df_staff['Role'].astype(str).str.lower().str.contains('coach', na=False)
+            if mask_coach.sum() == 1:
+                df_staff.loc[mask_coach, 'Role'] = 'Head Coach'
+                
+            def get_staff_icon(role_str):
+                r = str(role_str).lower()
+                if 'head' in r and 'coach' in r: return 'headcoach_icon.png'
+                if 'coach' in r: return 'coach_icon.png'
+                if 'manager' in r: return 'manager_icon.png'
+                if 'analyst' in r: return 'analyst_icon.png'
+                return 'coach_icon.png' # Fallback default
+                
+            html_staff = "<div style='display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;'>"
+            for _, row in df_staff.iterrows():
+                nama = str(row['Player_ID'])
+                jabatan = str(row['Role'])
+                icon_file = get_staff_icon(jabatan)
+                
+                b64_foto = image_to_base64(get_player_path(nama))
+                b64_icon = image_to_base64(f"assets/{icon_file}")
+                
+                # Kartu Staff (Bawahnya Jabatan, bukan Hero)
+                html_staff += f"""
+                <div style="position: relative; width: 62px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #111;">
+                    <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.6);">
+                    
+                    <!-- Icon Jabatan -->
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -5px; left: -5px; width: 16px; height: 16px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    
+                    <!-- Foto Staff -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 72%; z-index: 2; overflow: hidden; border-radius: 4px 4px 0 0;">
+                        <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
+                    </div>
+                    
+                    <!-- Nama Staff -->
+                    <div style="position: absolute; bottom: 18%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">
+                        {nama}
+                    </div>
+                    
+                    <!-- Nama Jabatan (Menggantikan Slot Hero) -->
+                    <div style="position: absolute; bottom: 3%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 5.5px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
+                        {jabatan}
+                    </div>
+                </div>
+                """
+            html_staff += "</div>"
+            st.markdown(html_staff, unsafe_allow_html=True)
+
+            # ==========================================
+            # B. BAGIAN SUBSTITUTES (CADANGAN)
+            # ==========================================
+            st.markdown("<h4 style='color: #d4af37; font-family: \"Montserrat\", sans-serif; margin-bottom: 10px;'>🔄 Substitutes</h4>", unsafe_allow_html=True)
+            
+            # Filter hanya Subs (Status_Score == 2)
+            df_subs = df_roster_tim[df_roster_tim['Status_Score'] == 2].copy()
+            
+            def get_subs_icon(role_str):
+                r = str(role_str).lower()
+                if 'top' in r or 'clash' in r: return 'subs_dashlane_icon.png' # Sesuai file-mu
+                if 'jung' in r: return 'subs_jungle_icon.png'
+                if 'mid' in r: return 'subs_midlane_icon.png'
+                if 'bot' in r or 'farm' in r or 'gold' in r: return 'subs_farmlane_icon.png'
+                if 'roam' in r or 'sup' in r: return 'subs_support_icon.png'
+                return 'subs_dashlane_icon.png' # Fallback
+                
+            html_subs = "<div style='display: flex; flex-wrap: wrap; gap: 12px;'>"
+            for _, row in df_subs.iterrows():
+                nama = str(row['Player_ID'])
+                jabatan = str(row['Role'])
+                icon_file = get_subs_icon(jabatan)
+                
+                b64_foto = image_to_base64(get_player_path(nama))
+                b64_icon = image_to_base64(f"assets/{icon_file}")
+                
+                # Kartu Subs (Lebih kecil, tanpa hero, foto lebih penuh ke bawah)
+                html_subs += f"""
+                <div style="position: relative; width: 55px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #111;">
+                    <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.65);">
+                    
+                    <!-- Icon Role Khusus Subs -->
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 14px; height: 14px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    
+                    <!-- Foto Pemain Subs (Lebih turun karena tidak ada slot hero/jabatan) -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 80%; z-index: 2; overflow: hidden; border-radius: 4px 4px 0 0;">
+                        <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
+                    </div>
+                    
+                    <!-- Nama Pemain -->
+                    <div style="position: absolute; bottom: 6%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 7.5px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">
+                        {nama}
+                    </div>
+                </div>
+                """
+            html_subs += "</div>"
+            st.markdown(html_subs, unsafe_allow_html=True)
             
         st.markdown("<br><br>", unsafe_allow_html=True)
         
