@@ -1648,7 +1648,7 @@ elif menu_utama == "🛡️ Team Profiling":
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.65);">
                         
                         <!-- Icon Role MURNI (Diperlakukan seperti angka 1337 MVP di pojok) -->
-                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 1px; left: 1px; width: 13px; height: 13px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                         
                         <!-- Foto Pemain (Mentok atas, tinggi 75%, width 100% persis seperti MVP!) -->
                         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 4px 4px 0 0;">
@@ -1656,7 +1656,7 @@ elif menu_utama == "🛡️ Team Profiling":
                         </div>
                         
                         <!-- Nama Pemain -->
-                        <div style="position: absolute; bottom: 26%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 7.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 7.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
                         
