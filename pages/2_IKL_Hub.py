@@ -1630,8 +1630,8 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    # 1. RENDER HERO FAVORIT (Diperkecil drastis menjadi 11px)
-                    hero_html = "<div style='position: absolute; bottom: 7%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
+                    # 1. RENDER HERO FAVORIT (Dipertahankan di ukuran 11px)
+                    hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
                         if h_path:
@@ -1641,22 +1641,22 @@ elif menu_utama == "🛡️ Team Profiling":
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # 2. SATU PAKET KARTU UTUH (Elemen internal dirampingkan)
+                    # 2. SATU PAKET KARTU UTUH (100% Adaptasi Settingan MVP Card)
                     html_container += f"""
                     <div style="position: absolute; {style_pos} width: 55px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
-                        <!-- Alas (Background Tim utuh) -->
-                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.7);">
+                        <!-- Alas (Background Tim) -->
+                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 4px; filter: brightness(0.65);">
                         
-                        <!-- Icon Role MURNI (Diperkecil menjadi 12px dan ditarik sedikit ke dalam) -->
-                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -3px; left: -3px; width: 12px; height: 12px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                        <!-- Icon Role MURNI (Diperlakukan seperti angka 1337 MVP di pojok) -->
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -3px; left: -3px; width: 13px; height: 13px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                         
-                        <!-- Foto Pemain (Dipersempit menjadi 80% dan diturunkan tingginya menjadi 50%) -->
-                        <div style="position: absolute; top: 10%; left: 10%; width: 80%; height: 50%; z-index: 2; overflow: hidden;">
-                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: bottom; opacity: 0.95;">
+                        <!-- Foto Pemain (Mentok atas, tinggi 75%, width 100% persis seperti MVP!) -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 4px 4px 0 0;">
+                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                         </div>
                         
-                        <!-- Nama Pemain (Font diperkecil menjadi 7.5px dan dinaikkan sedikit dari hero) -->
-                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 7.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                        <!-- Nama Pemain -->
+                        <div style="position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 7.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
                         
