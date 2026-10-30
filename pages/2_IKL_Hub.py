@@ -215,13 +215,13 @@ MAP_COORDINATES = {
     'Top Lane': {'top': '25%', 'left': '25%', 'transform': 'translate(-50%, -50%)'},
     
     # Jungler biasanya mondar-mandir di area atas/tengah hutan
-    'Jungler': {'top': '35%', 'left': '40%', 'transform': 'translate(-50%, -50%)'},
+    'Jungler': {'top': '45%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
     
     # Mid Lane pas di tengah-tengah
     'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
     
     # Roamer biasanya di sungai area bawah
-    'Roamer': {'top': '65%', 'left': '40%', 'transform': 'translate(-50%, -50%)'},
+    'Roamer': {'top': '65%', 'left': '62%', 'transform': 'translate(-50%, -50%)'},
     
     # Farm Lane (Bottom) biasanya di area kanan bawah
     'Bottom Lane': {'top': '75%', 'left': '75%', 'transform': 'translate(-50%, -50%)'}
