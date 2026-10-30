@@ -1574,11 +1574,9 @@ elif menu_utama == "🛡️ Team Profiling":
         df_roster = pd.read_csv("IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan].copy()
         
-        # LOGIKA CERDAS: Filter musim fleksibel
         if musim_pilihan in df_roster_tim['Season'].values:
             df_roster_tim = df_roster_tim[df_roster_tim['Season'] == musim_pilihan]
             
-        # LOGIKA CERDAS: Penilaian Status
         df_roster_tim['Status_Score'] = df_roster_tim['Status'].astype(str).str.strip().str.lower().map({
             'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2
         }).fillna(3)
@@ -1593,9 +1591,11 @@ elif menu_utama == "🛡️ Team Profiling":
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # PETA MURNI (Tag div pembungkus utama BUKA)
-            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;'>"
-            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>"
+            # Kita bangun struktur HTML utama
+            html_container = f"""
+            <div id='map_container' style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;'>
+                <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
+            """
             
             role_idx_map = {'Top Lane': 0, 'Jungler': 1, 'Middle': 2, 'Bottom Lane': 3, 'Roamer': 4}
             role_keywords = {
@@ -1607,9 +1607,6 @@ elif menu_utama == "🛡️ Team Profiling":
             }
             
             df_hist_player = df_long[(df_long['Team'] == tim_pilihan) & (df_long['Win'].notna())]
-            
-            # RANGKAIAN HTML PEMAIN
-            html_players = ""
             
             for role_csv, coords in MAP_COORDINATES.items():
                 keyword = role_keywords.get(role_csv, '')
@@ -1641,8 +1638,8 @@ elif menu_utama == "🛡️ Team Profiling":
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # Kita masukkan ke string TERPISAH (html_players)
-                    html_players += f"""
+                    # Tambahkan tiap pemain langsung ke dalam penampung
+                    html_container += f"""
                     <div style="position: absolute; {style_pos} width: 75px; display: flex; flex-direction: column; align-items: center; z-index: 5;">
                         <div style="position: relative; width: 100%; display: flex; justify-content: center; align-items: flex-end;">
                             <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; filter: brightness(0.85);">
@@ -1656,9 +1653,11 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     """
             
-            # GABUNGKAN SEMUA & TUTUP DIV UTAMA
-            html_final = html_map + html_players + "</div>"
-            st.markdown(html_final, unsafe_allow_html=True)
+            html_container += "</div>"
+            
+            # Kita gunakan st.components.v1.html agar Streamlit tidak memotong string Base64 yang panjang!
+            import streamlit.components.v1 as components
+            components.html(html_container, height=650)
             
         with col_staff:
             st.markdown("#### Staff & Coach")
