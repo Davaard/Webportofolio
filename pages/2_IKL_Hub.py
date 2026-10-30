@@ -215,7 +215,7 @@ MAP_COORDINATES = {
     'Top Lane': {'top': '25%', 'left': '25%', 'transform': 'translate(-50%, -50%)'},
     
     # Jungler biasanya mondar-mandir di area atas/tengah hutan
-    'Jungler': {'top': '45%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
+    'Jungler': {'top': '46%', 'left': '32%', 'transform': 'translate(-50%, -50%)'},
     
     # Mid Lane pas di tengah-tengah
     'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
