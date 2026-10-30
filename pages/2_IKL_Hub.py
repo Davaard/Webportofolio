@@ -221,7 +221,7 @@ MAP_COORDINATES = {
     'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
     
     # Roamer biasanya di sungai area bawah
-    'Roamer': {'top': '65%', 'left': '62%', 'transform': 'translate(-50%, -50%)'},
+    'Roamer': {'top': '60%', 'left': '67%', 'transform': 'translate(-50%, -50%)'},
     
     # Farm Lane (Bottom) biasanya di area kanan bawah
     'Bottom Lane': {'top': '75%', 'left': '75%', 'transform': 'translate(-50%, -50%)'}
