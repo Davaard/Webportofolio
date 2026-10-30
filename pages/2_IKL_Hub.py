@@ -211,11 +211,20 @@ def get_player_path(player_name):
 
 # Koordinat CSS Absolute untuk meletakkan pemain di atas Map HOK
 MAP_COORDINATES = {
-    'Top Lane': {'top': '18%', 'left': '25%'},
-    'Jungler': {'top': '35%', 'left': '45%'},
+    # Clash Lane biasanya di area kiri atas
+    'Top Lane': {'top': '25%', 'left': '25%', 'transform': 'translate(-50%, -50%)'},
+    
+    # Jungler biasanya mondar-mandir di area atas/tengah hutan
+    'Jungler': {'top': '35%', 'left': '40%', 'transform': 'translate(-50%, -50%)'},
+    
+    # Mid Lane pas di tengah-tengah
     'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
-    'Bottom Lane': {'top': '70%', 'left': '70%'},
-    'Roamer': {'top': '60%', 'left': '40%'}
+    
+    # Roamer biasanya di sungai area bawah
+    'Roamer': {'top': '65%', 'left': '40%', 'transform': 'translate(-50%, -50%)'},
+    
+    # Farm Lane (Bottom) biasanya di area kanan bawah
+    'Bottom Lane': {'top': '75%', 'left': '75%', 'transform': 'translate(-50%, -50%)'}
 }
 
 # Mapping Icon Role langsung ke Path Aset
