@@ -1574,9 +1574,11 @@ elif menu_utama == "🛡️ Team Profiling":
         df_roster = pd.read_csv("IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan].copy()
         
+        # LOGIKA CERDAS: Filter musim fleksibel
         if musim_pilihan in df_roster_tim['Season'].values:
             df_roster_tim = df_roster_tim[df_roster_tim['Season'] == musim_pilihan]
             
+        # LOGIKA CERDAS: Penilaian Status
         df_roster_tim['Status_Score'] = df_roster_tim['Status'].astype(str).str.strip().str.lower().map({
             'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2
         }).fillna(3)
@@ -1591,7 +1593,7 @@ elif menu_utama == "🛡️ Team Profiling":
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # Kita bangun struktur HTML utama
+            # Kita bangun struktur HTML utama (Wadah Map)
             html_container = f"""
             <div id='map_container' style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;'>
                 <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
@@ -1628,7 +1630,7 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    # 1. RENDER HERO FAVORIT (Paket Bawah - Disusun Horizontal)
+                    # 1. RENDER HERO FAVORIT (Disusun Horizontal di bagian bawah)
                     hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
@@ -1639,18 +1641,18 @@ elif menu_utama == "🛡️ Team Profiling":
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # 2. SATU PAKET KARTU UTUH (Gaya MVP Card Mini)
-                    html_players += f"""
+                    # 2. SATU PAKET KARTU UTUH (Gaya MVP Card Mini) DITAMBAHKAN KE Wadah Map
+                    html_container += f"""
                     <div style="position: absolute; {style_pos} width: 62px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
                         <!-- Alas (Background Tim) -->
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 6px; filter: brightness(0.65);">
                         
-                        <!-- Icon Role (Menggantikan Kotak Angka Total MVP) -->
+                        <!-- Icon Role -->
                         <div style="position: absolute; top: -3px; left: -3px; background-color: #222; padding: 3px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.6); z-index: 4; border: 1px solid #d4af37; display: flex; align-items: center; justify-content: center;">
                             <img src="data:image/png;base64,{icon_role_b64}" style="width: 14px; height: 14px; filter: drop-shadow(1px 1px 1px black);">
                         </div>
                         
-                        <!-- Foto Pemain (Mengisi ruang 75% ke atas) -->
+                        <!-- Foto Pemain -->
                         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 6px 6px 0 0;">
                             <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.95;">
                         </div>
@@ -1667,7 +1669,7 @@ elif menu_utama == "🛡️ Team Profiling":
             
             html_container += "</div>"
             
-            # Kita gunakan st.components.v1.html agar Streamlit tidak memotong string Base64 yang panjang!
+            # Kita gunakan st.components.v1.html agar HTML utuh dan tidak terpotong!
             import streamlit.components.v1 as components
             components.html(html_container, height=650)
             
