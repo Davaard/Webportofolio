@@ -1649,7 +1649,7 @@ elif menu_utama == "🛡️ Team Profiling":
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                         
                         <!-- Icon Role (Diperbesar dari 13px menjadi 18px, offset digeser jadi -4px) -->
-                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                         
                         <!-- Foto Pemain (Tetap pakai persentase, jadi otomatis menyesuaikan!) -->
                         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
@@ -1657,7 +1657,7 @@ elif menu_utama == "🛡️ Team Profiling":
                         </div>
                         
                         <!-- Nama Pemain (Font diperbesar dari 7.5px menjadi 10px) -->
-                        <div style="position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
                         
