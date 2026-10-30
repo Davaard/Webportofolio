@@ -1574,7 +1574,16 @@ elif menu_utama == "🛡️ Team Profiling":
         df_roster = pd.read_csv("IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan].copy()
         
-        # Ambil background tim untuk disisipkan di belakang foto pemain
+        # LOGIKA CERDAS: Filter musim fleksibel
+        if musim_pilihan in df_roster_tim['Season'].values:
+            df_roster_tim = df_roster_tim[df_roster_tim['Season'] == musim_pilihan]
+            
+        # LOGIKA CERDAS: Penilaian Status
+        df_roster_tim['Status_Score'] = df_roster_tim['Status'].astype(str).str.strip().str.lower().map({
+            'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2
+        }).fillna(3)
+        df_roster_tim = df_roster_tim.sort_values('Status_Score')
+        
         bg_path = get_team_bg_path(tim_pilihan)
         bg_b64 = image_to_base64(bg_path)
         
@@ -1584,25 +1593,34 @@ elif menu_utama == "🛡️ Team Profiling":
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # PETA MURNI TANPA BORDER EMAS CSS
-            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; overflow: hidden; margin: 0 auto;'>"
-            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: cover;'>"
+            # PETA MURNI (Tag div pembungkus utama BUKA)
+            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;'>"
+            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>"
             
-            # Mapping urutan index untuk mencari Hero Favorit di histori pertandingan
             role_idx_map = {'Top Lane': 0, 'Jungler': 1, 'Middle': 2, 'Bottom Lane': 3, 'Roamer': 4}
+            role_keywords = {
+                'Top Lane': 'top|clash',
+                'Jungler': 'jung',
+                'Middle': 'mid',
+                'Bottom Lane': 'bot|farm|gold',
+                'Roamer': 'roam|sup'
+            }
+            
             df_hist_player = df_long[(df_long['Team'] == tim_pilihan) & (df_long['Win'].notna())]
             
+            # RANGKAIAN HTML PEMAIN
+            html_players = ""
+            
             for role_csv, coords in MAP_COORDINATES.items():
-                # Memfilter langsung dari CSV berdasarkan Role persis dan Status "Main"
-                pemain_data = df_roster_tim[(df_roster_tim['Role'] == role_csv) & (df_roster_tim['Status'] == 'Main')]
+                keyword = role_keywords.get(role_csv, '')
+                pemain_data = df_roster_tim[df_roster_tim['Role'].astype(str).str.lower().str.contains(keyword, na=False)]
                 
                 if not pemain_data.empty:
-                    nama_pemain = pemain_data.iloc[0]['Player_ID']
+                    nama_pemain = str(pemain_data.iloc[0]['Player_ID'])
                     foto_path = get_player_path(nama_pemain)
                     foto_b64 = image_to_base64(foto_path)
                     icon_role_b64 = image_to_base64(f"assets/{ROLE_ICONS.get(role_csv)}")
                     
-                    # LOGIKA MENCARI HERO FAVORIT PER-LANE
                     idx_lane = role_idx_map.get(role_csv, 0)
                     hero_counts = {}
                     for _, row in df_hist_player.iterrows():
@@ -1613,33 +1631,34 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    # RENDER HERO FAVORIT KECIL DI BAWAH PEMAIN
                     hero_html = "<div style='display: flex; justify-content: center; gap: 3px; margin-top: 3px; z-index: 6;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
                         if h_path:
-                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 20px; height: 20px; border-radius: 4px; border: 1.5px solid #d4af37; object-fit: cover; box-shadow: 1px 1px 3px rgba(0,0,0,0.8);'>"
+                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 20px; height: 20px; border-radius: 4px; border: 1px solid #d4af37; object-fit: cover; box-shadow: 1px 1px 3px rgba(0,0,0,0.8);'>"
                     hero_html += "</div>"
                     
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    html_map += f"""
+                    # Kita masukkan ke string TERPISAH (html_players)
+                    html_players += f"""
                     <div style="position: absolute; {style_pos} width: 75px; display: flex; flex-direction: column; align-items: center; z-index: 5;">
-                        <div style="position: relative; width: 55px; height: 55px; border-radius: 6px; border: 2px solid #d4af37; box-shadow: 2px 2px 6px rgba(0,0,0,0.7); overflow: hidden; background: #222;">
-                            <img src="data:image/png;base64,{bg_b64}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5);">
-                            <img src="data:image/png;base64,{foto_b64}" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; object-fit: contain; z-index: 2;">
-                            <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; z-index: 3; filter: drop-shadow(1px 1px 2px black);">
+                        <div style="position: relative; width: 100%; display: flex; justify-content: center; align-items: flex-end;">
+                            <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; filter: brightness(0.85);">
+                            <img src="data:image/png;base64,{foto_b64}" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 85%; height: auto; object-fit: contain; z-index: 2;">
+                            <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -5px; left: -5px; width: 22px; height: 22px; z-index: 3; filter: drop-shadow(1px 1px 3px rgba(0,0,0,0.9));">
                         </div>
-                        <div style="background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: -6px; z-index: 4; border: 1px solid #555; text-align: center; white-space: nowrap;">
+                        <div style="background: rgba(0,0,0,0.85); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 3px; z-index: 4; border: 1px solid #444; white-space: nowrap;">
                             {nama_pemain}
                         </div>
                         {hero_html}
                     </div>
                     """
             
-            html_map += "</div>"
-            st.markdown(html_map, unsafe_allow_html=True)
+            # GABUNGKAN SEMUA & TUTUP DIV UTAMA
+            html_final = html_map + html_players + "</div>"
+            st.markdown(html_final, unsafe_allow_html=True)
             
         with col_staff:
             st.markdown("#### Staff & Coach")
