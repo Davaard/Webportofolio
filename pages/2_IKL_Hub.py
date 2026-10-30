@@ -200,6 +200,33 @@ def get_dynamic_logo_map(season):
 
 TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
 
+# === HELPER FOTO PEMAIN & KOORDINAT MAP ===
+def get_player_path(player_name):
+    # Asumsi foto pemain ada di folder assets/players (sesuaikan jika berbeda)
+    safe_name = str(player_name).replace(" ", "_")
+    for ext in ['.png', '.jpg', '.jpeg']:
+        path = f"assets/players/{safe_name}{ext}"
+        if os.path.exists(path): return path
+    return "assets/Recap/logo_background/roster_placeholder.png"
+
+# Koordinat CSS Absolute untuk meletakkan pemain di atas Map HOK
+MAP_COORDINATES = {
+    'Top Lane': {'top': '18%', 'left': '25%'},
+    'Jungler': {'top': '35%', 'left': '45%'},
+    'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
+    'Bottom Lane': {'top': '70%', 'left': '70%'},
+    'Roamer': {'top': '60%', 'left': '40%'}
+}
+
+# Mapping Icon Role
+ROLE_ICONS = {
+    'Top Lane': 'clashlane_icon.png',
+    'Jungler': 'jungle_icon.png',
+    'Middle': 'midlane_icon.png',
+    'Bottom Lane': 'farmlane_icon.png',
+    'Roamer': 'support_icon.png'
+}
+
 # === MESIN PEMBACA PROFIL TIM (NAMA PANJANG, WARNA, & GRUP) ===
 @st.cache_data(ttl=86400)
 def get_team_data():
@@ -214,6 +241,16 @@ def get_team_data():
 
 DF_TEAMS_MASTER, TEAM_FULLNAME_MAP, TEAM_COLOR_MAP = get_team_data()
 # ==============================================================
+
+def get_team_bg_path(team_name):
+    if team_name in TEAM_LOGO_MAP:
+        filename = str(TEAM_LOGO_MAP[team_name])
+        if filename.endswith(".png"): bg_filename = filename.replace(".png", "_bg.png")
+        elif filename.endswith(".jpg"): bg_filename = filename.replace(".jpg", "_bg.jpg")
+        else: bg_filename = filename
+        path = os.path.join("assets", "Recap", "logo_background", bg_filename)
+        if os.path.exists(path): return path
+    return "assets/Recap/logo_background/roster_placeholder.png"
 
 def get_logo_path(team_name):
     if team_name in TEAM_LOGO_MAP:
@@ -842,16 +879,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     if not mvp_counts.empty:
         cols_mvp = st.columns(5) 
-        
-        def get_team_bg_path(team_name):
-            if team_name in TEAM_LOGO_MAP:
-                filename = str(TEAM_LOGO_MAP[team_name])
-                if filename.endswith(".png"): bg_filename = filename.replace(".png", "_bg.png")
-                elif filename.endswith(".jpg"): bg_filename = filename.replace(".jpg", "_bg.jpg")
-                else: bg_filename = filename
-                path = os.path.join("assets", "Recap", "logo_background", bg_filename)
-                if os.path.exists(path): return path
-            return "assets/Recap/logo_background/roster_placeholder.png"
             
         player_avatar_path = "assets/Recap/logo_background/roster_placeholder.png"
         player_avatar_b64 = image_to_base64(player_avatar_path)
@@ -1488,33 +1515,119 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
                 st.rerun()
                 
+        # (Lanjutan dari kode tombol kembali / bandingkan)
         with col_nav3:
             st.markdown(f"### Analisis Mendalam: {tim_pilihan}")
         
         st.markdown("---")
-        data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan]
-
-        kategori_metrik = ['Dominance_100', 'Toughness_100', 'Discipline_100', 
-                           'Volatility_100', 'TeamFight_100', 'Flexibility_100']
-        skor_tim = data_tim[kategori_metrik].values.flatten().tolist()
-        skor_tim.append(skor_tim[0])
         
-        kategori_radar = ['Dominance', 'Toughness', 'Discipline', 'Volatility', 'Team Fight', 'Flexibility']
-        kategori_radar.append(kategori_radar[0])
+        # === 1. HEADER PROFIL TIM (LOGO & NARASI) ===
+        col_prof_logo, col_prof_desc = st.columns([1, 3.5])
+        
+        # Ambil data background dan logo tim
+        bg_path = get_team_bg_path(tim_pilihan)
+        bg_b64 = image_to_base64(bg_path) # <--- TAMBAHKAN BARIS INI
+        logo_path = get_logo_path(tim_pilihan)
+        tim_panjang = TEAM_FULLNAME_MAP.get(tim_pilihan, tim_pilihan)
+        
+        with col_prof_logo:
+            if logo_path:
+                st.markdown(f"""
+                <div style="position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; border: 3px solid #d4af37; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                    <img src="data:image/png;base64,{image_to_base64(bg_path)}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7);">
+                    <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; object-fit: contain; z-index: 2;">
+                </div>
+                <h3 style="text-align: center; color: white; margin-top: 15px; font-family: 'Montserrat', sans-serif; font-weight: 800; line-height: 1.2;">{tim_panjang}</h3>
+                """, unsafe_allow_html=True)
+                
+        with col_prof_desc:
+            # Mengambil metrik untuk narasi cerdas
+            data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
+            
+            # Hitung rekor keseluruhan
+            df_hist_tim = df_long[df_long['Team'] == tim_pilihan]
+            total_wins = int(df_hist_tim['Win'].sum())
+            total_losses = len(df_hist_tim) - total_wins
+            
+            # Kategori tim berdasarkan Dominance Skor
+            dom_score = data_tim['Dominance_100']
+            if dom_score > 75: kasta = "tim papan atas (Raksasa Liga)"
+            elif dom_score > 40: kasta = "tim papan tengah (Kuda Hitam)"
+            else: kasta = "tim papan bawah (Underdog)"
+            
+            avg_durasi = df_hist_tim['Durasi'].mean()
+            best_win = df_hist_tim[df_hist_tim['Win'] == 1]['O_Rank'].min()
+            lawan_terkuat = df_long[(df_long['Team'] == tim_pilihan) & (df_long['O_Rank'] == best_win)]['Opponent'].mode()[0] if total_wins > 0 else "-"
+            
+            narasi_profil = f"""
+            <div style="color: #d1d1d1; font-family: 'Montserrat', sans-serif; font-size: 15px; line-height: 1.8; text-align: justify; padding: 10px 20px;">
+                Pada musim ini, <b style="color: white;">{tim_panjang} ({tim_pilihan})</b> tergolong dalam kelompok <b style="color: #d4af37;">{kasta}</b>. 
+                Mereka mencatatkan rekor <b style="color: white;">{total_wins} Kemenangan</b> dan <b>{total_losses} Kekalahan</b> di sepanjang turnamen, 
+                dengan rata-rata durasi pertandingan yang dihabiskan selama <b>{avg_durasi:.1f} menit</b> per game.
+                <br><br>
+                Pencapaian terbesar mereka musim ini adalah saat berhasil menumbangkan <b style="color: #ff4b4b;">{lawan_terkuat}</b> (salah satu tim dengan peringkat tertinggi di klasemen) 
+                dalam sebuah pertarungan yang sangat krusial.
+            </div>
+            """
+            st.markdown(narasi_profil, unsafe_allow_html=True)
 
-        fig = px.line_polar(
-            r=skor_tim, theta=kategori_radar, line_close=True,
-            range_r=[0, 100]
-        )
-        fig.update_traces(fill='toself', line_color='cyan')
-        fig.update_layout(
-            polar=dict(radialaxis=dict(showticklabels=False, showline=False, ticks='')),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            margin=dict(l=20, r=20, t=20, b=20)
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # === 2. TEAM LINE UP (LAYERED MAP) & STAFF ===
+        st.markdown("### 🗺️ Team Line Up")
+        
+        # Load Data Roster
+        df_roster = pd.read_csv("IKL_Rosters.csv")
+        df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan]
+        
+        col_map, col_staff = st.columns([2.5, 1.5])
+        
+        with col_map:
+            map_path = "assets/HOK_map-layout.png"
+            map_b64 = image_to_base64(map_path)
+            
+            # HTML Base untuk Peta
+            html_map = f"<div style='position: relative; width: 100%; max-width: 600px; aspect-ratio: 1/1; border: 2px solid #d4af37; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); overflow: hidden; margin: 0 auto;'>"
+            html_map += f"<img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: cover; opacity: 0.8;'>"
+            
+            # Loop Pemain Utama (Line Up)
+            for role, coords in MAP_COORDINATES.items():
+                pemain_data = df_roster_tim[(df_roster_tim['Role'] == role) & (df_roster_tim['Status'] == 'Active')]
+                if not pemain_data.empty:
+                    nama_pemain = pemain_data.iloc[0]['Player_ID']
+                    foto_path = get_player_path(nama_pemain)
+                    foto_b64 = image_to_base64(foto_path)
+                    icon_role_b64 = image_to_base64(f"assets/{ROLE_ICONS.get(role)}")
+                    
+                    # Layering CSS Absolute
+                    style_pos = f"top: {coords['top']}; left: {coords['left']};"
+                    if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
+                    
+                    html_map += f"""
+                    <div style="position: absolute; {style_pos} width: 75px; display: flex; flex-direction: column; align-items: center; z-index: 5;">
+                        <div style="position: relative; width: 60px; height: 60px; border-radius: 6px; border: 2px solid #d4af37; box-shadow: 2px 2px 6px rgba(0,0,0,0.7); overflow: hidden; background: #222;">
+                            <img src="data:image/png;base64,{bg_b64}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5);">
+                            <img src="data:image/png;base64,{foto_b64}" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; object-fit: contain; z-index: 2;">
+                            <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; z-index: 3; filter: drop-shadow(1px 1px 2px black);">
+                        </div>
+                        <div style="background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: -5px; z-index: 4; border: 1px solid #555;">
+                            {nama_pemain}
+                        </div>
+                    </div>
+                    """
+            
+            html_map += "</div>"
+            st.markdown(html_map, unsafe_allow_html=True)
+            
+        with col_staff:
+            st.markdown("#### Staff & Coach")
+            # --- Rendering Staff bisa dilanjutkan nanti (agar kode ini tidak terpotong) ---
+            st.info("Ruang untuk foto Staff & Substitusi (Akan kita rakit setelah map ini tampil sempurna).")
+            
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # === 3. RADAR CHART & METRIK LAINNYA ===
 
-        st.markdown("---")
         st.subheader("🔥 Signature Hero Combo (Evolusi Taktik)")
         
         kombo_A = get_signature_combos(tim_pilihan)
