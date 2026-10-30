@@ -1628,27 +1628,39 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    hero_html = "<div style='display: flex; justify-content: center; gap: 3px; margin-top: 3px; z-index: 6;'>"
+                    # 1. RENDER HERO FAVORIT (Paket Bawah - Disusun Horizontal)
+                    hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 2px; z-index: 4;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
                         if h_path:
-                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 20px; height: 20px; border-radius: 4px; border: 1px solid #d4af37; object-fit: cover; box-shadow: 1px 1px 3px rgba(0,0,0,0.8);'>"
+                            hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 17px; height: 17px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.4); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
                     hero_html += "</div>"
                     
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # Tambahkan tiap pemain langsung ke dalam penampung
-                    html_container += f"""
-                    <div style="position: absolute; {style_pos} width: 75px; display: flex; flex-direction: column; align-items: center; z-index: 5;">
-                        <div style="position: relative; width: 100%; display: flex; justify-content: center; align-items: flex-end;">
-                            <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; filter: brightness(0.85);">
-                            <img src="data:image/png;base64,{foto_b64}" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 85%; height: auto; object-fit: contain; z-index: 2;">
-                            <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: -5px; left: -5px; width: 22px; height: 22px; z-index: 3; filter: drop-shadow(1px 1px 3px rgba(0,0,0,0.9));">
+                    # 2. SATU PAKET KARTU UTUH (Gaya MVP Card Mini)
+                    html_players += f"""
+                    <div style="position: absolute; {style_pos} width: 62px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
+                        <!-- Alas (Background Tim) -->
+                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 6px; filter: brightness(0.65);">
+                        
+                        <!-- Icon Role (Menggantikan Kotak Angka Total MVP) -->
+                        <div style="position: absolute; top: -3px; left: -3px; background-color: #222; padding: 3px; border-radius: 4px; box-shadow: 1px 2px 4px rgba(0,0,0,0.6); z-index: 4; border: 1px solid #d4af37; display: flex; align-items: center; justify-content: center;">
+                            <img src="data:image/png;base64,{icon_role_b64}" style="width: 14px; height: 14px; filter: drop-shadow(1px 1px 1px black);">
                         </div>
-                        <div style="background: rgba(0,0,0,0.85); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 3px; z-index: 4; border: 1px solid #444; white-space: nowrap;">
+                        
+                        <!-- Foto Pemain (Mengisi ruang 75% ke atas) -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 6px 6px 0 0;">
+                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.95;">
+                        </div>
+                        
+                        <!-- Nama Pemain -->
+                        <div style="position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
+                        
+                        <!-- Hero Favorit -->
                         {hero_html}
                     </div>
                     """
