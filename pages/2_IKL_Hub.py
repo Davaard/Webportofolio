@@ -2401,8 +2401,8 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         # === 4. TEAM STRATEGY COMPARISON ===
         st.markdown("### ♟️ Team Strategy")
         
-        # Sub-judul tambahan yang menyatukan kedua kolom
-        st.markdown("<h4 style='color: white; font-family: \"Montserrat\", sans-serif; font-size: 16px; margin-top: -10px; margin-bottom: 20px;'>Ban & Pick Rate Comparation</h4>", unsafe_allow_html=True)
+        # Sub-judul diturunkan dengan mengubah margin-top menjadi 5px dan memperbesar margin-bottom
+        st.markdown("<h4 style='color: white; font-family: \"Montserrat\", sans-serif; font-size: 16px; margin-top: 5px; margin-bottom: 25px;'>Ban & Pick Rate Comparation</h4>", unsafe_allow_html=True)
         
         col_strat_A, col_strat_B = st.columns(2)
         
@@ -2421,7 +2421,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         picks_A, bans_A, match_A = get_team_draft_stats(tim_A)
         picks_B, bans_B, match_B = get_team_draft_stats(tim_B)
         
-        # Fungsi diubah: parameter "tim_nama" DIHAPUS karena teks "[Tim] Strategy" sudah tidak dicetak lagi
         def render_h2h_draft_column(border_col, picks, bans, tot_match):
             html = f"<div style='border-left: 4px solid {border_col}; padding-left: 15px; margin-bottom: 20px;'>"
             
@@ -2453,7 +2452,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             return html
 
         with col_strat_A:
-            # Fungsi dipanggil tanpa nama tim
             st.markdown(render_h2h_draft_column(warna_A, picks_A, bans_A, match_A), unsafe_allow_html=True)
             
             kombo_A = get_signature_combos(tim_A)
@@ -2462,7 +2460,6 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 for k in kombo_A[:2]: render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                 
         with col_strat_B:
-            # Fungsi dipanggil tanpa nama tim
             st.markdown(render_h2h_draft_column(warna_B, picks_B, bans_B, match_B), unsafe_allow_html=True)
             
             kombo_B = get_signature_combos(tim_B)
