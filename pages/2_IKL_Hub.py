@@ -1877,7 +1877,7 @@ elif menu_utama == "🛡️ Team Profiling":
             master_draft_html += "</div>"
 
             import streamlit.components.v1 as components
-            components.html(master_draft_html, height=300)
+            components.html(master_draft_html, height=400)
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 10px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
