@@ -1787,7 +1787,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Subs -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 90%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
