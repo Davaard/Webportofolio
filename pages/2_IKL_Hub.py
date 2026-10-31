@@ -2222,12 +2222,24 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         col_rad_kiri, col_rad_tengah, col_rad_kanan = st.columns([1, 2, 1])
         with col_rad_tengah:
             fig_h2h = go.Figure()
-            # Warna selaras dengan konsep H2H (Biru vs Merah)
-            warna_A, warna_B = "#3b82f6", "#ef4444" 
             
-            # Render Radar Chart
-            fig_h2h.add_trace(go.Scatterpolar(r=skor_A, theta=kategori_label, fill='toself', name=tim_A, line_color=warna_A, fillcolor='rgba(59, 130, 246, 0.4)'))
-            fig_h2h.add_trace(go.Scatterpolar(r=skor_B, theta=kategori_label, fill='toself', name=tim_B, line_color=warna_B, fillcolor='rgba(239, 68, 68, 0.4)'))
+            # Dinamis mengambil warna identitas tim dari CSV
+            warna_A = TEAM_COLOR_MAP.get(tim_A, "#3b82f6")
+            warna_B = TEAM_COLOR_MAP.get(tim_B, "#ef4444")
+            
+            # Fungsi ajaib untuk mengonversi kode warna Hex menjadi RGBA (transparan) untuk chart area
+            def hex_to_rgba(hex_color, opacity=0.4):
+                hex_color = hex_color.lstrip('#')
+                if len(hex_color) == 6:
+                    return f"rgba({int(hex_color[0:2], 16)}, {int(hex_color[2:4], 16)}, {int(hex_color[4:6], 16)}, {opacity})"
+                return f"rgba(128, 128, 128, {opacity})"
+                
+            fill_A = hex_to_rgba(warna_A)
+            fill_B = hex_to_rgba(warna_B)
+            
+            # Render Radar Chart dengan warna dinamis
+            fig_h2h.add_trace(go.Scatterpolar(r=skor_A, theta=kategori_label, fill='toself', name=tim_A, line_color=warna_A, fillcolor=fill_A))
+            fig_h2h.add_trace(go.Scatterpolar(r=skor_B, theta=kategori_label, fill='toself', name=tim_B, line_color=warna_B, fillcolor=fill_B))
             
             fig_h2h.update_layout(
                 polar=dict(
@@ -2240,7 +2252,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             )
             st.plotly_chart(fig_h2h, use_container_width=True)
 
-            # --- RENDER BAR CHART COMPARISON (HTML/CSS MURNI) ---
+            # --- RENDER BAR CHART COMPARISON ---
             def calculate_h2h_bar_stats(tim):
                 df_tim = df_long[(df_long['Team'] == tim) & (df_long['Win'].notna())]
                 if df_tim.empty: return [0, 0, 0, 0, 0]
@@ -2262,41 +2274,22 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 val_a = stats_A[i]
                 val_b = stats_B[i]
                 
-                # Format angka dinamis agar rapi
                 if bar_labels[i] == "Gold/min":
                     str_a, str_b = f"{val_a:.0f}", f"{val_b:.0f}"
                 elif bar_labels[i] in ["Objective/min", "Kill/min"]:
                     str_a, str_b = f"{val_a:.2f}", f"{val_b:.2f}"
                 elif bar_labels[i] == "Average Duration":
                     str_a, str_b = f"{val_a:.1f}", f"{val_b:.1f}"
-                else: # Hero Pool (Angka Utuh)
+                else: 
                     str_a, str_b = f"{int(val_a)}", f"{int(val_b)}"
                     
-                # Hitung rasio lebar bar
                 tot = val_a + val_b
                 pct_a = (val_a / tot * 100) if tot > 0 else 50
                 pct_b = (val_b / tot * 100) if tot > 0 else 50
                 
-                # Merangkai Kartu Bar Chart
-                html_bars += f'''
-                <div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;'>
-                    <div style='width: 45px; text-align: right; font-weight: 800; color: white; font-family: "Montserrat", sans-serif; font-size: 14px;'>{str_a}</div>
-                    
-                    <div style='flex: 1; margin: 0 18px; position: relative; height: 30px; border-radius: 15px; overflow: hidden; display: flex; box-shadow: 0 4px 6px rgba(0,0,0,0.4);'>
-                        <!-- Batang Kiri (Tim Biru) -->
-                        <div style='width: {pct_a}%; background-color: {warna_A}; height: 100%;'></div>
-                        <!-- Batang Kanan (Tim Merah) -->
-                        <div style='width: {pct_b}%; background-color: {warna_B}; height: 100%;'></div>
-                        
-                        <!-- Label Tengah Menimpa Batang -->
-                        <div style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-family: "Montserrat", sans-serif; font-size: 12px; letter-spacing: 0.5px; text-shadow: 1.5px 1.5px 3px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.8); pointer-events: none;'>
-                            {bar_labels[i]}
-                        </div>
-                    </div>
-                    
-                    <div style='width: 45px; text-align: left; font-weight: 800; color: white; font-family: "Montserrat", sans-serif; font-size: 14px;'>{str_b}</div>
-                </div>
-                '''
+                # HTML dirapatkan menjadi 1 baris string murni agar aman dari bug Markdown Streamlit
+                html_bars += f"<div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;'><div style='width: 45px; text-align: right; font-weight: 800; color: white; font-family: \"Montserrat\", sans-serif; font-size: 14px;'>{str_a}</div><div style='flex: 1; margin: 0 18px; position: relative; height: 30px; border-radius: 15px; overflow: hidden; display: flex; box-shadow: 0 4px 6px rgba(0,0,0,0.4);'><div style='width: {pct_a}%; background-color: {warna_A}; height: 100%;'></div><div style='width: {pct_b}%; background-color: {warna_B}; height: 100%;'></div><div style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-family: \"Montserrat\", sans-serif; font-size: 12px; letter-spacing: 0.5px; text-shadow: 1.5px 1.5px 3px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.8); pointer-events: none;'>{bar_labels[i]}</div></div><div style='width: 45px; text-align: left; font-weight: 800; color: white; font-family: \"Montserrat\", sans-serif; font-size: 14px;'>{str_b}</div></div>"
+                
             html_bars += "</div>"
             st.markdown(html_bars, unsafe_allow_html=True)
 
