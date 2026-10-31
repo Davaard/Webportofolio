@@ -1888,40 +1888,70 @@ elif menu_utama == "🛡️ Team Profiling":
         icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
         
         with col_btn1:
-            if icon_kembali_b64:
-                st.markdown(f"""
-                <style>
-                .btn-kembali {{
-                    display: flex; align-items: center; justify-content: flex-start; gap: 10px;
-                    background: transparent; border: none; cursor: pointer; padding: 10px;
-                    transition: all 0.2s ease; opacity: 0.7;
-                }}
-                .btn-kembali:hover {{ opacity: 1; transform: translateX(-5px); }}
-                </style>
-                """, unsafe_allow_html=True)
-                if st.button("Kembali ke Pilihan Tim", use_container_width=True):
-                    st.session_state['profiling_team'] = None
-                    st.rerun()
-                st.markdown(f"<div style='margin-top: -45px; pointer-events: none;'><img src='data:image/png;base64,{icon_kembali_b64}' style='height: 35px;'></div>", unsafe_allow_html=True)
+            # Menyuntikkan CSS super spesifik untuk tombol di kolom 1
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {{
+                background-color: #24242e !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                color: white !important;
+                border-radius: 8px !important;
+                height: 50px !important;
+                padding-left: 45px !important;
+                background-image: url('data:image/png;base64,{icon_kembali_b64}') !important;
+                background-size: 25px !important;
+                background-repeat: no-repeat !important;
+                background-position: 15px center !important;
+                font-family: 'Montserrat', sans-serif !important;
+                font-weight: 600 !important;
+                opacity: 1 !important;
+                transition: all 0.3s ease !important;
+            }}
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {{
+                border-color: #d4af37 !important;
+                box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
+                color: #d4af37 !important;
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Kembali ke Pilihan Tim", use_container_width=True):
+                st.session_state['profiling_team'] = None
+                st.rerun()
 
         with col_btn2:
-            if icon_banding_b64:
-                st.markdown(f"""
-                <style>
-                .btn-banding {{
-                    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-                    background: transparent; border: none; cursor: pointer; padding: 10px;
-                    transition: all 0.2s ease; opacity: 0.7;
-                }}
-                .btn-banding:hover {{ opacity: 1; transform: translateX(5px); }}
-                </style>
-                """, unsafe_allow_html=True)
-                if st.button("Bandingkan (H2H) Tim Ini", use_container_width=True):
-                    st.session_state['h2h_team_A'] = tim_pilihan 
-                    st.session_state['h2h_team_B'] = None        
-                    st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
-                    st.rerun()
-                st.markdown(f"<div style='margin-top: -45px; display: flex; justify-content: flex-end; pointer-events: none;'><img src='data:image/png;base64,{icon_banding_b64}' style='height: 35px;'></div>", unsafe_allow_html=True)
+            # Menyuntikkan CSS super spesifik untuk tombol di kolom 3
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {{
+                background-color: #24242e !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                color: white !important;
+                border-radius: 8px !important;
+                height: 50px !important;
+                padding-right: 45px !important;
+                background-image: url('data:image/png;base64,{icon_banding_b64}') !important;
+                background-size: 25px !important;
+                background-repeat: no-repeat !important;
+                background-position: calc(100% - 15px) center !important;
+                font-family: 'Montserrat', sans-serif !important;
+                font-weight: 600 !important;
+                opacity: 1 !important;
+                transition: all 0.3s ease !important;
+            }}
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover {{
+                border-color: #d4af37 !important;
+                box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
+                color: #d4af37 !important;
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Bandingkan (H2H) Tim Ini", use_container_width=True):
+                st.session_state['h2h_team_A'] = tim_pilihan 
+                st.session_state['h2h_team_B'] = None        
+                st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
+                st.rerun()
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
