@@ -1653,7 +1653,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     
                     # 2. SATU PAKET KARTU UTUH (Master Width diperbesar dari 55px menjadi 75px)
                     html_container += f"""
-                    <div style="position: absolute; {style_pos} width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
+                    <div style="position: absolute; {style_pos} width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
                         <!-- Alas (Background Tim) -->
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                         
@@ -1727,15 +1727,15 @@ elif menu_utama == "🛡️ Team Profiling":
                 
                 # Kartu Staff (Skala Master 75px, persis seperti map)
                 html_staff_col += f"""
-                <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
+                <div style="position: relative; width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <!-- Alas Background Staff -->
-                    <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
+                    <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Jabatan -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Staff (Mentok atas, tinggi 75%) -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
@@ -1780,14 +1780,14 @@ elif menu_utama == "🛡️ Team Profiling":
                 
                 # Kartu Subs
                 html_staff_col += f"""
-                <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
-                    <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
+                <div style="position: relative; width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
+                    <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Role Subs -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Subs -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
