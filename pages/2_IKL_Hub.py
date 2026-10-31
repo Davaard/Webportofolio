@@ -1945,30 +1945,42 @@ elif menu_utama == "🛡️ Team Profiling":
             # --- RENDER UI KARTU DRAFTING (3 KOLOM ANTI BOCOR) ---
             col_p, col_b, col_r = st.columns(3)
             
-            def render_draft_card(title, data_series, is_ban=False):
-                # Cetak Judul dulu
+            def render_draft_card(title, data_series, mode="pick"):
+                # mode bisa berupa: "pick", "ban", atau "respected"
                 st.markdown(f"<h5 style='color: white; font-family: \"Montserrat\", sans-serif; margin-bottom: 15px;'>{title}</h5>", unsafe_allow_html=True)
                 
-                # Emas untuk Pick, Merah Bata untuk Ban
-                border_color = "#d4af37" if not is_ban else "#a33232" 
-                text_color = "#4caf50" if not is_ban else "#ff4b4b"
+                banned_b64 = image_to_base64("assets/Match/banned.png")
+                
+                # Setup Warna & Efek berdasarkan Mode
+                if mode == "pick":
+                    border_color = "#d4af37"
+                    text_color = "#4caf50"
+                    img_filter = "none"
+                else:
+                    border_color = "#a33232" # Merah Bata
+                    text_color = "#ff4b4b"
+                    img_filter = "grayscale(100%) brightness(0.5)" # Redupkan Hero
                 
                 if data_series.empty:
                     st.markdown("<div style='color: gray; font-size: 13px; font-style: italic;'>Data belum tersedia</div>", unsafe_allow_html=True)
                 else:
-                    # Cetak per baris hero secara mandiri agar string Base64 tidak kepanjangan
                     for hero, count in data_series.items():
                         rate = (count / total_match_tim) * 100
                         h_path = get_hero_path(hero)
                         
                         if h_path:
-                            # Sihir CSS: Kalau di-ban, jadikan hitam putih dan redupkan 50%
-                            img_filter = "grayscale(100%) brightness(0.5)" if is_ban else "none"
-                            h_img = f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1.5px solid {border_color}; filter: {img_filter};'>"
+                            # Membungkus gambar dengan div agar border merah tidak ikut terkena efek grayscale
+                            h_img = f"<div style='position: relative; width: 45px; height: 45px; border-radius: 6px; border: 1.5px solid {border_color}; overflow: hidden;'>"
+                            h_img += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 100%; height: 100%; object-fit: cover; filter: {img_filter};'>"
+                            
+                            # Logika khusus Respected Ban: Tambahkan layer banned.png
+                            if mode == "respected" and banned_b64:
+                                h_img += f"<img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>"
+                                
+                            h_img += "</div>"
                         else:
-                            h_img = f"<div style='width: 45px; height: 45px; background: #444; border: 1.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+                            h_img = f"<div style='width: 45px; height: 45px; background: #444; border: 1.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px; text-align:center;'>{hero}</div>"
                         
-                        # HTML individual untuk masing-masing hero
                         card_html = f"""
                         <div style='background-color: #24242e; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>
                             <div style='display: flex; align-items: center; gap: 15px;'>
@@ -1978,16 +1990,14 @@ elif menu_utama == "🛡️ Team Profiling":
                             <span style='color: {text_color}; font-weight: 800; font-size: 15px;'>{rate:.0f}%</span>
                         </div>
                         """
-                        # Print langsung ke Streamlit
                         st.markdown(card_html, unsafe_allow_html=True)
                 
-            # Mengeksekusi fungsi render di masing-masing kolom
             with col_p:
-                render_draft_card("Top Picked Heroes", tim_picks, is_ban=False)
+                render_draft_card("Top Picked Heroes", tim_picks, mode="pick")
             with col_b:
-                render_draft_card("Top Banned Heroes", tim_bans, is_ban=True)
+                render_draft_card("Top Banned Heroes", tim_bans, mode="ban")
             with col_r:
-                render_draft_card("Top Respected Banned", respected_bans, is_ban=True)
+                render_draft_card("Top Respected Banned", respected_bans, mode="respected")
                 
         st.markdown("<br><br>", unsafe_allow_html=True)
 # endregion
