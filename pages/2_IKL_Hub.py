@@ -1888,26 +1888,36 @@ elif menu_utama == "🛡️ Team Profiling":
         icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
         
         with col_btn1:
-            # Menggunakan karakter spasi kosong lebar ( ) untuk mendorong teks ke kanan
-            if st.button("   Kembali ke Pilihan Tim", use_container_width=True):
+            # Tombol asli Streamlit diubah teksnya menjadi karakter kosong (ㅤ) agar tingginya tetap terjaga
+            if st.button("ㅤ", key="btn_kembali", use_container_width=True):
                 st.session_state['profiling_team'] = None
                 st.rerun()
                 
             if icon_kembali_b64:
-                # Menumpuk ikon tepat di ruang kosong sebelah kiri tombol (ukuran ikon 24px agar pas di dalam tombol)
-                st.markdown(f"<div style='position: relative; margin-top: -48px; margin-left: 15px; z-index: 10; pointer-events: none;'><img src='data:image/png;base64,{icon_kembali_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'></div>", unsafe_allow_html=True)
+                # Menggabungkan Ikon dan Teks di dalam satu wadah HTML yang di-center presisi
+                st.markdown(f"""
+                <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10;'>
+                    <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 20px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Kembali</span>
+                </div>
+                """, unsafe_allow_html=True)
 
         with col_btn2:
-            # Menggunakan karakter spasi kosong lebar ( ) untuk mendorong teks ke kiri
-            if st.button("Bandingkan (H2H) Tim Ini   ", use_container_width=True):
+            # Tombol asli Streamlit diubah teksnya menjadi karakter kosong
+            if st.button("ㅤ", key="btn_bandingkan", use_container_width=True):
                 st.session_state['h2h_team_A'] = tim_pilihan 
                 st.session_state['h2h_team_B'] = None        
                 st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
                 st.rerun()
                 
             if icon_banding_b64:
-                # Menumpuk ikon tepat di ruang kosong sebelah kanan tombol
-                st.markdown(f"<div style='position: relative; margin-top: -48px; margin-right: 15px; display: flex; justify-content: flex-end; z-index: 10; pointer-events: none;'><img src='data:image/png;base64,{icon_banding_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'></div>", unsafe_allow_html=True)
+                # Menggabungkan Ikon dan Teks di dalam satu wadah HTML yang di-center presisi
+                st.markdown(f"""
+                <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10;'>
+                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Bandingkan</span>
+                </div>
+                """, unsafe_allow_html=True)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
