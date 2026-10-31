@@ -1792,7 +1792,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     
                     <!-- Nama Subs -->
-                    <div style="position: absolute; bottom: 9%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                 </div>
