@@ -1917,35 +1917,71 @@ elif menu_utama == "🛡️ Team Profiling":
         icon_kembali_b64 = image_to_base64("assets/kembali_icon.png")
         icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
         
+        # WAJIB: Membersihkan karakter newline pada base64 agar kode CSS tidak rusak/hilang
+        icon_kembali_b64 = icon_kembali_b64.replace('\n', '').replace('\r', '') if icon_kembali_b64 else ""
+        icon_banding_b64 = icon_banding_b64.replace('\n', '').replace('\r', '') if icon_banding_b64 else ""
+        
         with col_btn1:
-            if st.button("ㅤ", key="btn_kembali", use_container_width=True):
+            st.markdown(f"""
+            <style>
+            /* Menyulap tombol primary menjadi satu kesatuan Hitbox + Teks + Ikon */
+            div[data-testid="column"]:nth-child(1) button[kind="primary"] {{
+                background-color: transparent !important;
+                border: none !important;
+                color: gray !important;
+                padding-left: 35px !important; /* Memberi ruang kosong untuk ikon di kiri */
+                background-image: url('data:image/png;base64,{icon_kembali_b64}') !important;
+                background-size: 25px !important; /* Ukuran Ikon Kembali */
+                background-repeat: no-repeat !important;
+                background-position: left center !important;
+                font-family: 'Montserrat', sans-serif !important;
+                font-size: 15px !important;
+                font-weight: 600 !important;
+                box-shadow: none !important;
+                transition: all 0.2s ease !important;
+            }}
+            div[data-testid="column"]:nth-child(1) button[kind="primary"]:hover {{
+                color: #d4af37 !important; /* Berubah emas saat disorot */
+                transform: translateX(-5px) !important; /* Animasi geser kiri */
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            # Parameter type="primary" menjadi penanda khusus agar ditarget oleh CSS di atas
+            if st.button("Kembali", key="btn_kembali", type="primary", use_container_width=False):
                 st.session_state['profiling_team'] = None
                 st.rerun()
-                
-            if icon_kembali_b64:
-                # Ikon 25px ditarik dengan margin-top: -45px
-                st.markdown(f"""
-                <div style='position: relative; margin-top: -45px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
-                    <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 25px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
-                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Kembali</span>
-                </div>
-                """, unsafe_allow_html=True)
 
         with col_btn2:
-            if st.button("ㅤ", key="btn_bandingkan", use_container_width=True):
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"]:nth-child(3) button[kind="primary"] {{
+                background-color: transparent !important;
+                border: none !important;
+                color: gray !important;
+                padding-right: 50px !important; /* Memberi ruang untuk ikon 40px di kanan */
+                background-image: url('data:image/png;base64,{icon_banding_b64}') !important;
+                background-size: 40px !important; /* Ukuran Ikon Bandingkan */
+                background-repeat: no-repeat !important;
+                background-position: right center !important;
+                font-family: 'Montserrat', sans-serif !important;
+                font-size: 15px !important;
+                font-weight: 600 !important;
+                box-shadow: none !important;
+                transition: all 0.2s ease !important;
+            }}
+            div[data-testid="column"]:nth-child(3) button[kind="primary"]:hover {{
+                color: #d4af37 !important;
+                transform: translateX(5px) !important; /* Animasi geser kanan */
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Bandingkan", key="btn_bandingkan", type="primary", use_container_width=False):
                 st.session_state['h2h_team_A'] = tim_pilihan 
                 st.session_state['h2h_team_B'] = None        
                 st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
                 st.rerun()
-                
-            if icon_banding_b64:
-                # Ikon 40px (lebih tinggi) ditarik lebih kuat dengan margin-top: -52px
-                st.markdown(f"""
-                <div style='position: relative; margin-top: -52px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
-                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Bandingkan</span>
-                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
-                </div>
-                """, unsafe_allow_html=True)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
