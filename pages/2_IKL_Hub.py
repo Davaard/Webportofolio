@@ -1732,7 +1732,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
                     <!-- Icon Jabatan -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Staff (Mentok atas, tinggi 75%) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
@@ -1745,7 +1745,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     
                     <!-- Jabatan (Berada di slot hero favorit) -->
-                    <div style="position: absolute; bottom: 6%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
+                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
                         {jabatan}
                     </div>
                 </div>
@@ -1761,12 +1761,12 @@ elif menu_utama == "🛡️ Team Profiling":
             
             def get_subs_icon(role_str):
                 r = str(role_str).lower()
-                if 'top' in r or 'clash' in r: return 'subs_dashlane_icon.png'
+                if 'top' in r or 'clash' in r: return 'subs_clashlane_icon.png'
                 if 'jung' in r: return 'subs_jungle_icon.png'
                 if 'mid' in r: return 'subs_midlane_icon.png'
                 if 'bot' in r or 'farm' in r or 'gold' in r: return 'subs_farmlane_icon.png'
                 if 'roam' in r or 'sup' in r: return 'subs_support_icon.png'
-                return 'subs_dashlane_icon.png'
+                return 'reset_icon.png'
                 
             html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
             for _, row in df_subs.iterrows():
@@ -1784,15 +1784,15 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
                     <!-- Icon Role Subs -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Subs -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
                     <!-- Nama Subs -->
-                    <div style="position: absolute; bottom: 12%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                    <div style="position: absolute; bottom: 9%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                 </div>
