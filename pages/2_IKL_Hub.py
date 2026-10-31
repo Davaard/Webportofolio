@@ -1517,14 +1517,43 @@ elif menu_utama == "🛡️ Team Profiling":
         
         with col_prof_logo:
             if logo_path:
+                # Render Logo
                 st.markdown(f"""
                 <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding-top: 10px;">
                     <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="width: 100%; max-width: 220px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.8));">
                 </div>
-                <h2 style="text-align: center; color: white; margin-top: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 1px; line-height: 1.2;">
-                    {tim_panjang}
-                </h2>
                 """, unsafe_allow_html=True)
+                
+                # CSS khusus untuk menyulap tombol Streamlit menjadi Teks Judul H2 transparan
+                st.markdown("""
+                <style>
+                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {
+                    background-color: transparent !important;
+                    border: none !important;
+                    color: white !important;
+                    font-family: 'Montserrat', sans-serif !important;
+                    box-shadow: none !important;
+                    padding: 0 !important;
+                    margin-top: 15px !important;
+                    transition: all 0.2s ease-in-out !important;
+                }
+                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {
+                    color: #d4af37 !important; /* Teks menyala emas saat disorot */
+                    transform: scale(1.05) !important; /* Efek membesar sedikit */
+                }
+                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] p {
+                    font-size: 26px !important;
+                    font-weight: 900 !important;
+                    letter-spacing: 1px !important;
+                    line-height: 1.2 !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                # Tombol Streamlit yang menyamar sebagai Judul
+                if st.button(tim_panjang, use_container_width=True, key="btn_reset_header"):
+                    st.session_state['profiling_team'] = None
+                    st.rerun()
                 
         with col_prof_desc:
             data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
@@ -1554,7 +1583,8 @@ elif menu_utama == "🛡️ Team Profiling":
             """
             st.markdown(narasi_profil, unsafe_allow_html=True)
 
-        st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05);'><br>", unsafe_allow_html=True)
+        # Hapus tag <br> dan pakai margin presisi agar jarak ke Line Up merapat sempurna
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
         
         # === 2. TEAM LINE UP (LAYERED MAP) & STAFF (Murni 100% Desain Manualmu) ===
         st.markdown("### 🗺️ Team Line Up")
