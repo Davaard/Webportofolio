@@ -1727,7 +1727,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 
                 # Kartu Staff (Skala Master 75px, persis seperti map)
                 html_staff_col += f"""
-                <div style="position: relative; width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
+                <div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <!-- Alas Background Staff -->
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
