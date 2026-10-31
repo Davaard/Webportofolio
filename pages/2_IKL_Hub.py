@@ -2149,74 +2149,283 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
 
     # === FASE DASHBOARD H2H (KEDUA TIM TERPILIH) ===
     else:
-        # Bagian ini dibiarkan persis seperti kode aslimu untuk merender dashboard komparasi
         tim_A = st.session_state['h2h_team_A']
         tim_B = st.session_state['h2h_team_B']
-
-        col_nav1, col_nav2 = st.columns([1, 4])
-        with col_nav1:
-            if st.button("🔄 Ganti Pertandingan", use_container_width=True):
-                st.session_state['h2h_team_A'] = None
-                st.session_state['h2h_team_B'] = None
-                st.rerun()
-        with col_nav2:
-            st.markdown(f"### Duel: {tim_A} vs {tim_B}")
         
-        st.markdown("---")
+        # === 1. HEADER KLASEMEN & RESET TIM ===
+        col_a, col_vs, col_b = st.columns([3, 1.5, 3])
+        vs_gold_b64 = image_to_base64("assets/Match/vs_full_gold.png")
+        
+        def render_h2h_header(tim_nama, key_btn):
+            logo = get_logo_path(tim_nama)
+            b64_logo = image_to_base64(logo) if logo else ""
+            tim_panjang = TEAM_FULLNAME_MAP.get(tim_nama, tim_nama).upper()
+            
+            if " BY " in tim_panjang:
+                nama_utama, nama_sub = tim_panjang.split(" BY ", 1)
+                html_nama = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px;'>{nama_utama}</h3><p style='color: gray; font-size: 16px; margin: 0; font-weight: 600;'>by {nama_sub}</p>"
+            else:
+                html_nama = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px; line-height: 1.2;'>{tim_panjang}</h3>"
+
+            st.markdown(f"""
+            <div style='text-align: center;'>
+                <img src='data:image/png;base64,{b64_logo}' style='height: 140px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8)); margin-bottom: 10px;'>
+                {html_nama}
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Tombol reset samar
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"] div[data-testid="stButton"] button[key="{key_btn}"] {{
+                background: transparent !important; border: none !important; color: #707070 !important;
+                font-family: "Montserrat", sans-serif !important; font-size: 12px !important; font-weight: 600 !important;
+                padding: 0 !important; box-shadow: none !important; margin-top: 5px !important;
+            }}
+            div[data-testid="column"] div[data-testid="stButton"] button[key="{key_btn}"]:hover {{ color: white !important; }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Tekan untuk ganti tim", key=key_btn, use_container_width=True):
+                st.session_state[f'h2h_team_{key_btn[-1]}'] = None
+                st.rerun()
+
+        with col_a: render_h2h_header(tim_A, "btn_reset_A")
+        with col_vs:
+            st.markdown(f"""
+            <div style='display: flex; justify-content: center; align-items: center; height: 100%; min-height: 180px;'>
+                <img src='data:image/png;base64,{vs_gold_b64}' style='height: 80px; filter: drop-shadow(0 4px 10px rgba(212,175,55,0.4));'>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_b: render_h2h_header(tim_B, "btn_reset_B")
+
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+        
+        # === 2. STATISTIC COMPARISON ===
+        st.markdown("### 📊 Statistic Comparison")
         
         data_A = rapor_radar[rapor_radar['Team'] == tim_A].iloc[0]
         data_B = rapor_radar[rapor_radar['Team'] == tim_B].iloc[0]
 
         kategori = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Volatility_100', 'TeamFight_100', 'Flexibility_100']
-        kategori_label = ['Dominance', 'Toughness', 'Discipline', 'Volatility', 'Team Fight', 'Flexibility']
+        kategori_label = ['DOM', 'TOUG', 'DISC', 'STAB', 'TEAM', 'FLEX']
         
         skor_A = data_A[kategori].values.flatten().tolist()
         skor_B = data_B[kategori].values.flatten().tolist()
+        skor_A[3] = 120 - skor_A[3] # Inversi ke Stability
+        skor_B[3] = 120 - skor_B[3] 
+        
         skor_A.append(skor_A[0])
         skor_B.append(skor_B[0])
         kategori_label.append(kategori_label[0])
 
-        fig_h2h = go.Figure()
-        fig_h2h.add_trace(go.Scatterpolar(
-            r=skor_A, theta=kategori_label, fill='toself', 
-            name=tim_A, line_color='cyan', fillcolor='rgba(0, 255, 255, 0.3)'
-        ))
-        fig_h2h.add_trace(go.Scatterpolar(
-            r=skor_B, theta=kategori_label, fill='toself', 
-            name=tim_B, line_color='magenta', fillcolor='rgba(255, 0, 255, 0.3)'
-        ))
-        fig_h2h.update_layout(
-            polar=dict(radialaxis=dict(visible=False, range=[0, 100])),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            margin=dict(l=20, r=20, t=20, b=20),
-            legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="center", x=0.5)
-        )
-        st.plotly_chart(fig_h2h, use_container_width=True)
+        col_rad_kiri, col_rad_tengah, col_rad_kanan = st.columns([1, 2, 1])
+        with col_rad_tengah:
+            fig_h2h = go.Figure()
+            # Warna diubah agar selaras dengan konsep biru vs merah
+            warna_A, warna_B = "#3b82f6", "#ef4444" 
+            
+            fig_h2h.add_trace(go.Scatterpolar(r=skor_A, theta=kategori_label, fill='toself', name=tim_A, line_color=warna_A, fillcolor='rgba(59, 130, 246, 0.4)'))
+            fig_h2h.add_trace(go.Scatterpolar(r=skor_B, theta=kategori_label, fill='toself', name=tim_B, line_color=warna_B, fillcolor='rgba(239, 68, 68, 0.4)'))
+            
+            fig_h2h.update_layout(
+                polar=dict(
+                    bgcolor="rgba(255,255,255,0.05)",
+                    radialaxis=dict(visible=True, showticklabels=False, range=[0, 100], gridcolor="rgba(255,255,255,0.15)", linecolor="rgba(255,255,255,0.2)"),
+                    angularaxis=dict(tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), gridcolor="rgba(255,255,255,0.15)", linecolor="rgba(255,255,255,0.2)")
+                ),
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=30, r=30, t=40, b=30), showlegend=False, height=350
+            )
+            st.plotly_chart(fig_h2h, use_container_width=True)
 
-        st.markdown("---")
-        st.subheader("🔥 Clash of Signatures (Top 3 Combos)")
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
-        kombo_A = get_signature_combos(tim_A)
-        kombo_B = get_signature_combos(tim_B)
+        # === 3. LINE UP HEAD TO HEAD (MAP 10 HERO) ===
+        st.markdown("### 🗺️ Line Up Head to Head")
         
-        col_combo_A, divider, col_combo_B = st.columns([1, 0.05, 1])
+        df_roster = pd.read_csv("IKL_Rosters.csv")
+        df_roster = df_roster[df_roster['Season'] == musim_pilihan]
+        df_roster['Status_Score'] = df_roster['Status'].astype(str).str.strip().str.lower().map({'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2}).fillna(3)
+        df_roster = df_roster.sort_values('Status_Score')
+
+        # === KOORDINAT H2H KHUSUS ===
+        # Tim A (Kiri/Biru) ditarik sedikit ke arah markas bawah kiri
+        MAP_COORDS_A = {
+            'Top Lane': {'top': '30%', 'left': '22%', 'transform': 'translate(-50%, -50%)'},
+            'Jungler': {'top': '49%', 'left': '29%', 'transform': 'translate(-50%, -50%)'},
+            'Middle': {'top': '54%', 'left': '44%', 'transform': 'translate(-50%, -50%)'},
+            'Roamer': {'top': '61%', 'left': '60%', 'transform': 'translate(-50%, -50%)'},
+            'Bottom Lane': {'top': '78%', 'left': '69%', 'transform': 'translate(-50%, -50%)'}
+        }
+        # Tim B (Kanan/Merah) ditarik sedikit ke arah markas atas kanan
+        MAP_COORDS_B = {
+            'Top Lane': {'top': '20%', 'left': '28%', 'transform': 'translate(-50%, -50%)'},
+            'Jungler': {'top': '43%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
+            'Middle': {'top': '46%', 'left': '56%', 'transform': 'translate(-50%, -50%)'},
+            'Roamer': {'top': '49%', 'left': '74%', 'transform': 'translate(-50%, -50%)'},
+            'Bottom Lane': {'top': '72%', 'left': '81%', 'transform': 'translate(-50%, -50%)'}
+        }
+
+        map_path = "assets/HOK_map-layout.png"
+        map_b64 = image_to_base64(map_path)
         
-        with col_combo_A:
-            st.markdown(f"<h4 style='text-align: center; color: cyan;'>{tim_A}</h4>", unsafe_allow_html=True)
-            if not kombo_A:
-                st.info("Belum ada kombinasi andalan.")
-            else:
-                for k in kombo_A:
-                    render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+        # Background Border Warna Tim
+        bg_b64_A = image_to_base64(get_team_bg_path(tim_A))
+        bg_b64_B = image_to_base64(get_team_bg_path(tim_B))
+        
+        html_container = f"""
+        <div id='map_container' style='position: relative; width: 100%; max-width: 900px; aspect-ratio: 1/1; margin: 0 auto; border: 2px solid #d4af37; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5);'>
+            <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
+        """
+
+        role_idx_map = {'Top Lane': 0, 'Jungler': 1, 'Middle': 2, 'Bottom Lane': 3, 'Roamer': 4}
+        role_keywords = {'Top Lane': 'top|clash', 'Jungler': 'jung', 'Middle': 'mid', 'Bottom Lane': 'bot|farm|gold', 'Roamer': 'roam|sup'}
+
+        # Fungsi Builder Kartu Map
+        def build_map_cards(tim_nama, coords_dict, bg_b64, border_hex):
+            html_cards = ""
+            df_hist_player = df_long[(df_long['Team'] == tim_nama) & (df_long['Win'].notna())]
+            df_roster_tim = df_roster[df_roster['Team'] == tim_nama]
+            
+            for role_csv, coords in coords_dict.items():
+                keyword = role_keywords.get(role_csv, '')
+                pemain_data = df_roster_tim[df_roster_tim['Role'].astype(str).str.lower().str.contains(keyword, na=False)]
                 
-        with divider:
-            st.markdown("<div style='border-left: 2px solid gray; height: 100%; min-height: 250px;'></div>", unsafe_allow_html=True)
+                if not pemain_data.empty:
+                    nama_pemain = str(pemain_data.iloc[0]['Player_ID'])
+                    foto_b64 = image_to_base64(get_player_path(nama_pemain))
+                    icon_role_b64 = image_to_base64(f"assets/{ROLE_ICONS.get(role_csv)}")
+                    
+                    idx_lane = role_idx_map.get(role_csv, 0)
+                    hero_counts = {}
+                    for _, row in df_hist_player.iterrows():
+                        heroes = row['Heroes_List']
+                        if isinstance(heroes, list) and len(heroes) > idx_lane:
+                            h = heroes[idx_lane]
+                            hero_counts[h] = hero_counts.get(h, 0) + 1
+                            
+                    top_2_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:2] # Hanya muat 2 hero agar kartu tidak kepanjangan
+                    
+                    hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 3px; z-index: 4;'>"
+                    for h_name, _ in top_2_heroes:
+                        h_path = get_hero_path(h_name)
+                        if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 14px; height: 14px; border-radius: 2px; border: 0.5px solid rgba(255,255,255,0.5); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
+                    hero_html += "</div>"
+                    
+                    style_pos = f"top: {coords['top']}; left: {coords['left']};"
+                    if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
+                    
+                    # Kartu sedikit diperkecil lebarnya (dari 75px menjadi 65px) agar map tidak terlalu penuh
+                    html_cards += f"""
+                    <div style="position: absolute; {style_pos} width: 65px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5; border: 1.5px solid {border_hex};">
+                        <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; filter: brightness(0.65);">
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 70%; z-index: 2; overflow: hidden; border-radius: 2px 2px 0 0;">
+                            <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
+                        </div>
+                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">{nama_pemain}</div>
+                        {hero_html}
+                    </div>
+                    """
+            return html_cards
 
-        with col_combo_B:
-            st.markdown(f"<h4 style='text-align: center; color: magenta;'>{tim_B}</h4>", unsafe_allow_html=True)
-            if not kombo_B:
-                st.info("Belum ada kombinasi andalan.")
-            else:
-                for k in kombo_B:
-                    render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+        html_container += build_map_cards(tim_A, MAP_COORDS_A, bg_b64_A, warna_A)
+        html_container += build_map_cards(tim_B, MAP_COORDS_B, bg_b64_B, warna_B)
+        html_container += "</div>"
+        
+        import streamlit.components.v1 as components
+        components.html(html_container, height=920)
+
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+        
+        # === 4. TEAM STRATEGY COMPARISON ===
+        st.markdown("### ♟️ Team Strategy")
+        
+        col_strat_A, col_strat_B = st.columns(2)
+        
+        # Mesin pencari data draft
+        def get_team_draft_stats(nama_tim):
+            df_semua = df_history[(df_history['Team_(Blue)'] == nama_tim) | (df_history['Opponent_(Red)'] == nama_tim)]
+            tot_match = len(df_semua)
+            if tot_match == 0: return pd.Series(), pd.Series(), 0
+            
+            picks = df_long[df_long['Team'] == nama_tim].explode('Heroes_List')['Heroes_List'].value_counts().head(5)
+            ban_b = df_semua[df_semua['Team_(Blue)'] == nama_tim]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+            ban_r = df_semua[df_semua['Opponent_(Red)'] == nama_tim]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+            bans = pd.concat([ban_b, ban_r]).value_counts().head(5)
+            return picks, bans, tot_match
+
+        picks_A, bans_A, match_A = get_team_draft_stats(tim_A)
+        picks_B, bans_B, match_B = get_team_draft_stats(tim_B)
+        
+        def render_h2h_draft_column(tim_nama, border_col, picks, bans, tot_match):
+            html = f"<div style='border-left: 4px solid {border_col}; padding-left: 15px; margin-bottom: 20px;'>"
+            html += f"<h4 style='color: white; margin-bottom: 15px;'>{tim_nama} Strategy</h4>"
+            
+            if tot_match == 0:
+                html += "<div style='color: gray; font-style: italic;'>Data belum tersedia</div></div>"
+                return html
+                
+            html += "<div style='display: flex; gap: 15px;'>"
+            
+            # Most Picked Sub-Column
+            html += "<div style='flex: 1;'><div style='color: #4caf50; font-weight: bold; font-size: 13px; margin-bottom: 10px;'>Most Picked</div>"
+            for hero, count in picks.items():
+                h_path = get_hero_path(hero)
+                rate = (count / tot_match) * 100
+                h_img = f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 35px; height: 35px; border-radius: 4px; object-fit: cover; border: 1px solid #4caf50;'>" if h_path else f"<div style='width: 35px; height: 35px; background: #444; border-radius: 4px; font-size:8px;'></div>"
+                html += f"<div style='display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; margin-bottom: 8px;'><div style='display: flex; align-items: center; gap: 10px;'>{h_img}<span style='color: white; font-size: 13px; font-weight: 600;'>{hero}</span></div><span style='color: #4caf50; font-weight: bold; font-size: 13px;'>{rate:.0f}%</span></div>"
+            html += "</div>"
+            
+            # Most Banned Sub-Column
+            html += "<div style='flex: 1;'><div style='color: #ef4444; font-weight: bold; font-size: 13px; margin-bottom: 10px;'>Most Banned</div>"
+            for hero, count in bans.items():
+                h_path = get_hero_path(hero)
+                rate = (count / tot_match) * 100
+                h_img = f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 35px; height: 35px; border-radius: 4px; object-fit: cover; border: 1px solid #ef4444; filter: grayscale(100%);'>" if h_path else f"<div style='width: 35px; height: 35px; background: #444; border-radius: 4px; font-size:8px;'></div>"
+                html += f"<div style='display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; margin-bottom: 8px;'><div style='display: flex; align-items: center; gap: 10px;'>{h_img}<span style='color: white; font-size: 13px; font-weight: 600;'>{hero}</span></div><span style='color: #ef4444; font-weight: bold; font-size: 13px;'>{rate:.0f}%</span></div>"
+            html += "</div>"
+            
+            html += "</div></div>"
+            return html
+
+        with col_strat_A:
+            st.markdown(render_h2h_draft_column(tim_A, warna_A, picks_A, bans_A, match_A), unsafe_allow_html=True)
+            kombo_A = get_signature_combos(tim_A)
+            if kombo_A:
+                st.markdown(f"<div style='border-left: 4px solid {warna_A}; padding-left: 15px; margin-bottom: 10px; color: white; font-weight: bold;'>Top Combos</div>", unsafe_allow_html=True)
+                for k in kombo_A[:2]: render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+                
+        with col_strat_B:
+            st.markdown(render_h2h_draft_column(tim_B, warna_B, picks_B, bans_B, match_B), unsafe_allow_html=True)
+            kombo_B = get_signature_combos(tim_B)
+            if kombo_B:
+                st.markdown(f"<div style='border-left: 4px solid {warna_B}; padding-left: 15px; margin-bottom: 10px; color: white; font-weight: bold;'>Top Combos</div>", unsafe_allow_html=True)
+                for k in kombo_B[:2]: render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+
+        # === 5. MATCH HISTORY HEAD TO HEAD ===
+        st.markdown("### 📜 H2H Match History")
+        
+        hist_h2h = df_history[
+            ((df_history['Team_(Blue)'] == tim_A) & (df_history['Opponent_(Red)'] == tim_B)) |
+            ((df_history['Team_(Blue)'] == tim_B) & (df_history['Opponent_(Red)'] == tim_A))
+        ].copy()
+        
+        if hist_h2h.empty:
+            st.info(f"Belum ada riwayat pertemuan antara {tim_A} dan {tim_B} di musim ini.")
+        else:
+            hist_h2h['Date_Sort'] = pd.to_datetime(hist_h2h['Date'], errors='coerce')
+            hist_h2h['Date'] = hist_h2h['Date_Sort'].dt.strftime('%d %b %Y').fillna(hist_h2h['Date'])
+            hist_h2h['Result'] = hist_h2h['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
+            
+            hist_h2h = hist_h2h.sort_values(by=['Date_Sort'], ascending=[False])
+            hist_h2h = hist_h2h[['Date', 'Week', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+            
+            st.dataframe(
+                hist_h2h.style.set_properties(**{'text-align': 'center'}), 
+                use_container_width=True, hide_index=True
+            )
 # endregion
