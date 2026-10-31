@@ -2317,8 +2317,8 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             'Top Lane': {'top': '21%', 'left': '33%', 'transform': 'translate(-50%, -50%)'},
             'Jungler': {'top': '28%', 'left': '48%', 'transform': 'translate(-50%, -50%)'},
             'Middle': {'top': '46%', 'left': '56%', 'transform': 'translate(-50%, -50%)'},
-            'Roamer': {'top': '49%', 'left': '78%', 'transform': 'translate(-50%, -50%)'},
-            'Bottom Lane': {'top': '69%', 'left': '78%', 'transform': 'translate(-50%, -50%)'}
+            'Roamer': {'top': '69%', 'left': '78%', 'transform': 'translate(-50%, -50%)'},
+            'Bottom Lane': {'top': '49%', 'left': '78%', 'transform': 'translate(-50%, -50%)'}
         }
 
         map_path = "assets/HOK_map-layout.png"
