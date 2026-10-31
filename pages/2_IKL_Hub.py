@@ -1699,7 +1699,7 @@ elif menu_utama == "🛡️ Team Profiling":
             # ==========================================
             # A. BAGIAN STAFF & MANAGEMENT
             # ==========================================
-            html_staff_col += "<h4 style='color: #d4af37; margin-bottom: 15px; margin-top: 0;'>👔 Management & Staff</h4>"
+            html_staff_col += "<h4 style='color: #ffffff; margin-bottom: 15px; margin-top: 0;'>Management & Staff</h4>"
             
             df_staff = df_roster_tim[df_roster_tim['Status'].astype(str).str.strip().str.lower() == 'staff'].copy()
             
@@ -1745,7 +1745,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     
                     <!-- Jabatan (Berada di slot hero favorit) -->
-                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
+                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
                         {jabatan}
                     </div>
                 </div>
@@ -1755,7 +1755,7 @@ elif menu_utama == "🛡️ Team Profiling":
             # ==========================================
             # B. BAGIAN SUBSTITUTES (CADANGAN)
             # ==========================================
-            html_staff_col += "<h4 style='color: #d4af37; margin-bottom: 15px;'>🔄 Substitutes</h4>"
+            html_staff_col += "<h4 style='color: #ffffff; margin-bottom: 15px;'>Substitutes</h4>"
             
             df_subs = df_roster_tim[df_roster_tim['Status_Score'] == 2].copy()
             
