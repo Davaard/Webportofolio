@@ -1806,19 +1806,102 @@ elif menu_utama == "🛡️ Team Profiling":
             
         st.markdown("<br><br>", unsafe_allow_html=True)
         
-        # === 3. RADAR CHART & METRIK LAINNYA ===
+        # === 3. RADAR CHART & TEAM PERFORMANCE STATISTIC ===
+        st.markdown("### 📊 Team Statistic Performance")
+        
+        col_radar, col_narasi = st.columns([1.5, 2.5])
+        
+        # Ambil data statistik mentah (skala 100) dari DataFrame rapor_radar
+        data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
+        warna_tim = TEAM_COLOR_MAP.get(tim_pilihan, "#d4af37") # Gunakan warna emas jika warna tim tidak ditemukan
+        
+        # Daftar kategori asli
+        kategori_keys = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Volatility_100', 'TeamFight_100', 'Flexibility_100']
+        # Daftar label elegan untuk di UI Radar
+        kategori_label = ['DOM', 'TGH', 'DSC', 'VOL', 'TMF', 'FLX']
+        
+        skor_tim = data_tim[kategori_keys].values.flatten().tolist()
+        
+        # 1. RENDER RADAR CHART (SEBELAH KIRI)
+        with col_radar:
+            # Tutup poligon radar (tambahkan titik awal ke akhir)
+            skor_radar = skor_tim + [skor_tim[0]]
+            label_radar = kategori_label + [kategori_label[0]]
+            
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=skor_radar,
+                theta=label_radar,
+                fill='toself',
+                name=tim_pilihan,
+                line_color=warna_tim, 
+                fillcolor=f"rgba({int(warna_tim.lstrip('#')[0:2], 16)}, {int(warna_tim.lstrip('#')[2:4], 16)}, {int(warna_tim.lstrip('#')[4:6], 16)}, 0.4)",
+                marker=dict(size=6, color="white", line=dict(width=1, color=warna_tim))
+            ))
+            
+            fig_radar.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 100], gridcolor="rgba(255,255,255,0.1)", tickfont=dict(color="rgba(255,255,255,0.3)", size=8)),
+                    angularaxis=dict(tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), gridcolor="rgba(255,255,255,0.2)")
+                ),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=20, r=20, t=30, b=20),
+                showlegend=False,
+                height=320 # Agar grafiknya padat dan rapi
+            )
+            st.plotly_chart(fig_radar, use_container_width=True)
 
-        st.subheader("🔥 Signature Hero Combo (Evolusi Taktik)")
+        # 2. MESIN ANALISIS NARASI (SEBELAH KANAN)
+        with col_narasi:
+            # Mencari Kekuatan (Skor Tertinggi) dan Kelemahan (Skor Terendah)
+            kamus_skor = dict(zip(kategori_keys, skor_tim))
+            skor_diurutkan = sorted(kamus_skor.items(), key=lambda item: item[1], reverse=True)
+            
+            kekuatan_utama = skor_diurutkan[0][0]
+            kelemahan_utama = skor_diurutkan[-1][0]
+            
+            # Kamus terjemahan untuk narasi yang luas dan natural
+            kamus_narasi = {
+                'Dominance_100': "Dominasi Pertandingan (Kemampuan menekan lawan sejak *early game* dan menguasai *gold*).",
+                'Toughness_100': "Ketangguhan Mental (Kemampuan bertahan dan memperlama durasi saat berada di posisi tertinggal/kalah).",
+                'Discipline_100': "Kedisiplinan Objektif (Fokus pada penghancuran *turret* dan perebutan Tyrant/Overlord dibandingkan sekadar mencari *kill*).",
+                'Volatility_100': "Ledakan Volatilitas (Kemampuan menghasilkan *Gold Per Minute* (GPM) yang sangat tinggi saat melawan tim papan atas).",
+                'TeamFight_100': "Kekompakan *Team Fight* (Rasio *assist* yang sangat tinggi di setiap *kill*, menandakan rotasi yang selalu bergerombol).",
+                'Flexibility_100': "Fleksibilitas Draft (Kekayaan jumlah variasi *hero* yang mereka berani mainkan di panggung kompetitif)."
+            }
+            
+            # Merakit paragraf
+            teks_analisis = f"""
+            <div style="color: #e0e0e0; font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.8; text-align: justify; margin-top: 15px; padding-left: 10px;">
+                Berdasarkan grafik performa <i>hexagonal</i> di samping, <b style="color: {warna_tim};">{tim_panjang}</b> menampilkan karakteristik permainan yang sangat khas di musim ini. 
+                <br><br>
+                Ujung tombak dan kekuatan utama dari tim ini terletak pada parameter <b style="color: white;">{kamus_narasi[kekuatan_utama].split(' (')[0]}</b>. 
+                Hal ini mencerminkan {kamus_narasi[kekuatan_utama].split('(')[1].replace(').', '')} dengan perolehan skor memukau di angka <b style="color: #4caf50;">{kamus_skor[kekuatan_utama]:.1f}/100</b>.
+                <br><br>
+                Di sisi lain, parameter yang masih menjadi catatan dan ruang untuk evaluasi bagi jajaran pelatih adalah <b style="color: white;">{kamus_narasi[kelemahan_utama].split(' (')[0]}</b> (Skor: <b style="color: #ff4b4b;">{kamus_skor[kelemahan_utama]:.1f}/100</b>). 
+                Musuh kerap mengeksploitasi celah ini mengingat kurangnya {kamus_narasi[kelemahan_utama].split('(')[1].replace(').', '').lower()} mereka.
+            </div>
+            """
+            st.markdown(teks_analisis, unsafe_allow_html=True)
+            
+        st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
+        
+        # === 4. TEAM STRATEGY (SIGNATURE HERO COMBO) ===
+        st.markdown("### ♟️ Team Strategy")
         
         kombo_A = get_signature_combos(tim_pilihan)
         
         if not kombo_A:
-            st.info(f"Tim {tim_pilihan} belum memiliki kombinasi andalan yang lolos evaluasi taktik.")
+            st.info(f"Tim {tim_pilihan} belum memiliki rekam jejak kombinasi *hero* yang mencukupi untuk dianalisis.")
         else:
-            cols = st.columns(len(kombo_A))
-            for idx, k in enumerate(kombo_A):
+            cols = st.columns(3)
+            # Menampilkan maksimal 3 kombo agar desain tetap proporsional
+            for idx, k in enumerate(kombo_A[:3]):
                 with cols[idx]:
                     render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+                    
+        st.markdown("<br><br>", unsafe_allow_html=True)
 # endregion
 
 # region H2H
