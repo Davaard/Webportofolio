@@ -1980,7 +1980,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -56px; height: 45px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10;'>
                     <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Bandingkan</span>
-                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
                 </div>
                 """, unsafe_allow_html=True)
 
