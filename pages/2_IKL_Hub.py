@@ -2514,26 +2514,79 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
 
-        # === 5. MATCH HISTORY HEAD TO HEAD ===
-        st.markdown("### 📜 H2H Match History")
+        # === TOMBOL RESET TEAM DI ATAS MATCH HISTORY ===
+        col_space_r, col_btn_r = st.columns([5, 1.5])
         
-        hist_h2h = df_history[
-            ((df_history['Team_(Blue)'] == tim_A) & (df_history['Opponent_(Red)'] == tim_B)) |
-            ((df_history['Team_(Blue)'] == tim_B) & (df_history['Opponent_(Red)'] == tim_A))
+        icon_reset_b64 = image_to_base64("assets/reset_icon.png")
+        icon_reset_b64 = icon_reset_b64.replace('\n', '').replace('\r', '') if icon_reset_b64 else ""
+        
+        with col_btn_r:
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button {{
+                height: 45px !important;
+                background-color: transparent !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                color: transparent !important;
+                transition: all 0.3s ease !important;
+            }}
+            div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button p {{
+                color: transparent !important; 
+            }}
+            div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button:hover {{
+                border-color: #d4af37 !important;
+                box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Reset Team", key="btn_reset_match_history", use_container_width=True):
+                st.session_state['h2h_team_A'] = None
+                st.session_state['h2h_team_B'] = None
+                st.rerun()
+                
+            if icon_reset_b64:
+                st.markdown(f"""
+                <div style='position: relative; margin-top: -56px; height: 45px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10;'>
+                    <img src='data:image/png;base64,{icon_reset_b64}' style='height: 20px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 14px; font-weight: 600;'>Reset Team</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # === 5. H2H MATCH HISTORY ===
+        st.markdown("### 📜 Match History")
+        st.markdown("<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan riwayat saat 2 tim ini bertemu (di semua season).</div>", unsafe_allow_html=True)
+        
+        hist_h2h = df_csv[
+            ((df_csv['Team_(Blue)'] == tim_A) & (df_csv['Opponent_(Red)'] == tim_B)) |
+            ((df_csv['Team_(Blue)'] == tim_B) & (df_csv['Opponent_(Red)'] == tim_A))
         ].copy()
         
         if hist_h2h.empty:
-            st.info(f"Belum ada riwayat pertemuan antara {tim_A} dan {tim_B} di musim ini.")
+            st.info(f"Belum ada riwayat pertemuan antara {tim_A} dan {tim_B} di seluruh musim.")
         else:
             hist_h2h['Date_Sort'] = pd.to_datetime(hist_h2h['Date'], errors='coerce')
             hist_h2h['Date'] = hist_h2h['Date_Sort'].dt.strftime('%d %b %Y').fillna(hist_h2h['Date'])
             hist_h2h['Result'] = hist_h2h['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
             
             hist_h2h = hist_h2h.sort_values(by=['Date_Sort'], ascending=[False])
-            hist_h2h = hist_h2h[['Date', 'Week', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+            hist_h2h = hist_h2h[['Date', 'Season', 'Week', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
             
             st.dataframe(
                 hist_h2h.style.set_properties(**{'text-align': 'center'}), 
-                use_container_width=True, hide_index=True
+                use_container_width=True, hide_index=True,
+                column_config={
+                    "Date": st.column_config.TextColumn("Tanggal", width="medium"),
+                    "Season": st.column_config.TextColumn("Musim", width="small"),
+                    "Week": st.column_config.TextColumn("Fase/Week", width="small"),
+                    "Team_(Blue)": st.column_config.TextColumn("Tim Biru (Blue)", width="medium"),
+                    "Result": st.column_config.TextColumn("Hasil Pemenang", width="medium"),
+                    "Opponent_(Red)": st.column_config.TextColumn("Tim Merah (Red)", width="medium"),
+                    "Duration_min": st.column_config.TextColumn("Durasi", width="small"),
+                    "MVP": st.column_config.TextColumn("MVP", width="medium")
+                }
             )
+            
 # endregion
