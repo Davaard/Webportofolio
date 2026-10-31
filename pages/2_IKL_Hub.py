@@ -2330,7 +2330,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         
         # max-width diturunkan menjadi 780px agar map sedikit mengecil
         html_container = f"""
-        <div id='map_container' style='position: relative; width: 100%; max-width: 780px; aspect-ratio: 1/1; margin: 0 auto; border: 2px solid #d4af37; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5);'>
+        <div id='map_container' style='position: relative; width: 100%; max-width: 780px; aspect-ratio: 1/1; margin: 0 auto; border: none solid #d4af37; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5);'>
             <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
         """
 
