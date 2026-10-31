@@ -1784,7 +1784,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Role Subs -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 5px; left: 5px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Subs -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 99%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
