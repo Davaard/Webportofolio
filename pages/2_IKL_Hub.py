@@ -2401,7 +2401,11 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         # === 4. TEAM STRATEGY COMPARISON ===
         st.markdown("### ♟️ Team Strategy")
         
-        # Sub-judul diturunkan dengan mengubah margin-top menjadi 5px dan memperbesar margin-bottom
+        # Mengambil identitas warna tim untuk garis tepi
+        warna_A = TEAM_COLOR_MAP.get(tim_A, "#3b82f6")
+        warna_B = TEAM_COLOR_MAP.get(tim_B, "#ef4444")
+        
+        # Sub-judul 1: Ban & Pick
         st.markdown("<h4 style='color: white; font-family: \"Montserrat\", sans-serif; font-size: 16px; margin-top: 5px; margin-bottom: 25px;'>Ban & Pick Rate Comparation</h4>", unsafe_allow_html=True)
         
         col_strat_A, col_strat_B = st.columns(2)
@@ -2425,8 +2429,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             html = f"<div style='border-left: 4px solid {border_col}; padding-left: 15px; margin-bottom: 20px;'>"
             
             if tot_match == 0:
-                html += "<div style='color: gray; font-style: italic;'>Data belum tersedia</div></div>"
-                return html
+                return html + "<div style='color: gray; font-style: italic;'>Data belum tersedia</div></div>"
                 
             html += "<div style='display: flex; gap: 15px;'>"
             
@@ -2453,19 +2456,61 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
 
         with col_strat_A:
             st.markdown(render_h2h_draft_column(warna_A, picks_A, bans_A, match_A), unsafe_allow_html=True)
-            
-            kombo_A = get_signature_combos(tim_A)
-            if kombo_A:
-                st.markdown(f"<div style='border-left: 4px solid {warna_A}; padding-left: 15px; margin-bottom: 10px; color: white; font-weight: bold;'>Top Combos</div>", unsafe_allow_html=True)
-                for k in kombo_A[:2]: render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                 
         with col_strat_B:
             st.markdown(render_h2h_draft_column(warna_B, picks_B, bans_B, match_B), unsafe_allow_html=True)
+
+        # Sub-judul 2: Hero Combination
+        st.markdown("<h4 style='color: white; font-family: \"Montserrat\", sans-serif; font-size: 16px; margin-top: 10px; margin-bottom: 25px;'>Hero Combination Comparation</h4>", unsafe_allow_html=True)
+        
+        col_combo_A, col_combo_B = st.columns(2)
+        
+        # Fungsi pembangun HTML kartu kombo untuk diletakkan di dalam wadah bergaris tepi warna tim
+        def render_h2h_combo_column(kombo_list, border_col):
+            if not kombo_list:
+                return f"<div style='border-left: 4px solid {border_col}; padding-left: 15px; color: gray; font-style: italic;'>Data kombinasi belum tersedia</div>"
+                
+            # Wadah utama dengan garis tepi kiri sesuai warna tim
+            html = f"<div style='border-left: 4px solid {border_col}; padding-left: 15px;'>"
             
+            for k in kombo_list[:2]:
+                combo_tuple = k["combo"]
+                warna_meta = k["warna"]
+                freq = k["freq"]
+                wr = k["wr"]
+                label = k["label"]
+                
+                tema = {"error": "#ff4b4b", "warning": "#ffc107", "success": "#4caf50"}
+                brdr = tema.get(warna_meta, "#4caf50")
+                combo_name = " & ".join(combo_tuple)
+                
+                html += f"<div style='background-color: #24242e; border-left: 5px solid {brdr}; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>"
+                html += "<div style='display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;'>"
+                
+                for hero in combo_tuple:
+                    h_path = get_hero_path(hero)
+                    if h_path:
+                        html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);'>"
+                    else:
+                        html += f"<div style='width: 45px; height: 45px; background: #444; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+                        
+                html += "</div>"
+                html += f"<div style='color: #d1d1d1; font-family: \"Montserrat\", sans-serif;'>"
+                html += f"<div style='font-size: 13px; margin-bottom: 4px; line-height: 1.2;'><b>{combo_name}</b></div>"
+                html += f"<div style='font-size: 12px; font-weight: 600; color: #a0a0a0;'>Pick: <b style='color: white;'>{freq}x</b> | WR: <b style='color: white;'>{wr:.0f}%</b></div>"
+                html += f"<div style='font-size: 11px; font-weight: 800; color: {brdr}; margin-top: 4px;'>{label}</div>"
+                html += "</div></div>"
+                
+            html += "</div>"
+            return html
+
+        with col_combo_A:
+            kombo_A = get_signature_combos(tim_A)
+            st.markdown(render_h2h_combo_column(kombo_A, warna_A), unsafe_allow_html=True)
+            
+        with col_combo_B:
             kombo_B = get_signature_combos(tim_B)
-            if kombo_B:
-                st.markdown(f"<div style='border-left: 4px solid {warna_B}; padding-left: 15px; margin-bottom: 10px; color: white; font-weight: bold;'>Top Combos</div>", unsafe_allow_html=True)
-                for k in kombo_B[:2]: render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
+            st.markdown(render_h2h_combo_column(kombo_B, warna_B), unsafe_allow_html=True)
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
 
