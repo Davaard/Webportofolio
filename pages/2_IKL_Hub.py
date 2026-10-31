@@ -198,7 +198,7 @@ with col_header_right:
 
 # 2. Baris Kedua: Judul Aplikasi (Rata Tengah)
 st.markdown("""
-<div style='text-align: center; margin-top: 0px; margin-bottom: 25px;'>
+<div style='text-align: center; margin-top: 0px; margin-bottom: 30px;'>
     <h1 style='color: white; font-family: "Montserrat", sans-serif; font-weight: 900; font-size: 32px; margin-bottom: 5px; line-height: 1.2;'>Indonesia Kings Laga<br>Team Performance Analyst</h1>
     <p style='color: gray; font-family: "Montserrat", sans-serif; font-size: 16px; font-weight: 600; margin-top: 0;'>by @davaard</p>
 </div>
