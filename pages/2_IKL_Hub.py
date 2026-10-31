@@ -1813,14 +1813,20 @@ elif menu_utama == "🛡️ Team Profiling":
         
         # Ambil data statistik mentah (skala 100) dari DataFrame rapor_radar
         data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
-        warna_tim = TEAM_COLOR_MAP.get(tim_pilihan, "#d4af37") # Gunakan warna emas jika warna tim tidak ditemukan
+        warna_tim = TEAM_COLOR_MAP.get(tim_pilihan, "#d4af37") # Mengikuti identitas Hex Color tim!
         
-        # Daftar kategori asli
+        # Daftar kategori asli di database
         kategori_keys = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Volatility_100', 'TeamFight_100', 'Flexibility_100']
-        # Daftar label elegan untuk di UI Radar
-        kategori_label = ['DOM', 'TGH', 'DSC', 'VOL', 'TMF', 'FLX']
+        
+        # 4 HURUF ELEGAN UNTUK RADAR CHART
+        kategori_label = ['DOM', 'TOUG', 'DISC', 'STAB', 'TEAM', 'FLEX']
         
         skor_tim = data_tim[kategori_keys].values.flatten().tolist()
+        
+        # === INVERSI LOGIKA: Volatility diubah menjadi Stability ===
+        # Karena skala aslinya 20-100, inversinya adalah 120 - x
+        # (Jika volatility 100, stability jadi 20. Jika volatility 20, stability jadi 100)
+        skor_tim[3] = 120 - skor_tim[3] 
         
         # 1. RENDER RADAR CHART (SEBELAH KIRI)
         with col_radar:
@@ -1835,40 +1841,55 @@ elif menu_utama == "🛡️ Team Profiling":
                 fill='toself',
                 name=tim_pilihan,
                 line_color=warna_tim, 
-                fillcolor=f"rgba({int(warna_tim.lstrip('#')[0:2], 16)}, {int(warna_tim.lstrip('#')[2:4], 16)}, {int(warna_tim.lstrip('#')[4:6], 16)}, 0.4)",
-                marker=dict(size=6, color="white", line=dict(width=1, color=warna_tim))
+                # Chart area dibuat lebih 'lite' transparansinya (0.2)
+                fillcolor=f"rgba({int(warna_tim.lstrip('#')[0:2], 16)}, {int(warna_tim.lstrip('#')[2:4], 16)}, {int(warna_tim.lstrip('#')[4:6], 16)}, 0.2)",
+                marker=dict(size=6, color="white", line=dict(width=1.5, color=warna_tim))
             ))
             
             fig_radar.update_layout(
                 polar=dict(
-                    radialaxis=dict(visible=True, range=[0, 100], gridcolor="rgba(255,255,255,0.1)", tickfont=dict(color="rgba(255,255,255,0.3)", size=8)),
-                    angularaxis=dict(tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), gridcolor="rgba(255,255,255,0.2)")
+                    # Background lingkaran semi-transparan tipis seperti kaca
+                    bgcolor="rgba(255,255,255,0.05)",
+                    radialaxis=dict(
+                        visible=True, 
+                        showticklabels=False, # SKALA ANGKA DIHILANGKAN
+                        range=[0, 100], 
+                        gridcolor="rgba(255,255,255,0.15)",
+                        linecolor="rgba(255,255,255,0.2)"
+                    ),
+                    angularaxis=dict(
+                        tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), 
+                        gridcolor="rgba(255,255,255,0.15)",
+                        linecolor="rgba(255,255,255,0.2)"
+                    )
                 ),
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                margin=dict(l=20, r=20, t=30, b=20),
+                margin=dict(l=30, r=30, t=40, b=30),
                 showlegend=False,
-                height=320 # Agar grafiknya padat dan rapi
+                height=350
             )
             st.plotly_chart(fig_radar, use_container_width=True)
 
         # 2. MESIN ANALISIS NARASI (SEBELAH KANAN)
         with col_narasi:
-            # Mencari Kekuatan (Skor Tertinggi) dan Kelemahan (Skor Terendah)
-            kamus_skor = dict(zip(kategori_keys, skor_tim))
-            skor_diurutkan = sorted(kamus_skor.items(), key=lambda item: item[1], reverse=True)
+            # Gunakan Label baru agar Volatility_100 murni berubah jadi Stability_100 di otak Narasi
+            kategori_narasi_keys = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Stability_100', 'TeamFight_100', 'Flexibility_100']
+            kamus_skor = dict(zip(kategori_narasi_keys, skor_tim))
             
+            # Mencari Skor Tertinggi dan Terendah
+            skor_diurutkan = sorted(kamus_skor.items(), key=lambda item: item[1], reverse=True)
             kekuatan_utama = skor_diurutkan[0][0]
             kelemahan_utama = skor_diurutkan[-1][0]
             
-            # Kamus terjemahan untuk narasi yang luas dan natural
+            # Kamus terjemahan untuk narasi 
             kamus_narasi = {
-                'Dominance_100': "Dominasi Pertandingan (Kemampuan menekan lawan sejak *early game* dan menguasai *gold*).",
-                'Toughness_100': "Ketangguhan Mental (Kemampuan bertahan dan memperlama durasi saat berada di posisi tertinggal/kalah).",
-                'Discipline_100': "Kedisiplinan Objektif (Fokus pada penghancuran *turret* dan perebutan Tyrant/Overlord dibandingkan sekadar mencari *kill*).",
-                'Volatility_100': "Ledakan Volatilitas (Kemampuan menghasilkan *Gold Per Minute* (GPM) yang sangat tinggi saat melawan tim papan atas).",
-                'TeamFight_100': "Kekompakan *Team Fight* (Rasio *assist* yang sangat tinggi di setiap *kill*, menandakan rotasi yang selalu bergerombol).",
-                'Flexibility_100': "Fleksibilitas Draft (Kekayaan jumlah variasi *hero* yang mereka berani mainkan di panggung kompetitif)."
+                'Dominance_100': "Dominasi Pertandingan (kemampuan menekan lawan sejak *early game* dan agresif dalam menguasai perolehan *gold*).",
+                'Toughness_100': "Ketangguhan Mental (kemampuan bertahan luar biasa dan memperlama durasi saat berada di posisi tertinggal).",
+                'Discipline_100': "Kedisiplinan Objektif (fokus tingkat tinggi pada penghancuran *turret* dan perebutan monster epik dibandingkan sekadar mencari *kill*).",
+                'Stability_100': "Stabilitas Performa (kemampuan menjaga konsistensi permainan dan meminimalisir blunder fatal saat berhadapan dengan berbagai level tim).",
+                'TeamFight_100': "Kekompakan *Team Fight* (rasio *assist* yang sangat tinggi di setiap eliminasi, menandakan rotasi mereka selalu mematikan).",
+                'Flexibility_100': "Fleksibilitas Draft (kekayaan jumlah variasi taktik dan *hero* yang mereka berani mainkan di panggung kompetitif)."
             }
             
             # Merakit paragraf
@@ -1880,7 +1901,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 Hal ini mencerminkan {kamus_narasi[kekuatan_utama].split('(')[1].replace(').', '')} dengan perolehan skor memukau di angka <b style="color: #4caf50;">{kamus_skor[kekuatan_utama]:.1f}/100</b>.
                 <br><br>
                 Di sisi lain, parameter yang masih menjadi catatan dan ruang untuk evaluasi bagi jajaran pelatih adalah <b style="color: white;">{kamus_narasi[kelemahan_utama].split(' (')[0]}</b> (Skor: <b style="color: #ff4b4b;">{kamus_skor[kelemahan_utama]:.1f}/100</b>). 
-                Musuh kerap mengeksploitasi celah ini mengingat kurangnya {kamus_narasi[kelemahan_utama].split('(')[1].replace(').', '').lower()} mereka.
+                Musuh kerap mengeksploitasi celah ini mengingat kurangnya {kamus_narasi[kelemahan_utama].split('(')[1].replace(').', '')} mereka.
             </div>
             """
             st.markdown(teks_analisis, unsafe_allow_html=True)
