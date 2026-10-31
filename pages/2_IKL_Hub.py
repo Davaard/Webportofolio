@@ -1679,7 +1679,7 @@ elif menu_utama == "🛡️ Team Profiling":
             
             # Kita gunakan st.components.v1.html agar HTML utuh dan tidak terpotong!
             import streamlit.components.v1 as components
-            components.html(html_container, height=720)
+            components.html(html_container, height=750)
             
         with col_staff:
             path_bg_staff = "assets/Recap/logo_background/IKL_bg.png"
@@ -1802,7 +1802,7 @@ elif menu_utama == "🛡️ Team Profiling":
             # Eksekusi dengan components.html agar kebal dari Base64 Overflow!
             # Tinggi disamakan dengan map (870px)
             import streamlit.components.v1 as components
-            components.html(html_staff_col, height=720)
+            components.html(html_staff_col, height=750)
         
         # === 3. RADAR CHART & TEAM PERFORMANCE STATISTIC ===
         st.markdown("### 📊 Team Statistic Performance")
