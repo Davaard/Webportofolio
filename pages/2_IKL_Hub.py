@@ -157,20 +157,35 @@ def urutkan_musim(s):
     return (0, 0)
 
 # === PENGATURAN HEADER GLOBAL (FIXED TOP-RIGHT) ===
-col_title, col_season = st.columns([3, 1])
-with col_title:
-    st.markdown("## 🎮 Indonesia Kings Laga (IKL) - HOK")
+
+# 1. Baris Pertama: Logo Kiri & Dropdown Musim Kanan
+col_header_left, col_header_space, col_header_right = st.columns([1.5, 3, 1.5])
+
+with col_header_left:
+    # Memuat logo Liquipedia dan HoK yang berdampingan
+    logo_liquipedia_b64 = image_to_base64("assets/liquipedia_logo.png")
+    logo_hok_b64 = image_to_base64("assets/hok_logo.png")
+    
+    st.markdown(f"""
+    <div style='display: flex; align-items: center; gap: 10px; padding-top: 5px;'>
+        <img src='data:image/png;base64,{logo_liquipedia_b64}' style='height: 25px; object-fit: contain;'>
+        <img src='data:image/png;base64,{logo_hok_b64}' style='height: 25px; object-fit: contain;'>
+    </div>
+    """, unsafe_allow_html=True)
         
-with col_season:
+with col_header_right:
     if 'Season' in df_csv.columns:
         daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
+        # Menambahkan sedikit margin atas agar selectbox sejajar dengan logo
+        st.markdown("<div style='margin-top: -10px;'>", unsafe_allow_html=True)
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
         
         # === MESIN TRANSLASI REBRANDING TIM ===
         if os.path.exists("IKL_Rebrands.csv"):
             df_rebrand = pd.read_csv("IKL_Rebrands.csv")
-            # Filter aturan ganti nama HANYA untuk musim yang sedang dipilih
             rebrand_musim = df_rebrand[df_rebrand['Season'] == musim_pilihan]
             
             if not rebrand_musim.empty:
@@ -180,6 +195,14 @@ with col_season:
     else:
         st.error("Kolom 'Season' tidak ditemukan!")
         st.stop()
+
+# 2. Baris Kedua: Judul Aplikasi (Rata Tengah)
+st.markdown("""
+<div style='text-align: center; margin-top: 15px; margin-bottom: 25px;'>
+    <h1 style='color: white; font-family: "Montserrat", sans-serif; font-weight: 900; font-size: 32px; margin-bottom: 5px; line-height: 1.2;'>Indonesia Kings Laga<br>Team Performance Analyst</h1>
+    <p style='color: gray; font-family: "Montserrat", sans-serif; font-size: 16px; font-weight: 600; margin-top: 0;'>by @davaard</p>
+</div>
+""", unsafe_allow_html=True)
 # ==================================================
 
 # region UI HELPERS
