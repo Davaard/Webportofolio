@@ -2314,8 +2314,8 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         }
         # Tim B (Kanan/Merah) ditarik sedikit ke arah markas atas kanan
         MAP_COORDS_B = {
-            'Top Lane': {'top': '17%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
-            'Jungler': {'top': '40%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
+            'Top Lane': {'top': '15%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
+            'Jungler': {'top': '37%', 'left': '35%', 'transform': 'translate(-50%, -50%)'},
             'Middle': {'top': '46%', 'left': '56%', 'transform': 'translate(-50%, -50%)'},
             'Roamer': {'top': '49%', 'left': '74%', 'transform': 'translate(-50%, -50%)'},
             'Bottom Lane': {'top': '72%', 'left': '81%', 'transform': 'translate(-50%, -50%)'}
