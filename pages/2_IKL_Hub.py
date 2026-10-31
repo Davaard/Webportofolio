@@ -1897,7 +1897,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 # Menambahkan pointer-events: none !important ke SEMUA elemen agar kursor tembus ke tombol asli
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
-                    <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 20px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
+                    <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 25px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
                     <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Kembali</span>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1913,7 +1913,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
                     <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Bandingkan</span>
-                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
+                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
                 </div>
                 """, unsafe_allow_html=True)
 
