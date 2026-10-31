@@ -2523,15 +2523,13 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         with col_btn_r:
             st.markdown(f"""
             <style>
+            /* Memaksa tombol asli menjadi kotak transparan setinggi 45px */
             div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button {{
                 height: 45px !important;
                 background-color: transparent !important;
                 border: 1px solid rgba(255,255,255,0.1) !important;
                 color: transparent !important;
                 transition: all 0.3s ease !important;
-            }}
-            div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button p {{
-                color: transparent !important; 
             }}
             div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button:hover {{
                 border-color: #d4af37 !important;
@@ -2540,15 +2538,17 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             </style>
             """, unsafe_allow_html=True)
             
-            if st.button("Reset Team", key="btn_reset_match_history", use_container_width=True):
+            # Tombol asli HANYA BERISI 3 SPASI agar teks aslinya tidak berbayang/double
+            if st.button("   ", key="btn_reset_match_history", use_container_width=True):
                 st.session_state['h2h_team_A'] = None
                 st.session_state['h2h_team_B'] = None
                 st.rerun()
                 
             if icon_reset_b64:
+                # Lapisan Visual ditarik ke atas agar menimpa tombol asli
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -56px; height: 45px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10;'>
-                    <img src='data:image/png;base64,{icon_reset_b64}' style='height: 20px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <img src='data:image/png;base64,{icon_reset_b64}' style='height: 25px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
                     <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 14px; font-weight: 600;'>Reset Team</span>
                 </div>
                 """, unsafe_allow_html=True)
