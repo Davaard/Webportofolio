@@ -2324,20 +2324,21 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         map_path = "assets/HOK_map-layout.png"
         map_b64 = image_to_base64(map_path)
         
-        # Background Border Warna Tim
+        # Background Warna Tim
         bg_b64_A = image_to_base64(get_team_bg_path(tim_A))
         bg_b64_B = image_to_base64(get_team_bg_path(tim_B))
         
+        # max-width diturunkan menjadi 780px agar map sedikit mengecil
         html_container = f"""
-        <div id='map_container' style='position: relative; width: 100%; max-width: 900px; aspect-ratio: 1/1; margin: 0 auto; border: 2px solid #d4af37; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5);'>
+        <div id='map_container' style='position: relative; width: 100%; max-width: 780px; aspect-ratio: 1/1; margin: 0 auto; border: 2px solid #d4af37; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5);'>
             <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
         """
 
         role_idx_map = {'Top Lane': 0, 'Jungler': 1, 'Middle': 2, 'Bottom Lane': 3, 'Roamer': 4}
         role_keywords = {'Top Lane': 'top|clash', 'Jungler': 'jung', 'Middle': 'mid', 'Bottom Lane': 'bot|farm|gold', 'Roamer': 'roam|sup'}
 
-        # Fungsi Builder Kartu Map
-        def build_map_cards(tim_nama, coords_dict, bg_b64, border_hex):
+        # Fungsi Builder Kartu Map (Parameter border warna sudah dibuang)
+        def build_map_cards(tim_nama, coords_dict, bg_b64):
             html_cards = ""
             df_hist_player = df_long[(df_long['Team'] == tim_nama) & (df_long['Win'].notna())]
             df_roster_tim = df_roster[df_roster['Team'] == tim_nama]
@@ -2359,37 +2360,41 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                             h = heroes[idx_lane]
                             hero_counts[h] = hero_counts.get(h, 0) + 1
                             
-                    top_2_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:2] # Hanya muat 2 hero agar kartu tidak kepanjangan
+                    # Mengembalikan kapasitas menjadi 3 Hero Teratas
+                    top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
                     hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 3px; z-index: 4;'>"
-                    for h_name, _ in top_2_heroes:
+                    for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
-                        if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 14px; height: 14px; border-radius: 2px; border: 0.5px solid rgba(255,255,255,0.5); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
+                        # Ukuran ikon hero disesuaikan menjadi 15px
+                        if h_path: hero_html += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 15px; height: 15px; border-radius: 2px; border: 0.5px solid rgba(255,255,255,0.5); object-fit: cover; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);'>"
                     hero_html += "</div>"
                     
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # Kartu sedikit diperkecil lebarnya (dari 75px menjadi 65px) agar map tidak terlalu penuh
+                    # Kartu diperbesar kembali ke 75px, tanpa inline border warna
                     html_cards += f"""
-                    <div style="position: absolute; {style_pos} width: 65px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5; border: 1.5px solid {border_hex};">
+                    <div style="position: absolute; {style_pos} width: 75px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; filter: brightness(0.65);">
-                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 70%; z-index: 2; overflow: hidden; border-radius: 2px 2px 0 0;">
+                        <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 3px; left: 2px; width: 17px; height: 17px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 74%; z-index: 2; overflow: hidden; border-radius: 4px 4px 0 0;">
                             <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                         </div>
-                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">{nama_pemain}</div>
+                        <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9.5px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">{nama_pemain}</div>
                         {hero_html}
                     </div>
                     """
             return html_cards
 
-        html_container += build_map_cards(tim_A, MAP_COORDS_A, bg_b64_A, warna_A)
-        html_container += build_map_cards(tim_B, MAP_COORDS_B, bg_b64_B, warna_B)
+        # Render kartu tim tanpa mengirimkan parameter warna border
+        html_container += build_map_cards(tim_A, MAP_COORDS_A, bg_b64_A)
+        html_container += build_map_cards(tim_B, MAP_COORDS_B, bg_b64_B)
         html_container += "</div>"
         
+        # Karena lebar map diperkecil, tinggi iframe juga disesuaikan agar proporsional
         import streamlit.components.v1 as components
-        components.html(html_container, height=920)
+        components.html(html_container, height=800)
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
