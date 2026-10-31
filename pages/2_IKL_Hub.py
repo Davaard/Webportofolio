@@ -2222,9 +2222,10 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         col_rad_kiri, col_rad_tengah, col_rad_kanan = st.columns([1, 2, 1])
         with col_rad_tengah:
             fig_h2h = go.Figure()
-            # Warna diubah agar selaras dengan konsep biru vs merah
+            # Warna selaras dengan konsep H2H (Biru vs Merah)
             warna_A, warna_B = "#3b82f6", "#ef4444" 
             
+            # Render Radar Chart
             fig_h2h.add_trace(go.Scatterpolar(r=skor_A, theta=kategori_label, fill='toself', name=tim_A, line_color=warna_A, fillcolor='rgba(59, 130, 246, 0.4)'))
             fig_h2h.add_trace(go.Scatterpolar(r=skor_B, theta=kategori_label, fill='toself', name=tim_B, line_color=warna_B, fillcolor='rgba(239, 68, 68, 0.4)'))
             
@@ -2235,9 +2236,69 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                     angularaxis=dict(tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), gridcolor="rgba(255,255,255,0.15)", linecolor="rgba(255,255,255,0.2)")
                 ),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                margin=dict(l=30, r=30, t=40, b=30), showlegend=False, height=350
+                margin=dict(l=30, r=30, t=40, b=10), showlegend=False, height=350
             )
             st.plotly_chart(fig_h2h, use_container_width=True)
+
+            # --- RENDER BAR CHART COMPARISON (HTML/CSS MURNI) ---
+            def calculate_h2h_bar_stats(tim):
+                df_tim = df_long[(df_long['Team'] == tim) & (df_long['Win'].notna())]
+                if df_tim.empty: return [0, 0, 0, 0, 0]
+                
+                gpm = (df_tim['Gold'] / df_tim['Durasi']).mean()
+                opm = (df_tim['Obj'] / df_tim['Durasi']).mean()
+                kpm = (df_tim['Kill'] / df_tim['Durasi']).mean()
+                durasi = df_tim['Durasi'].mean()
+                hero_pool = df_tim.explode('Heroes_List')['Heroes_List'].nunique()
+                return [gpm, opm, kpm, durasi, hero_pool]
+
+            stats_A = calculate_h2h_bar_stats(tim_A)
+            stats_B = calculate_h2h_bar_stats(tim_B)
+            
+            bar_labels = ["Gold/min", "Objective/min", "Kill/min", "Average Duration", "Hero Pool"]
+            
+            html_bars = "<div style='width: 100%; max-width: 480px; margin: 15px auto 0 auto;'>"
+            for i in range(5):
+                val_a = stats_A[i]
+                val_b = stats_B[i]
+                
+                # Format angka dinamis agar rapi
+                if bar_labels[i] == "Gold/min":
+                    str_a, str_b = f"{val_a:.0f}", f"{val_b:.0f}"
+                elif bar_labels[i] in ["Objective/min", "Kill/min"]:
+                    str_a, str_b = f"{val_a:.2f}", f"{val_b:.2f}"
+                elif bar_labels[i] == "Average Duration":
+                    str_a, str_b = f"{val_a:.1f}", f"{val_b:.1f}"
+                else: # Hero Pool (Angka Utuh)
+                    str_a, str_b = f"{int(val_a)}", f"{int(val_b)}"
+                    
+                # Hitung rasio lebar bar
+                tot = val_a + val_b
+                pct_a = (val_a / tot * 100) if tot > 0 else 50
+                pct_b = (val_b / tot * 100) if tot > 0 else 50
+                
+                # Merangkai Kartu Bar Chart
+                html_bars += f'''
+                <div style='display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;'>
+                    <div style='width: 45px; text-align: right; font-weight: 800; color: white; font-family: "Montserrat", sans-serif; font-size: 14px;'>{str_a}</div>
+                    
+                    <div style='flex: 1; margin: 0 18px; position: relative; height: 30px; border-radius: 15px; overflow: hidden; display: flex; box-shadow: 0 4px 6px rgba(0,0,0,0.4);'>
+                        <!-- Batang Kiri (Tim Biru) -->
+                        <div style='width: {pct_a}%; background-color: {warna_A}; height: 100%;'></div>
+                        <!-- Batang Kanan (Tim Merah) -->
+                        <div style='width: {pct_b}%; background-color: {warna_B}; height: 100%;'></div>
+                        
+                        <!-- Label Tengah Menimpa Batang -->
+                        <div style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-family: "Montserrat", sans-serif; font-size: 12px; letter-spacing: 0.5px; text-shadow: 1.5px 1.5px 3px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.8); pointer-events: none;'>
+                            {bar_labels[i]}
+                        </div>
+                    </div>
+                    
+                    <div style='width: 45px; text-align: left; font-weight: 800; color: white; font-family: "Montserrat", sans-serif; font-size: 14px;'>{str_b}</div>
+                </div>
+                '''
+            html_bars += "</div>"
+            st.markdown(html_bars, unsafe_allow_html=True)
 
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
