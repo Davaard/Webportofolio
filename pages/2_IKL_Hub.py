@@ -1732,7 +1732,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Jabatan -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 16px; height: 14px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Staff (Mentok atas, tinggi 75%) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
