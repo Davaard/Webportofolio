@@ -1918,67 +1918,106 @@ elif menu_utama == "🛡️ Team Profiling":
         icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
         
         with col_btn1:
-            st.markdown("""
+            st.markdown(f"""
             <style>
-            /* Memaksa tombol asli menjadi kotak transparan setinggi 55px */
-            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {
+            /* Memaksa wadah tombol asli setinggi 55px */
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {{
                 height: 55px !important;
                 background-color: transparent !important;
                 border: 1px solid rgba(255,255,255,0.1) !important;
-                color: transparent !important; /* Sembunyikan teks asli, tapi lebarnya tetap dihitung */
                 transition: all 0.3s ease !important;
-            }
-            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {
+            }}
+            /* MENGUBAH TEKS ASLI MENJADI FLEXBOX (Agar selalu rata tengah secara presisi) */
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button p {{
+                color: gray !important; 
+                font-family: "Montserrat", sans-serif !important;
+                font-size: 15px !important;
+                font-weight: 600 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 10px !important; /* Jarak antara ikon dan teks */
+                margin: 0 !important;
+            }}
+            /* MENYUNTIKKAN IKON SECARA FISIK SEBELUM TEKS (::before) */
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button p::before {{
+                content: "" !important;
+                display: inline-block !important;
+                width: 25px !important; /* Ukuran Ikon Kembali */
+                height: 25px !important;
+                background-image: url('data:image/png;base64,{icon_kembali_b64}') !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)) !important;
+            }}
+            /* Efek Hover (Garis dan Teks Menyala Emas) */
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {{
                 border-color: #d4af37 !important;
                 box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
-            }
+            }}
+            div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover p {{
+                color: #d4af37 !important;
+            }}
             </style>
             """, unsafe_allow_html=True)
             
-            # Tombol asli Streamlit. Hitbox-nya sekarang sangat besar (55px) dan aman diklik!
+            # Tombol asli (Teks dan Ikon kini menyatu secara organik di dalam CSS)
             if st.button("Kembali", key="btn_kembali", use_container_width=True):
                 st.session_state['profiling_team'] = None
                 st.rerun()
-                
-            if icon_kembali_b64:
-                # Ditarik sejauh -51px agar tepat berada di tengah-tengah hitbox tombol
-                st.markdown(f"""
-                <div style='position: relative; margin-top: -51px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10;'>
-                    <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 25px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
-                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Kembali</span>
-                </div>
-                """, unsafe_allow_html=True)
 
         with col_btn2:
-            st.markdown("""
+            st.markdown(f"""
             <style>
-            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {
+            /* Memaksa wadah tombol asli setinggi 55px */
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {{
                 height: 55px !important;
                 background-color: transparent !important;
                 border: 1px solid rgba(255,255,255,0.1) !important;
-                color: transparent !important; 
                 transition: all 0.3s ease !important;
-            }
-            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover {
+            }}
+            /* MENGUBAH TEKS ASLI MENJADI FLEXBOX */
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button p {{
+                color: gray !important; 
+                font-family: "Montserrat", sans-serif !important;
+                font-size: 15px !important;
+                font-weight: 600 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 10px !important;
+                margin: 0 !important;
+            }}
+            /* MENYUNTIKKAN IKON SECARA FISIK SESUDAH TEKS (::after) */
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button p::after {{
+                content: "" !important;
+                display: inline-block !important;
+                width: 40px !important; /* Ukuran Ikon Bandingkan */
+                height: 40px !important;
+                background-image: url('data:image/png;base64,{icon_banding_b64}') !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)) !important;
+            }}
+            /* Efek Hover */
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover {{
                 border-color: #d4af37 !important;
                 box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;
-            }
+            }}
+            div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover p {{
+                color: #d4af37 !important;
+            }}
             </style>
             """, unsafe_allow_html=True)
             
+            # Tombol asli (Teks dan Ikon menyatu sempurna)
             if st.button("Bandingkan", key="btn_bandingkan", use_container_width=True):
                 st.session_state['h2h_team_A'] = tim_pilihan 
                 st.session_state['h2h_team_B'] = None        
                 st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
                 st.rerun()
-                
-            if icon_banding_b64:
-                st.markdown(f"""
-                <div style='position: relative; margin-top: -51px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none; z-index: 10;'>
-                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Bandingkan</span>
-                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
-                </div>
-                """, unsafe_allow_html=True)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
 
