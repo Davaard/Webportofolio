@@ -1732,7 +1732,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Jabatan -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 5px; left: 5px; width: 20px; height: 16px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Staff (Mentok atas, tinggi 75%) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
@@ -1740,12 +1740,12 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     
                     <!-- Nama Staff -->
-                    <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                    <div style="position: absolute; bottom: 28%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10Spx; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                     
                     <!-- Jabatan (Berada di slot hero favorit) -->
-                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
+                    <div style="position: absolute; bottom: 10%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 10px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
                         {jabatan}
                     </div>
                 </div>
