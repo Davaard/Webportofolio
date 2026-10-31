@@ -2048,6 +2048,48 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         # Rasio kolom disesuaikan agar terpusat sempurna seperti desain
         col_a, col_vs, col_b = st.columns([3, 1.5, 3])
 
+        # Fungsi helper untuk merender profil tim yang sudah terpilih di fase pemilihan
+        def render_selected_team_profile(tim_nama, key_btn):
+            logo = get_logo_path(tim_nama)
+            b64_logo = image_to_base64(logo) if logo else ""
+            tim_panjang = TEAM_FULLNAME_MAP.get(tim_nama, tim_nama).upper()
+            
+            if " BY " in tim_panjang:
+                nama_utama, nama_sub = tim_panjang.split(" BY ", 1)
+                html_nama = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px;'>{nama_utama}</h3><p style='color: gray; font-size: 16px; margin: 0; font-weight: 600;'>by {nama_sub}</p>"
+            else:
+                html_nama = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px; line-height: 1.2;'>{tim_panjang}</h3>"
+
+            st.markdown(f"""
+            <div style='text-align: center;'>
+                <img src='data:image/png;base64,{b64_logo}' style='height: 180px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8)); margin-bottom: 15px;'>
+                {html_nama}
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <style>
+            div[data-testid="column"] div[data-testid="stButton"] button[key="{key_btn}"] {{
+                background: transparent !important;
+                border: none !important;
+                color: #707070 !important;
+                font-family: "Montserrat", sans-serif !important;
+                font-size: 13px !important;
+                font-weight: 600 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                margin-top: 5px !important;
+                transition: color 0.2s ease !important;
+            }}
+            div[data-testid="column"] div[data-testid="stButton"] button[key="{key_btn}"]:hover {{
+                color: white !important;
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+            if st.button("Tekan untuk ganti tim", key=key_btn, use_container_width=True):
+                st.session_state[f'h2h_team_{key_btn[-1]}'] = None
+                st.rerun()
+
         with col_a:
             if tim_A is None:
                 st.markdown(f"""
@@ -2058,50 +2100,9 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                logo_A = get_logo_path(tim_A)
-                b64_A = image_to_base64(logo_A) if logo_A else ""
-                tim_panjang_A = TEAM_FULLNAME_MAP.get(tim_A, tim_A).upper()
-                
-                # Logika pemisahan kata "BY" untuk estetika teks bertingkat (Contoh: DOMINATOR by NEMESIS)
-                if " BY " in tim_panjang_A:
-                    nama_utama, nama_sub = tim_panjang_A.split(" BY ", 1)
-                    html_nama_A = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px;'>{nama_utama}</h3><p style='color: gray; font-size: 16px; margin: 0; font-weight: 600;'>by {nama_sub}</p>"
-                else:
-                    html_nama_A = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px; line-height: 1.2;'>{tim_panjang_A}</h3>"
-
-                st.markdown(f"""
-                <div style='text-align: center;'>
-                    <img src='data:image/png;base64,{b64_A}' style='height: 180px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8)); margin-bottom: 15px;'>
-                    {html_nama_A}
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Menyulap tombol reset menjadi teks abu-abu yang menyatu dengan layout
-                st.markdown("""
-                <style>
-                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {
-                    background: transparent !important;
-                    border: none !important;
-                    color: #707070 !important;
-                    font-family: "Montserrat", sans-serif !important;
-                    font-size: 13px !important;
-                    font-weight: 600 !important;
-                    padding: 0 !important;
-                    box-shadow: none !important;
-                    margin-top: 5px !important;
-                    transition: color 0.2s ease !important;
-                }
-                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {
-                    color: white !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-                if st.button("Tekan untuk ganti tim", key="btn_reset_A", use_container_width=True):
-                    st.session_state['h2h_team_A'] = None
-                    st.rerun()
+                render_selected_team_profile(tim_A, "btn_reset_A")
 
         with col_vs:
-            # Menggunakan Flexbox agar logo VS emas selalu berada di tengah secara vertikal dan horizontal
             st.markdown(f"""
             <div style='display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;'>
                 <img src='data:image/png;base64,{vs_gold_b64}' style='height: 100px; filter: drop-shadow(0 4px 10px rgba(212,175,55,0.4)); margin-top: -30px;'>
@@ -2117,6 +2118,9 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                     <p style='color: gray; font-size: 14px; margin-top: 5px; font-weight: 600;'>Pilih Tim</p>
                 </div>
                 """, unsafe_allow_html=True)
+            else:
+                # Logika perbaikan: Render profil Tim B jika sudah terpilih, meskipun Tim A kosong
+                render_selected_team_profile(tim_B, "btn_reset_B")
 
         # Garis pembatas elegan
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
@@ -2129,7 +2133,10 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                 with kolom_grid[idx % 4]:
                     logo_path = get_logo_path(tim)
                     render_logo_card(logo_path, tim)
-                    if st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
+                    # Nonaktifkan tombol untuk Tim B jika Tim B sudah dipilih agar tidak bisa dipilih ganda
+                    if tim == tim_B:
+                        st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_A_{tim}")
+                    elif st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
                         st.session_state['h2h_team_A'] = tim
                         st.rerun()
                         
@@ -2142,10 +2149,9 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
                     render_logo_card(logo_path, tim)
                     if tim == tim_A:
                         st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_B_{tim}")
-                    else:
-                        if st.button(tim, use_container_width=True, key=f"btn_B_{tim}"):
-                            st.session_state['h2h_team_B'] = tim
-                            st.rerun()
+                    elif st.button(tim, use_container_width=True, key=f"btn_B_{tim}"):
+                        st.session_state['h2h_team_B'] = tim
+                        st.rerun()
 
     # === FASE DASHBOARD H2H (KEDUA TIM TERPILIH) ===
     else:
