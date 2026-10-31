@@ -1486,7 +1486,6 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
 # region PROFILING
 elif menu_utama == "🛡️ Team Profiling":
-    st.title(f"🛡️ Profiling Tim IKL - {musim_pilihan}")
     
     if 'profiling_team' not in st.session_state:
         st.session_state['profiling_team'] = None
@@ -1510,39 +1509,21 @@ elif menu_utama == "🛡️ Team Profiling":
     else:
         tim_pilihan = st.session_state['profiling_team']
         
-        col_nav1, col_nav2, col_nav3 = st.columns([1, 1.5, 3.5])
-        
-        with col_nav1:
-            if st.button("🔙 Kembali", use_container_width=True):
-                st.session_state['profiling_team'] = None
-                st.rerun()
-                
-        with col_nav2:
-            if st.button("⚔️ Bandingkan (H2H)", use_container_width=True):
-                st.session_state['h2h_team_A'] = tim_pilihan 
-                st.session_state['h2h_team_B'] = None        
-                st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
-                st.rerun()
-                
-        with col_nav3:
-            st.markdown(f"### Analisis Mendalam: {tim_pilihan}")
-        
-        st.markdown("---")
-        
-        # === 1. HEADER PROFIL TIM (LOGO MURNI & NARASI) ===
-        col_prof_logo, col_prof_desc = st.columns([1, 3.5])
+        # === 1. HEADER PROFIL TIM (LANGSUNG LOGO & NARASI) ===
+        col_prof_logo, col_prof_desc = st.columns([1.5, 3.5])
         
         logo_path = get_logo_path(tim_pilihan)
         tim_panjang = TEAM_FULLNAME_MAP.get(tim_pilihan, tim_pilihan)
         
         with col_prof_logo:
             if logo_path:
-                # LOGO DITAMPILKAN MURNI TANPA BACKGROUND & BORDER
                 st.markdown(f"""
-                <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
-                    <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="width: 100%; max-width: 180px; object-fit: contain;">
+                <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding-top: 10px;">
+                    <img src="data:image/png;base64,{image_to_base64(logo_path)}" style="width: 100%; max-width: 220px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.8));">
                 </div>
-                <h3 style="text-align: center; color: white; margin-top: 15px; font-family: 'Montserrat', sans-serif; font-weight: 800; line-height: 1.2;">{tim_panjang}</h3>
+                <h2 style="text-align: center; color: white; margin-top: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 1px; line-height: 1.2;">
+                    {tim_panjang}
+                </h2>
                 """, unsafe_allow_html=True)
                 
         with col_prof_desc:
@@ -1559,12 +1540,10 @@ elif menu_utama == "🛡️ Team Profiling":
             avg_durasi = df_hist_tim['Durasi'].mean()
             best_win = df_hist_tim[df_hist_tim['Win'] == 1]['O_Rank'].min()
             lawan_terkuat = df_long[(df_long['Team'] == tim_pilihan) & (df_long['O_Rank'] == best_win)]['Opponent'].mode()[0] if total_wins > 0 else "-"
-            
-            # WARNA LAWAN TERKUAT DINAMIS BERDASARKAN CSV
             lawan_color = TEAM_COLOR_MAP.get(lawan_terkuat, "#ff4b4b")
             
             narasi_profil = f"""
-            <div style="color: #d1d1d1; font-family: 'Montserrat', sans-serif; font-size: 15px; line-height: 1.8; text-align: justify; padding: 10px 20px;">
+            <div style="color: #d1d1d1; font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.8; text-align: justify; padding: 25px 30px; background: rgba(255,255,255,0.02); border-left: 4px solid {TEAM_COLOR_MAP.get(tim_pilihan, '#d4af37')}; border-radius: 8px;">
                 Pada musim ini, <b style="color: white;">{tim_panjang} ({tim_pilihan})</b> tergolong dalam kelompok <b style="color: #d4af37;">{kasta}</b>. 
                 Mereka mencatatkan rekor <b style="color: white;">{total_wins} Kemenangan</b> dan <b>{total_losses} Kekalahan</b> di sepanjang turnamen, 
                 dengan rata-rata durasi pertandingan yang dihabiskan selama <b>{avg_durasi:.1f} menit</b> per game.
@@ -1575,19 +1554,17 @@ elif menu_utama == "🛡️ Team Profiling":
             """
             st.markdown(narasi_profil, unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05);'><br>", unsafe_allow_html=True)
         
-        # === 2. TEAM LINE UP (LAYERED MAP) & STAFF ===
+        # === 2. TEAM LINE UP (LAYERED MAP) & STAFF (Murni 100% Desain Manualmu) ===
         st.markdown("### 🗺️ Team Line Up")
         
         df_roster = pd.read_csv("IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan].copy()
         
-        # LOGIKA CERDAS: Filter musim fleksibel
         if musim_pilihan in df_roster_tim['Season'].values:
             df_roster_tim = df_roster_tim[df_roster_tim['Season'] == musim_pilihan]
             
-        # LOGIKA CERDAS: Penilaian Status
         df_roster_tim['Status_Score'] = df_roster_tim['Status'].astype(str).str.strip().str.lower().map({
             'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2
         }).fillna(3)
@@ -1596,14 +1573,12 @@ elif menu_utama == "🛡️ Team Profiling":
         bg_path = get_team_bg_path(tim_pilihan)
         bg_b64 = image_to_base64(bg_path)
         
-        # Rasio kolom 2:1 (Map mengambil 2/3 alias 66% layar, Staff mengambil 1/3)
         col_map, col_staff = st.columns([2, 1])
         
         with col_map:
             map_path = "assets/HOK_map-layout.png"
             map_b64 = image_to_base64(map_path)
             
-            # max-width dinaikkan menjadi 850px agar map bisa membesar memakan ruang layar
             html_container = f"""
             <div id='map_container' style='position: relative; width: 100%; max-width: 850px; aspect-ratio: 1/1; margin: 0 auto;'>
                 <img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>
@@ -1640,7 +1615,6 @@ elif menu_utama == "🛡️ Team Profiling":
                             
                     top_3_heroes = sorted(hero_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                     
-                    # 1. RENDER HERO FAVORIT (Diperbesar dari 11px menjadi 15px, gap dilebarkan jadi 3px)
                     hero_html = "<div style='position: absolute; bottom: 5%; width: 100%; display: flex; justify-content: center; gap: 3px; z-index: 4;'>"
                     for h_name, _ in top_3_heroes:
                         h_path = get_hero_path(h_name)
@@ -1651,35 +1625,23 @@ elif menu_utama == "🛡️ Team Profiling":
                     style_pos = f"top: {coords['top']}; left: {coords['left']};"
                     if 'transform' in coords: style_pos += f" transform: {coords['transform']};"
                     
-                    # 2. SATU PAKET KARTU UTUH (Master Width diperbesar dari 55px menjadi 75px)
                     html_container += f"""
                     <div style="position: absolute; {style_pos} width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); z-index: 5;">
-                        <!-- Alas (Background Tim) -->
                         <img src="data:image/png;base64,{bg_b64}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
-                        
-                        <!-- Icon Role (Diperbesar dari 13px menjadi 18px, offset digeser jadi -4px) -->
                         <img src="data:image/png;base64,{icon_role_b64}" style="position: absolute; top: 4px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
-                        
-                        <!-- Foto Pemain (Tetap pakai persentase, jadi otomatis menyesuaikan!) -->
                         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                             <img src="data:image/png;base64,{foto_b64}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                         </div>
-                        
-                        <!-- Nama Pemain (Font diperbesar dari 7.5px menjadi 10px) -->
                         <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                             {nama_pemain}
                         </div>
-                        
-                        <!-- Hero Favorit -->
                         {hero_html}
                     </div>
                     """
             
             html_container += "</div>"
-            
-            # Kita gunakan st.components.v1.html agar HTML utuh dan tidak terpotong!
             import streamlit.components.v1 as components
-            components.html(html_container, height=750)
+            components.html(html_container, height=750) # TINGGI MANUALMU AMAN
             
         with col_staff:
             path_bg_staff = "assets/Recap/logo_background/IKL_bg.png"
@@ -1687,25 +1649,18 @@ elif menu_utama == "🛡️ Team Profiling":
             b64_bg_staff = image_to_base64(path_bg_staff) if os.path.exists(path_bg_staff) else ""
             b64_bg_subs = image_to_base64(path_bg_subs) if os.path.exists(path_bg_subs) else ""
 
-            # Kita inisialisasi Master HTML untuk seluruh kolom kanan
-            # (Termasuk import font Montserrat agar cantik di dalam iFrame)
             html_staff_col = """
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
             </style>
             <div style="font-family: 'Montserrat', sans-serif;">
+            <h4 style='color: #ffffff; margin-bottom: 15px; margin-top: 0;'>Management & Staff</h4>
+            <div style='display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 35px;'>
             """
-
-            # ==========================================
-            # A. BAGIAN STAFF & MANAGEMENT
-            # ==========================================
-            html_staff_col += "<h4 style='color: #ffffff; margin-bottom: 15px; margin-top: 0;'>Management & Staff</h4>"
             
             df_staff = df_roster_tim[df_roster_tim['Status'].astype(str).str.strip().str.lower() == 'staff'].copy()
-            
             mask_coach = df_staff['Role'].astype(str).str.lower().str.contains('coach', na=False)
-            if mask_coach.sum() == 1:
-                df_staff.loc[mask_coach, 'Role'] = 'Head Coach'
+            if mask_coach.sum() == 1: df_staff.loc[mask_coach, 'Role'] = 'Head Coach'
                 
             def get_staff_icon(role_str):
                 r = str(role_str).lower()
@@ -1715,50 +1670,28 @@ elif menu_utama == "🛡️ Team Profiling":
                 if 'analyst' in r: return 'analyst_icon.png'
                 return 'coach_icon.png'
                 
-            html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 35px;'>"
             for _, row in df_staff.iterrows():
                 nama = str(row['Player_ID'])
                 jabatan = str(row['Role'])
-                icon_file = get_staff_icon(jabatan)
-                
                 f_path = get_player_path(nama)
                 b64_foto = image_to_base64(f_path) if f_path else ""
-                b64_icon = image_to_base64(f"assets/{icon_file}")
+                b64_icon = image_to_base64(f"assets/{get_staff_icon(jabatan)}")
                 
-                # Kartu Staff (Skala Master 75px, persis seperti map)
                 html_staff_col += f"""
                 <div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
-                    <!-- Alas Background Staff -->
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
-                    
-                    <!-- Icon Jabatan -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
-                    
-                    <!-- Foto Staff (Mentok atas, tinggi 75%) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
-                    
-                    <!-- Nama Staff -->
-                    <div style="position: absolute; bottom: 28%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
-                        {nama}
-                    </div>
-                    
-                    <!-- Jabatan (Berada di slot hero favorit) -->
-                    <div style="position: absolute; bottom: 9%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 9px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
-                        {jabatan}
-                    </div>
+                    <div style="position: absolute; bottom: 28%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px;">{nama}</div>
+                    <div style="position: absolute; bottom: 9%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 9px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">{jabatan}</div>
                 </div>
                 """
-            html_staff_col += "</div>"
-
-            # ==========================================
-            # B. BAGIAN SUBSTITUTES (CADANGAN)
-            # ==========================================
-            html_staff_col += "<h4 style='color: #ffffff; margin-bottom: 15px;'>Substitutes</h4>"
+            
+            html_staff_col += "</div><h4 style='color: #ffffff; margin-bottom: 15px;'>Substitutes</h4><div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
             
             df_subs = df_roster_tim[df_roster_tim['Status_Score'] == 2].copy()
-            
             def get_subs_icon(role_str):
                 r = str(role_str).lower()
                 if 'top' in r or 'clash' in r: return 'subs_clashlane_icon.png'
@@ -1768,119 +1701,72 @@ elif menu_utama == "🛡️ Team Profiling":
                 if 'roam' in r or 'sup' in r: return 'subs_support_icon.png'
                 return 'subs_flex_icon.png'
                 
-            html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
             for _, row in df_subs.iterrows():
                 nama = str(row['Player_ID'])
-                jabatan = str(row['Role'])
-                icon_file = get_subs_icon(jabatan)
-                
                 f_path = get_player_path(nama)
                 b64_foto = image_to_base64(f_path) if f_path else ""
-                b64_icon = image_to_base64(f"assets/{icon_file}")
+                b64_icon = image_to_base64(f"assets/{get_subs_icon(str(row['Role']))}")
                 
-                # Kartu Subs
                 html_staff_col += f"""
                 <div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
-                    
-                    <!-- Icon Role Subs -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
-                    
-                    <!-- Foto Subs -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 99%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
-                    
-                    <!-- Nama Subs -->
-                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
-                        {nama}
-                    </div>
+                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px;">{nama}</div>
                 </div>
                 """
             html_staff_col += "</div></div>"
             
-            # Eksekusi dengan components.html agar kebal dari Base64 Overflow!
-            # Tinggi disamakan dengan map (870px)
             import streamlit.components.v1 as components
-            components.html(html_staff_col, height=750)
+            components.html(html_staff_col, height=750) # TINGGI MANUALMU AMAN
+            
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 20px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
         # === 3. RADAR CHART & TEAM PERFORMANCE STATISTIC ===
         st.markdown("### 📊 Team Statistic Performance")
         
         col_radar, col_narasi = st.columns([1.5, 2.5])
         
-        # Ambil data statistik mentah (skala 100) dari DataFrame rapor_radar
         data_tim = rapor_radar[rapor_radar['Team'] == tim_pilihan].iloc[0]
-        warna_tim = TEAM_COLOR_MAP.get(tim_pilihan, "#d4af37") # Mengikuti identitas Hex Color tim!
+        warna_tim = TEAM_COLOR_MAP.get(tim_pilihan, "#d4af37")
         
-        # Daftar kategori asli di database
         kategori_keys = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Volatility_100', 'TeamFight_100', 'Flexibility_100']
-        
-        # 4 HURUF ELEGAN UNTUK RADAR CHART
         kategori_label = ['DOM', 'TOUG', 'DISC', 'STAB', 'TEAM', 'FLEX']
         
         skor_tim = data_tim[kategori_keys].values.flatten().tolist()
-        
-        # === INVERSI LOGIKA: Volatility diubah menjadi Stability ===
-        # Karena skala aslinya 20-100, inversinya adalah 120 - x
-        # (Jika volatility 100, stability jadi 20. Jika volatility 20, stability jadi 100)
         skor_tim[3] = 120 - skor_tim[3] 
         
-        # 1. RENDER RADAR CHART (SEBELAH KIRI)
         with col_radar:
-            # Tutup poligon radar (tambahkan titik awal ke akhir)
             skor_radar = skor_tim + [skor_tim[0]]
             label_radar = kategori_label + [kategori_label[0]]
             
             fig_radar = go.Figure()
             fig_radar.add_trace(go.Scatterpolar(
-                r=skor_radar,
-                theta=label_radar,
-                fill='toself',
-                name=tim_pilihan,
-                line_color=warna_tim, 
-                # Chart area dibuat lebih 'lite' transparansinya (0.2)
+                r=skor_radar, theta=label_radar, fill='toself', name=tim_pilihan, line_color=warna_tim, 
                 fillcolor=f"rgba({int(warna_tim.lstrip('#')[0:2], 16)}, {int(warna_tim.lstrip('#')[2:4], 16)}, {int(warna_tim.lstrip('#')[4:6], 16)}, 0.2)",
                 marker=dict(size=6, color="white", line=dict(width=1.5, color=warna_tim))
             ))
             
             fig_radar.update_layout(
                 polar=dict(
-                    # Background lingkaran semi-transparan tipis seperti kaca
                     bgcolor="rgba(255,255,255,0.05)",
-                    radialaxis=dict(
-                        visible=True, 
-                        showticklabels=False, # SKALA ANGKA DIHILANGKAN
-                        range=[0, 100], 
-                        gridcolor="rgba(255,255,255,0.15)",
-                        linecolor="rgba(255,255,255,0.2)"
-                    ),
-                    angularaxis=dict(
-                        tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), 
-                        gridcolor="rgba(255,255,255,0.15)",
-                        linecolor="rgba(255,255,255,0.2)"
-                    )
+                    radialaxis=dict(visible=True, showticklabels=False, range=[0, 100], gridcolor="rgba(255,255,255,0.15)", linecolor="rgba(255,255,255,0.2)"),
+                    angularaxis=dict(tickfont=dict(color="white", size=13, family="'Montserrat', sans-serif", weight="bold"), gridcolor="rgba(255,255,255,0.15)", linecolor="rgba(255,255,255,0.2)")
                 ),
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                margin=dict(l=30, r=30, t=40, b=30),
-                showlegend=False,
-                height=350
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=30, r=30, t=40, b=30), showlegend=False, height=350
             )
             st.plotly_chart(fig_radar, use_container_width=True)
 
-        # 2. MESIN ANALISIS NARASI (SEBELAH KANAN)
         with col_narasi:
-            # Gunakan Label baru agar Volatility_100 murni berubah jadi Stability_100 di otak Narasi
             kategori_narasi_keys = ['Dominance_100', 'Toughness_100', 'Discipline_100', 'Stability_100', 'TeamFight_100', 'Flexibility_100']
             kamus_skor = dict(zip(kategori_narasi_keys, skor_tim))
-            
-            # Mencari Skor Tertinggi dan Terendah
             skor_diurutkan = sorted(kamus_skor.items(), key=lambda item: item[1], reverse=True)
             kekuatan_utama = skor_diurutkan[0][0]
             kelemahan_utama = skor_diurutkan[-1][0]
             
-            # Kamus terjemahan untuk narasi 
             kamus_narasi = {
                 'Dominance_100': "Dominasi Pertandingan (kemampuan menekan lawan sejak *early game* dan agresif dalam menguasai perolehan *gold*).",
                 'Toughness_100': "Ketangguhan Mental (kemampuan bertahan luar biasa dan memperlama durasi saat berada di posisi tertinggal).",
@@ -1890,7 +1776,6 @@ elif menu_utama == "🛡️ Team Profiling":
                 'Flexibility_100': "Fleksibilitas Draft (kekayaan jumlah variasi taktik dan *hero* yang mereka berani mainkan di panggung kompetitif)."
             }
             
-            # Merakit paragraf
             teks_analisis = f"""
             <div style="color: #e0e0e0; font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.8; text-align: justify; margin-top: 15px; padding-left: 10px;">
                 Berdasarkan grafik performa <i>hexagonal</i> di samping, <b style="color: {warna_tim};">{tim_panjang}</b> menampilkan karakteristik permainan yang sangat khas di musim ini. 
@@ -1904,7 +1789,7 @@ elif menu_utama == "🛡️ Team Profiling":
             """
             st.markdown(teks_analisis, unsafe_allow_html=True)
             
-        st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 20px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
         # === 4. TEAM STRATEGY (SIGNATURE HERO COMBO & DRAFTING) ===
         st.markdown("### ♟️ Team Strategy")
@@ -1916,90 +1801,168 @@ elif menu_utama == "🛡️ Team Profiling":
             st.info(f"Tim {tim_pilihan} belum memiliki rekam jejak kombinasi *hero* yang mencukupi untuk dianalisis.")
         else:
             cols = st.columns(3)
-            # Menampilkan maksimal 3 kombo agar desain tetap proporsional
             for idx, k in enumerate(kombo_A[:3]):
                 with cols[idx]:
                     render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                     
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # --- MESIN LOGIKA PICK RATE, BAN RATE, & RESPECTED BAN RATE ---
-        # 1. Hitung Total Match Tim Terpilih (Sebagai basis persentase 100%)
         df_tim_semua = df_history[(df_history['Team_(Blue)'] == tim_pilihan) | (df_history['Opponent_(Red)'] == tim_pilihan)]
         total_match_tim = len(df_tim_semua)
         
         if total_match_tim > 0:
-            # 2. Top Picked (Hero yang paling sering DIPILIH tim ini)
             tim_picks = df_long[df_long['Team'] == tim_pilihan].explode('Heroes_List')['Heroes_List'].value_counts().head(3)
             
-            # 3. Top Banned (Hero yang paling sering di-BAN oleh TIM INI)
             ban_as_blue = df_tim_semua[df_tim_semua['Team_(Blue)'] == tim_pilihan]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
             ban_as_red = df_tim_semua[df_tim_semua['Opponent_(Red)'] == tim_pilihan]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
             tim_bans = pd.concat([ban_as_blue, ban_as_red]).value_counts().head(3)
             
-            # 4. Top Respected Banned (Hero yang paling sering di-BAN oleh LAWAN saat bertemu tim ini)
             resp_ban_as_blue = df_tim_semua[df_tim_semua['Team_(Blue)'] == tim_pilihan]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
             resp_ban_as_red = df_tim_semua[df_tim_semua['Opponent_(Red)'] == tim_pilihan]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
             respected_bans = pd.concat([resp_ban_as_blue, resp_ban_as_red]).value_counts().head(3)
             
-            # --- RENDER UI KARTU DRAFTING (3 KOLOM ANTI BOCOR) ---
-            col_p, col_b, col_r = st.columns(3)
+            banned_b64 = image_to_base64("assets/Match/banned.png")
             
-            def render_draft_card(title, data_series, mode="pick"):
-                # mode bisa berupa: "pick", "ban", atau "respected"
-                st.markdown(f"<h5 style='color: white; font-family: \"Montserrat\", sans-serif; margin-bottom: 15px;'>{title}</h5>", unsafe_allow_html=True)
+            def generate_draft_column_html(title, data_series, mode="pick"):
+                col_html = f"<div style='flex: 1; padding: 0 10px;'>"
+                col_html += f"<h4 style='color: white; margin-top: 0; margin-bottom: 20px; font-size: 18px;'>{title}</h4>"
                 
-                banned_b64 = image_to_base64("assets/Match/banned.png")
-                
-                # Setup Warna & Efek berdasarkan Mode
                 if mode == "pick":
                     border_color = "#d4af37"
                     text_color = "#4caf50"
                     img_filter = "none"
                 else:
-                    border_color = "#a33232" # Merah Bata
+                    border_color = "#a33232" 
                     text_color = "#ff4b4b"
-                    img_filter = "grayscale(100%) brightness(0.5)" # Redupkan Hero
+                    img_filter = "grayscale(100%) brightness(0.5)" 
                 
                 if data_series.empty:
-                    st.markdown("<div style='color: gray; font-size: 13px; font-style: italic;'>Data belum tersedia</div>", unsafe_allow_html=True)
+                    col_html += "<div style='color: gray; font-size: 13px; font-style: italic;'>Data belum tersedia</div>"
                 else:
                     for hero, count in data_series.items():
                         rate = (count / total_match_tim) * 100
                         h_path = get_hero_path(hero)
                         
                         if h_path:
-                            # Membungkus gambar dengan div agar border merah tidak ikut terkena efek grayscale
-                            h_img = f"<div style='position: relative; width: 45px; height: 45px; border-radius: 6px; border: 1.5px solid {border_color}; overflow: hidden;'>"
+                            h_img = f"<div style='position: relative; width: 55px; height: 55px; border-radius: 6px; border: 1.5px solid {border_color}; overflow: hidden;'>"
                             h_img += f"<img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 100%; height: 100%; object-fit: cover; filter: {img_filter};'>"
-                            
-                            # Logika khusus Respected Ban: Tambahkan layer banned.png
                             if mode == "respected" and banned_b64:
                                 h_img += f"<img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>"
-                                
                             h_img += "</div>"
                         else:
-                            h_img = f"<div style='width: 45px; height: 45px; background: #444; border: 1.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px; text-align:center;'>{hero}</div>"
+                            h_img = f"<div style='width: 55px; height: 55px; background: #444; border: 1.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:10px; text-align:center;'>{hero}</div>"
                         
-                        card_html = f"""
-                        <div style='background-color: #24242e; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>
+                        col_html += f"""
+                        <div style='background-color: #24242e; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>
                             <div style='display: flex; align-items: center; gap: 15px;'>
                                 {h_img}
-                                <span style='color: white; font-weight: 700; font-size: 14px; letter-spacing: 0.5px;'>{hero}</span>
+                                <span style='color: white; font-weight: 700; font-size: 15px; letter-spacing: 0.5px;'>{hero}</span>
                             </div>
-                            <span style='color: {text_color}; font-weight: 800; font-size: 15px;'>{rate:.0f}%</span>
+                            <span style='color: {text_color}; font-weight: 800; font-size: 16px;'>{rate:.0f}%</span>
                         </div>
                         """
-                        st.markdown(card_html, unsafe_allow_html=True)
-                
-            with col_p:
-                render_draft_card("Top Picked Heroes", tim_picks, mode="pick")
-            with col_b:
-                render_draft_card("Top Banned Heroes", tim_bans, mode="ban")
-            with col_r:
-                render_draft_card("Top Respected Banned", respected_bans, mode="respected")
-                
+                col_html += "</div>"
+                return col_html
+
+            master_draft_html = """
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+            </style>
+            <div style="font-family: 'Montserrat', sans-serif; display: flex; width: 100%; justify-content: space-between;">
+            """
+            
+            master_draft_html += generate_draft_column_html("Top Picked Heroes", tim_picks, mode="pick")
+            master_draft_html += generate_draft_column_html("Top Banned Heroes", tim_bans, mode="ban")
+            master_draft_html += generate_draft_column_html("Top Respected Banned", respected_bans, mode="respected")
+            master_draft_html += "</div>"
+
+            import streamlit.components.v1 as components
+            components.html(master_draft_html, height=280)
+
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 10px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+        
+        # === 5. NAVIGASI BAWAH (KEMBALI & BANDINGKAN) ===
+        col_btn1, col_space, col_btn2 = st.columns([2, 5, 2])
+        
+        icon_kembali_b64 = image_to_base64("assets/kembali_icon.png")
+        icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
+        
+        with col_btn1:
+            if icon_kembali_b64:
+                st.markdown(f"""
+                <style>
+                .btn-kembali {{
+                    display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+                    background: transparent; border: none; cursor: pointer; padding: 10px;
+                    transition: all 0.2s ease; opacity: 0.7;
+                }}
+                .btn-kembali:hover {{ opacity: 1; transform: translateX(-5px); }}
+                </style>
+                """, unsafe_allow_html=True)
+                if st.button("Kembali ke Pilihan Tim", use_container_width=True):
+                    st.session_state['profiling_team'] = None
+                    st.rerun()
+                st.markdown(f"<div style='margin-top: -45px; pointer-events: none;'><img src='data:image/png;base64,{icon_kembali_b64}' style='height: 35px;'></div>", unsafe_allow_html=True)
+
+        with col_btn2:
+            if icon_banding_b64:
+                st.markdown(f"""
+                <style>
+                .btn-banding {{
+                    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+                    background: transparent; border: none; cursor: pointer; padding: 10px;
+                    transition: all 0.2s ease; opacity: 0.7;
+                }}
+                .btn-banding:hover {{ opacity: 1; transform: translateX(5px); }}
+                </style>
+                """, unsafe_allow_html=True)
+                if st.button("Bandingkan (H2H) Tim Ini", use_container_width=True):
+                    st.session_state['h2h_team_A'] = tim_pilihan 
+                    st.session_state['h2h_team_B'] = None        
+                    st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
+                    st.rerun()
+                st.markdown(f"<div style='margin-top: -45px; display: flex; justify-content: flex-end; pointer-events: none;'><img src='data:image/png;base64,{icon_banding_b64}' style='height: 35px;'></div>", unsafe_allow_html=True)
+
         st.markdown("<br><br>", unsafe_allow_html=True)
+
+        # === 6. RIWAYAT PERTANDINGAN TIM TERPILIH ===
+        st.markdown(f"### 📜 Match History: {tim_panjang}")
+        st.markdown(f"<div style='color: #a0a0a0; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>*Menampilkan riwayat pertandingan eksklusif untuk tim <b>{tim_pilihan}</b> di musim ini.</div>", unsafe_allow_html=True)
+        
+        hist_display = df_history[(df_history['Team_(Blue)'] == tim_pilihan) | (df_history['Opponent_(Red)'] == tim_pilihan)].copy()
+        
+        if hist_display.empty:
+            st.info(f"Belum ada riwayat pertandingan untuk {tim_pilihan} di musim ini.")
+        else:
+            hist_display['Date_Sort'] = pd.to_datetime(hist_display['Date'], errors='coerce')
+            hist_display['Date'] = hist_display['Date_Sort'].dt.strftime('%d %b %Y').fillna(hist_display['Date'])
+            
+            def format_match_id(row):
+                w, d = str(row['Week']).strip(), str(row['Day']).strip()
+                m, g = str(row['Match']).replace('.0', '').strip(), str(row['Game']).replace('.0', '').strip()
+                return f"W{w}D{d}M{m}G{g}" if w.isdigit() else f"{w}{d}{g}" 
+                
+            hist_display['Match_ID'] = hist_display.apply(format_match_id, axis=1)
+            hist_display['Result'] = hist_display['Result'].apply(lambda x: "🟦 Blue Win" if x == 1.0 else ("🟥 Red Win" if x == 0.0 else "TBD"))
+            
+            hist_display = hist_display.sort_values(by=['Date_Sort', 'Match_ID'], ascending=[False, False])
+            hist_display = hist_display[['Date', 'Match_ID', 'Team_(Blue)', 'Result', 'Opponent_(Red)', 'Duration_min', 'MVP']]
+            
+            styled_hist = hist_display.style.set_properties(**{'text-align': 'center'})
+            st.dataframe(
+                styled_hist, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    "Date": st.column_config.TextColumn("Tanggal", width="medium"),
+                    "Match_ID": st.column_config.TextColumn("Kode Match", width="medium"),
+                    "Team_(Blue)": st.column_config.TextColumn("Tim Biru (Blue)", width="medium"),
+                    "Result": st.column_config.TextColumn("Hasil Pemenang", width="medium"),
+                    "Opponent_(Red)": st.column_config.TextColumn("Tim Merah (Red)", width="medium"),
+                    "Duration_min": st.column_config.TextColumn("Durasi", width="small"),
+                    "MVP": st.column_config.TextColumn("MVP", width="medium")
+                }
+            )
 # endregion
 
 # region H2H
