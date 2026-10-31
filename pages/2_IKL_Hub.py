@@ -1766,7 +1766,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 if 'mid' in r: return 'subs_midlane_icon.png'
                 if 'bot' in r or 'farm' in r or 'gold' in r: return 'subs_farmlane_icon.png'
                 if 'roam' in r or 'sup' in r: return 'subs_support_icon.png'
-                return 'reset_icon.png'
+                return 'subs_flex_icon.png'
                 
             html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
             for _, row in df_subs.iterrows():
