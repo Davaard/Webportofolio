@@ -1712,32 +1712,30 @@ elif menu_utama == "🛡️ Team Profiling":
                 jabatan = str(row['Role'])
                 icon_file = get_staff_icon(jabatan)
                 
-                # Cek path foto staff
                 f_path = get_player_path(nama)
                 b64_foto = image_to_base64(f_path) if f_path else ""
                 b64_icon = image_to_base64(f"assets/{icon_file}")
                 
-                # Menggunakan struktur persis seperti Kartu MVP / Pemain Utama agar rasionya pas
                 html_staff += f"""
                 <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <!-- Alas Background Staff -->
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
-                    <!-- Icon Jabatan -->
+                    <!-- Icon Jabatan (Skala disamakan dengan Map) -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
-                    <!-- Foto Staff (Mentok atas, tinggi 65%) -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 65%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
+                    <!-- Foto Staff (Mentok atas, tinggi 75% sama dengan Map) -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
-                    <!-- Nama Staff -->
-                    <div style="position: absolute; bottom: 25%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">
+                    <!-- Nama Staff (Ukuran font 10px sama dengan Map) -->
+                    <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                     
-                    <!-- Jabatan (Menggantikan Slot Hero di bawah) -->
-                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 6.5px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
+                    <!-- Jabatan (Berada di slot hero favorit) -->
+                    <div style="position: absolute; bottom: 6%; width: 100%; text-align: center; color: #d4af37; font-weight: 800; font-size: 6px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">
                         {jabatan}
                     </div>
                 </div>
@@ -1771,21 +1769,20 @@ elif menu_utama == "🛡️ Team Profiling":
                 b64_foto = image_to_base64(f_path) if f_path else ""
                 b64_icon = image_to_base64(f"assets/{icon_file}")
                 
-                # Kartu Subs (Format mirip pemain utama tapi tanpa hero)
                 html_subs += f"""
                 <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
-                    <!-- Icon Role Subs -->
+                    <!-- Icon Role Subs (Skala disamakan dengan Map) -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
-                    <!-- Foto Subs (Tinggi 75% karena tidak ada baris jabatan di bawahnya) -->
+                    <!-- Foto Subs (Mentok atas, tinggi 75% sama dengan Map) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
-                    <!-- Nama Subs -->
-                    <div style="position: absolute; bottom: 15%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8.5px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;">
+                    <!-- Nama Subs (Ukuran font 10px sama dengan Map) -->
+                    <div style="position: absolute; bottom: 12%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                 </div>
