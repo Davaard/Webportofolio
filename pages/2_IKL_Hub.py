@@ -1894,11 +1894,11 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.rerun()
                 
             if icon_kembali_b64:
-                # Menggabungkan Ikon dan Teks di dalam satu wadah HTML yang di-center presisi
+                # Menggabungkan Ikon dan Teks (Warna Abu-abu) di-center presisi
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10;'>
                     <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 20px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
-                    <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Kembali</span>
+                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Kembali</span>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -1911,11 +1911,11 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.rerun()
                 
             if icon_banding_b64:
-                # Menggabungkan Ikon dan Teks di dalam satu wadah HTML yang di-center presisi
+                # Menggabungkan Ikon dan Teks (Warna Abu-abu) di-center presisi
                 st.markdown(f"""
                 <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 10px; pointer-events: none; z-index: 10;'>
-                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 24px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
-                    <span style='color: white; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Bandingkan</span>
+                    <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));'>
+                    <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600;'>Bandingkan</span>
                 </div>
                 """, unsafe_allow_html=True)
 
