@@ -1780,11 +1780,11 @@ elif menu_utama == "🛡️ Team Profiling":
                 
                 # Kartu Subs
                 html_staff_col += f"""
-                <div style="position: relative; width: 75px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
+                <div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);">
                     
                     <!-- Icon Role Subs -->
-                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
+                    <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 5px; left: 5px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
                     <!-- Foto Subs -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 99%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;">
@@ -1792,7 +1792,7 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                     
                     <!-- Nama Subs -->
-                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 8px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
+                    <div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                 </div>
