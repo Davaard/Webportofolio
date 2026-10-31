@@ -1687,10 +1687,19 @@ elif menu_utama == "🛡️ Team Profiling":
             b64_bg_staff = image_to_base64(path_bg_staff) if os.path.exists(path_bg_staff) else ""
             b64_bg_subs = image_to_base64(path_bg_subs) if os.path.exists(path_bg_subs) else ""
 
+            # Kita inisialisasi Master HTML untuk seluruh kolom kanan
+            # (Termasuk import font Montserrat agar cantik di dalam iFrame)
+            html_staff_col = """
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+            </style>
+            <div style="font-family: 'Montserrat', sans-serif;">
+            """
+
             # ==========================================
             # A. BAGIAN STAFF & MANAGEMENT
             # ==========================================
-            st.markdown("<h4 style='color: #d4af37; font-family: \"Montserrat\", sans-serif; margin-bottom: 10px;'>👔 Management & Staff</h4>", unsafe_allow_html=True)
+            html_staff_col += "<h4 style='color: #d4af37; margin-bottom: 15px; margin-top: 0;'>👔 Management & Staff</h4>"
             
             df_staff = df_roster_tim[df_roster_tim['Status'].astype(str).str.strip().str.lower() == 'staff'].copy()
             
@@ -1706,7 +1715,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 if 'analyst' in r: return 'analyst_icon.png'
                 return 'coach_icon.png'
                 
-            html_staff = "<div style='display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px;'>"
+            html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 35px;'>"
             for _, row in df_staff.iterrows():
                 nama = str(row['Player_ID'])
                 jabatan = str(row['Role'])
@@ -1716,20 +1725,21 @@ elif menu_utama == "🛡️ Team Profiling":
                 b64_foto = image_to_base64(f_path) if f_path else ""
                 b64_icon = image_to_base64(f"assets/{icon_file}")
                 
-                html_staff += f"""
+                # Kartu Staff (Skala Master 75px, persis seperti map)
+                html_staff_col += f"""
                 <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <!-- Alas Background Staff -->
                     <img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
-                    <!-- Icon Jabatan (Skala disamakan dengan Map) -->
+                    <!-- Icon Jabatan -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
-                    <!-- Foto Staff (Mentok atas, tinggi 75% sama dengan Map) -->
+                    <!-- Foto Staff (Mentok atas, tinggi 75%) -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
-                    <!-- Nama Staff (Ukuran font 10px sama dengan Map) -->
+                    <!-- Nama Staff -->
                     <div style="position: absolute; bottom: 27%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
@@ -1740,13 +1750,12 @@ elif menu_utama == "🛡️ Team Profiling":
                     </div>
                 </div>
                 """
-            html_staff += "</div>"
-            st.markdown(html_staff, unsafe_allow_html=True)
+            html_staff_col += "</div>"
 
             # ==========================================
             # B. BAGIAN SUBSTITUTES (CADANGAN)
             # ==========================================
-            st.markdown("<h4 style='color: #d4af37; font-family: \"Montserrat\", sans-serif; margin-bottom: 10px;'>🔄 Substitutes</h4>", unsafe_allow_html=True)
+            html_staff_col += "<h4 style='color: #d4af37; margin-bottom: 15px;'>🔄 Substitutes</h4>"
             
             df_subs = df_roster_tim[df_roster_tim['Status_Score'] == 2].copy()
             
@@ -1759,7 +1768,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 if 'roam' in r or 'sup' in r: return 'subs_support_icon.png'
                 return 'subs_dashlane_icon.png'
                 
-            html_subs = "<div style='display: flex; flex-wrap: wrap; gap: 12px;'>"
+            html_staff_col += "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
             for _, row in df_subs.iterrows():
                 nama = str(row['Player_ID'])
                 jabatan = str(row['Role'])
@@ -1769,26 +1778,31 @@ elif menu_utama == "🛡️ Team Profiling":
                 b64_foto = image_to_base64(f_path) if f_path else ""
                 b64_icon = image_to_base64(f"assets/{icon_file}")
                 
-                html_subs += f"""
+                # Kartu Subs
+                html_staff_col += f"""
                 <div style="position: relative; width: 75px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;">
                     <img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 5px; filter: brightness(0.65);">
                     
-                    <!-- Icon Role Subs (Skala disamakan dengan Map) -->
+                    <!-- Icon Role Subs -->
                     <img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));">
                     
-                    <!-- Foto Subs (Mentok atas, tinggi 75% sama dengan Map) -->
+                    <!-- Foto Subs -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 5px 5px 0 0;">
                         <img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;">
                     </div>
                     
-                    <!-- Nama Subs (Ukuran font 10px sama dengan Map) -->
+                    <!-- Nama Subs -->
                     <div style="position: absolute; bottom: 12%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 10px; text-shadow: 1px 1px 2px black, -1px -1px 2px black, 0px 2px 4px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; letter-spacing: 0.5px;">
                         {nama}
                     </div>
                 </div>
                 """
-            html_subs += "</div>"
-            st.markdown(html_subs, unsafe_allow_html=True)
+            html_staff_col += "</div></div>"
+            
+            # Eksekusi dengan components.html agar kebal dari Base64 Overflow!
+            # Tinggi disamakan dengan map (870px)
+            import streamlit.components.v1 as components
+            components.html(html_staff_col, height=870)
             
         st.markdown("<br><br>", unsafe_allow_html=True)
         
