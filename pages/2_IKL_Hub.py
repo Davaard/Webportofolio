@@ -168,8 +168,8 @@ with col_header_left:
     
     st.markdown(f"""
     <div style='display: flex; align-items: center; gap: 10px; padding-top: 5px;'>
-        <img src='data:image/png;base64,{logo_liquipedia_b64}' style='height: 25px; object-fit: contain;'>
-        <img src='data:image/png;base64,{logo_hok_b64}' style='height: 25px; object-fit: contain;'>
+        <img src='data:image/png;base64,{logo_hok_b64}' style='height: 30px; object-fit: contain;'>
+        <img src='data:image/png;base64,{logo_liquipedia_b64}' style='height: 30px; object-fit: contain;'>
     </div>
     """, unsafe_allow_html=True)
         
