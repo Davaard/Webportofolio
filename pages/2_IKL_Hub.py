@@ -2306,7 +2306,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         # === KOORDINAT H2H KHUSUS ===
         # Tim A (Kiri/Biru) ditarik sedikit ke arah markas bawah kiri
         MAP_COORDS_A = {
-            'Top Lane': {'top': '30%', 'left': '22%', 'transform': 'translate(-50%, -50%)'},
+            'Top Lane': {'top': '30%', 'left': '20%', 'transform': 'translate(-50%, -50%)'},
             'Jungler': {'top': '49%', 'left': '29%', 'transform': 'translate(-50%, -50%)'},
             'Middle': {'top': '54%', 'left': '44%', 'transform': 'translate(-50%, -50%)'},
             'Roamer': {'top': '61%', 'left': '60%', 'transform': 'translate(-50%, -50%)'},
