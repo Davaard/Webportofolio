@@ -2028,7 +2028,6 @@ elif menu_utama == "🛡️ Team Profiling":
 
 # region H2H
 elif menu_utama == "⚔️ Versus Mode (H2H)":
-    st.title(f"⚔️ H2H: Duel Mekanik & Taktik ({musim_pilihan})")
 
     if 'h2h_team_A' not in st.session_state:
         st.session_state['h2h_team_A'] = None
@@ -2036,60 +2035,121 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
         st.session_state['h2h_team_B'] = None
 
     daftar_tim = sorted(rapor_radar['Team'].unique())
+    tim_A = st.session_state['h2h_team_A']
+    tim_B = st.session_state['h2h_team_B']
 
-    if st.session_state['h2h_team_A'] is None:
-        st.markdown("### 🔴 Pilih Tim 1 (Sisi Kiri)")
-        st.markdown("---")
-        kolom_grid = st.columns(4)
-        for idx, tim in enumerate(daftar_tim):
-            with kolom_grid[idx % 4]:
-                logo_path = get_logo_path(tim)
-                render_logo_card(logo_path, tim)
+    # === FASE PEMILIHAN TIM (KONDISI A ATAU B BELUM TERPILIH) ===
+    if tim_A is None or tim_B is None:
+        
+        # Load assets H2H
+        ikl_silver_b64 = image_to_base64("assets/ikl_Silver.png")
+        vs_gold_b64 = image_to_base64("assets/Match/vs_full_gold.png")
+
+        # Rasio kolom disesuaikan agar terpusat sempurna seperti desain
+        col_a, col_vs, col_b = st.columns([3, 1.5, 3])
+
+        with col_a:
+            if tim_A is None:
+                st.markdown(f"""
+                <div style='text-align: center;'>
+                    <img src='data:image/png;base64,{ikl_silver_b64}' style='height: 180px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); opacity: 0.8; margin-bottom: 15px;'>
+                    <h3 style='color: white; margin: 0; font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 22px;'>IKL {musim_pilihan}'s<br>TEAM</h3>
+                    <p style='color: gray; font-size: 14px; margin-top: 5px; font-weight: 600;'>Pilih Tim</p>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                logo_A = get_logo_path(tim_A)
+                b64_A = image_to_base64(logo_A) if logo_A else ""
+                tim_panjang_A = TEAM_FULLNAME_MAP.get(tim_A, tim_A).upper()
                 
-                if st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
-                    st.session_state['h2h_team_A'] = tim
+                # Logika pemisahan kata "BY" untuk estetika teks bertingkat (Contoh: DOMINATOR by NEMESIS)
+                if " BY " in tim_panjang_A:
+                    nama_utama, nama_sub = tim_panjang_A.split(" BY ", 1)
+                    html_nama_A = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px;'>{nama_utama}</h3><p style='color: gray; font-size: 16px; margin: 0; font-weight: 600;'>by {nama_sub}</p>"
+                else:
+                    html_nama_A = f"<h3 style='color: white; margin: 0; font-family: \"Montserrat\", sans-serif; font-weight: 900; font-size: 22px; line-height: 1.2;'>{tim_panjang_A}</h3>"
+
+                st.markdown(f"""
+                <div style='text-align: center;'>
+                    <img src='data:image/png;base64,{b64_A}' style='height: 180px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.8)); margin-bottom: 15px;'>
+                    {html_nama_A}
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Menyulap tombol reset menjadi teks abu-abu yang menyatu dengan layout
+                st.markdown("""
+                <style>
+                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {
+                    background: transparent !important;
+                    border: none !important;
+                    color: #707070 !important;
+                    font-family: "Montserrat", sans-serif !important;
+                    font-size: 13px !important;
+                    font-weight: 600 !important;
+                    padding: 0 !important;
+                    box-shadow: none !important;
+                    margin-top: 5px !important;
+                    transition: color 0.2s ease !important;
+                }
+                div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {
+                    color: white !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                if st.button("Tekan untuk ganti tim", key="btn_reset_A", use_container_width=True):
+                    st.session_state['h2h_team_A'] = None
                     st.rerun()
 
-    elif st.session_state['h2h_team_B'] is None:
-        tim_A = st.session_state['h2h_team_A']
-        
-        st.markdown("### ⚔️ Versus Mode: Pilih Lawan")
-        col_slot1, col_slot2 = st.columns(2)
-        
-        with col_slot1:
-            st.info("🔴 Sisi Kiri (Tim 1)")
-            logo_A = get_logo_path(tim_A)
-            if logo_A:
-                col_A1, col_A2, col_A3 = st.columns([1.5, 1, 1.5])
-                with col_A2:
-                    st.image(logo_A, use_container_width=True)
-                    
-            if st.button(f"✨ {tim_A} (Klik untuk ganti)", use_container_width=True, key="btn_reset_A"):
-                st.session_state['h2h_team_A'] = None
-                st.rerun()
-                
-        with col_slot2:
-            st.warning("🔵 Sisi Kanan (Tim 2)")
-            st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
-            st.button("Menunggu pilihan...", use_container_width=True, disabled=True)
-            
-        st.markdown("---")
-        st.markdown(f"**Pilih lawan dari daftar di bawah ini untuk menantang {tim_A}:**")
-        
-        kolom_grid = st.columns(4)
-        for idx, tim in enumerate(daftar_tim):
-            with kolom_grid[idx % 4]:
-                logo_path = get_logo_path(tim)
-                render_logo_card(logo_path, tim)
-                        
-                if tim == tim_A:
-                    st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_B_{tim}")
-                else:
-                    if st.button(tim, use_container_width=True, key=f"btn_B_{tim}"):
-                        st.session_state['h2h_team_B'] = tim
-                        st.rerun()
+        with col_vs:
+            # Menggunakan Flexbox agar logo VS emas selalu berada di tengah secara vertikal dan horizontal
+            st.markdown(f"""
+            <div style='display: flex; justify-content: center; align-items: center; height: 100%; min-height: 250px;'>
+                <img src='data:image/png;base64,{vs_gold_b64}' style='height: 100px; filter: drop-shadow(0 4px 10px rgba(212,175,55,0.4)); margin-top: -30px;'>
+            </div>
+            """, unsafe_allow_html=True)
 
+        with col_b:
+            if tim_B is None:
+                st.markdown(f"""
+                <div style='text-align: center;'>
+                    <img src='data:image/png;base64,{ikl_silver_b64}' style='height: 180px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); opacity: 0.8; margin-bottom: 15px;'>
+                    <h3 style='color: white; margin: 0; font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 22px;'>IKL {musim_pilihan}'s<br>TEAM</h3>
+                    <p style='color: gray; font-size: 14px; margin-top: 5px; font-weight: 600;'>Pilih Tim</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Garis pembatas elegan
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 15px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+
+        # === RENDER GRID PEMILIHAN BAWAH ===
+        if tim_A is None:
+            st.markdown("<p style='text-align: center; color: gray; font-size: 13px; font-weight: 600; margin-bottom: 20px;'>Team selection yang sudah ada sebelumnya</p>", unsafe_allow_html=True)
+            kolom_grid = st.columns(4)
+            for idx, tim in enumerate(daftar_tim):
+                with kolom_grid[idx % 4]:
+                    logo_path = get_logo_path(tim)
+                    render_logo_card(logo_path, tim)
+                    if st.button(tim, use_container_width=True, key=f"btn_A_{tim}"):
+                        st.session_state['h2h_team_A'] = tim
+                        st.rerun()
+                        
+        elif tim_B is None:
+            st.markdown("<p style='text-align: center; color: gray; font-size: 13px; font-weight: 600; margin-bottom: 20px;'>Team selection yang sudah ada sebelumnya</p>", unsafe_allow_html=True)
+            kolom_grid = st.columns(4)
+            for idx, tim in enumerate(daftar_tim):
+                with kolom_grid[idx % 4]:
+                    logo_path = get_logo_path(tim)
+                    render_logo_card(logo_path, tim)
+                    if tim == tim_A:
+                        st.button(f"🔒 {tim}", use_container_width=True, disabled=True, key=f"btn_B_{tim}")
+                    else:
+                        if st.button(tim, use_container_width=True, key=f"btn_B_{tim}"):
+                            st.session_state['h2h_team_B'] = tim
+                            st.rerun()
+
+    # === FASE DASHBOARD H2H (KEDUA TIM TERPILIH) ===
     else:
+        # Bagian ini dibiarkan persis seperti kode aslimu untuk merender dashboard komparasi
         tim_A = st.session_state['h2h_team_A']
         tim_B = st.session_state['h2h_team_B']
 
