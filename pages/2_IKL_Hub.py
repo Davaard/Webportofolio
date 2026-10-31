@@ -1803,8 +1803,6 @@ elif menu_utama == "🛡️ Team Profiling":
             # Tinggi disamakan dengan map (870px)
             import streamlit.components.v1 as components
             components.html(html_staff_col, height=870)
-            
-        st.markdown("<br><br>", unsafe_allow_html=True)
         
         # === 3. RADAR CHART & TEAM PERFORMANCE STATISTIC ===
         st.markdown("### 📊 Team Statistic Performance")
@@ -1908,9 +1906,10 @@ elif menu_utama == "🛡️ Team Profiling":
             
         st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
         
-        # === 4. TEAM STRATEGY (SIGNATURE HERO COMBO) ===
+        # === 4. TEAM STRATEGY (SIGNATURE HERO COMBO & DRAFTING) ===
         st.markdown("### ♟️ Team Strategy")
         
+        st.markdown("<h5 style='color: white; font-family: \"Montserrat\", sans-serif; margin-bottom: 15px;'>Top Team Heroes Combination</h5>", unsafe_allow_html=True)
         kombo_A = get_signature_combos(tim_pilihan)
         
         if not kombo_A:
@@ -1922,7 +1921,73 @@ elif menu_utama == "🛡️ Team Profiling":
                 with cols[idx]:
                     render_combo_card(k["combo"], k["warna"], k["freq"], k["wr"], k["label"])
                     
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # --- MESIN LOGIKA PICK RATE, BAN RATE, & RESPECTED BAN RATE ---
+        # 1. Hitung Total Match Tim Terpilih (Sebagai basis persentase 100%)
+        df_tim_semua = df_history[(df_history['Team_(Blue)'] == tim_pilihan) | (df_history['Opponent_(Red)'] == tim_pilihan)]
+        total_match_tim = len(df_tim_semua)
+        
+        if total_match_tim > 0:
+            # 2. Top Picked (Hero yang paling sering DIPILIH tim ini)
+            tim_picks = df_long[df_long['Team'] == tim_pilihan].explode('Heroes_List')['Heroes_List'].value_counts().head(3)
+            
+            # 3. Top Banned (Hero yang paling sering di-BAN oleh TIM INI)
+            ban_as_blue = df_tim_semua[df_tim_semua['Team_(Blue)'] == tim_pilihan]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+            ban_as_red = df_tim_semua[df_tim_semua['Opponent_(Red)'] == tim_pilihan]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+            tim_bans = pd.concat([ban_as_blue, ban_as_red]).value_counts().head(3)
+            
+            # 4. Top Respected Banned (Hero yang paling sering di-BAN oleh LAWAN saat bertemu tim ini)
+            resp_ban_as_blue = df_tim_semua[df_tim_semua['Team_(Blue)'] == tim_pilihan]['Bans_Red'].dropna().astype(str).str.split(',').explode().str.strip()
+            resp_ban_as_red = df_tim_semua[df_tim_semua['Opponent_(Red)'] == tim_pilihan]['Bans_Blue'].dropna().astype(str).str.split(',').explode().str.strip()
+            respected_bans = pd.concat([resp_ban_as_blue, resp_ban_as_red]).value_counts().head(3)
+            
+            # --- RENDER UI KARTU DRAFTING (3 KOLOM) ---
+            col_p, col_b, col_r = st.columns(3)
+            
+            def render_draft_card(title, data_series, is_ban=False):
+                html = f"<h5 style='color: white; font-family: \"Montserrat\", sans-serif; margin-bottom: 15px;'>{title}</h5>"
+                banned_b64 = image_to_base64("assets/Match/banned.png") if is_ban else ""
+                
+                # Hijau untuk Pick, Merah Bata untuk Ban
+                border_color = "#d4af37" if not is_ban else "#a33232" 
+                text_color = "#4caf50" if not is_ban else "#ff4b4b"
+                
+                if data_series.empty:
+                    html += "<div style='color: gray; font-size: 13px; font-style: italic;'>Data belum tersedia</div>"
+                else:
+                    for hero, count in data_series.items():
+                        # Kalkulasi Rate
+                        rate = (count / total_match_tim) * 100
+                        h_path = get_hero_path(hero)
+                        
+                        # Rendering Gambar Hero (Dengan logo coret Ban jika mode is_ban)
+                        if h_path:
+                            h_img = f"<div style='position: relative; width: 45px; height: 45px;'><img src='data:image/png;base64,{image_to_base64(h_path)}' style='width: 100%; height: 100%; border-radius: 6px; object-fit: cover; border: 1.5px solid {border_color};'>"
+                            if is_ban and banned_b64:
+                                h_img += f"<img src='data:image/png;base64,{banned_b64}' style='position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.9;'>"
+                            h_img += "</div>"
+                        else:
+                            h_img = f"<div style='width: 45px; height: 45px; background: #444; border: 1.5px solid {border_color}; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size:9px;'>{hero}</div>"
+                        
+                        # Merakit Baris Kartu
+                        html += f"""
+                        <div style='background-color: #24242e; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'>
+                            <div style='display: flex; align-items: center; gap: 15px;'>
+                                {h_img}
+                                <span style='color: white; font-weight: 700; font-size: 14px; letter-spacing: 0.5px;'>{hero}</span>
+                            </div>
+                            <span style='color: {text_color}; font-weight: 800; font-size: 15px;'>{rate:.0f}%</span>
+                        </div>
+                        """
+                return html
+                
+            with col_p:
+                st.markdown(render_draft_card("Top Picked Heroes", tim_picks, is_ban=False), unsafe_allow_html=True)
+            with col_b:
+                st.markdown(render_draft_card("Top Banned Heroes", tim_bans, is_ban=True), unsafe_allow_html=True)
+            with col_r:
+                st.markdown(render_draft_card("Top Respected Banned", respected_bans, is_ban=True), unsafe_allow_html=True)
 # endregion
 
 # region H2H
