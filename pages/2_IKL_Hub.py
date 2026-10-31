@@ -1882,7 +1882,6 @@ elif menu_utama == "🛡️ Team Profiling":
         st.markdown("<hr style='border-color: rgba(255,255,255,0.05); margin-top: 10px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
         # === 5. NAVIGASI BAWAH (KEMBALI & BANDINGKAN) ===
-        # Mengecilkan rasio kolom 1 dan 3 agar hitbox tombol transparan tidak melebar ke mana-mana
         col_btn1, col_space, col_btn2 = st.columns([1.5, 7, 1.5])
         
         icon_kembali_b64 = image_to_base64("assets/kembali_icon.png")
@@ -1894,9 +1893,9 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.rerun()
                 
             if icon_kembali_b64:
-                # Menambahkan pointer-events: none !important ke SEMUA elemen agar kursor tembus ke tombol asli
+                # Ikon 25px ditarik dengan margin-top: -45px
                 st.markdown(f"""
-                <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
+                <div style='position: relative; margin-top: -45px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
                     <img src='data:image/png;base64,{icon_kembali_b64}' style='height: 25px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
                     <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Kembali</span>
                 </div>
@@ -1910,8 +1909,9 @@ elif menu_utama == "🛡️ Team Profiling":
                 st.rerun()
                 
             if icon_banding_b64:
+                # Ikon 40px (lebih tinggi) ditarik lebih kuat dengan margin-top: -52px
                 st.markdown(f"""
-                <div style='position: relative; margin-top: -42px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
+                <div style='position: relative; margin-top: -52px; display: flex; justify-content: center; align-items: center; gap: 8px; pointer-events: none !important; z-index: 10;'>
                     <span style='color: gray; font-family: "Montserrat", sans-serif; font-size: 15px; font-weight: 600; pointer-events: none !important;'>Bandingkan</span>
                     <img src='data:image/png;base64,{icon_banding_b64}' style='height: 40px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5)); pointer-events: none !important;'>
                 </div>
