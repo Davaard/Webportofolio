@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from itertools import combinations
 import base64
 
-# Pindahkan fungsi ini ke paling atas agar bisa dibaca duluan oleh Streamlit
+
 def image_to_base64(img_path):
     if img_path and os.path.exists(img_path):
         with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
@@ -16,15 +16,16 @@ def image_to_base64(img_path):
 
 st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# === SIHIR CSS: STICKY HEADER SEMPURNA ===
 st.markdown("""
     <style>
     /* =========================================
-       1. IMPORT FONTS DARI GOOGLE FONTS (WAJIB PALING ATAS!)
+       1. IMPORT FONTS DARI GOOGLE FONTS
        ========================================= */
     @import url('https://fonts.googleapis.com/css2?family=Condiment&family=Londrina+Shadow&family=Rajdhani:wght@500;700&family=Montserrat:wght@400;600;800&display=swap');
 
-    /* 2. Target spesifik HANYA untuk kontainer paling atas di halaman utama */
+    /* ========================================= 
+       2. Target spesifik HANYA untuk kontainer paling atas di halaman utama
+       =========================================  */
     .main .block-container > div:first-child {
         position: sticky;
         top: 2.875rem; 
@@ -35,7 +36,9 @@ st.markdown("""
         border-bottom: 1px solid rgba(255,255,255,0.1); 
     }
     
-    /* 3. KELAS FONT UNTUK RECAP */
+    /* ========================================= 
+       3. KELAS FONT UNTUK RECAP
+       =========================================  */
     .recap-kill {
         font-family: 'Condiment', system-ui;
         font-size: 35px;
@@ -123,7 +126,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-# =========================================
 
 @st.cache_data(ttl=60)
 def load_and_preprocess_data(filepath):
@@ -156,13 +158,18 @@ def urutkan_musim(s):
         return (tahun, bobot_musim)
     return (0, 0)
 
-# === PENGATURAN HEADER GLOBAL (FIXED TOP-RIGHT) ===
+# =================================================================================================
+#                                 HEADER dan Pemilihan Musim
 
-# 1. Baris Pertama: Logo Kiri & Dropdown Musim Kanan
+#                     ==================================================
+#                              Logo Kiri & Dropdown Musim Kanan
+
 col_header_left, col_header_space, col_header_right = st.columns([1.5, 3, 1.5])
 
+# Logo Kiri
 with col_header_left:
-    # Memuat logo Liquipedia dan HoK yang berdampingan
+
+    # Load logo Liquipedia dan HoK
     logo_liquipedia_b64 = image_to_base64("assets/liquipedia_logo.png")
     logo_hok_b64 = image_to_base64("assets/hok_logo.png")
     
@@ -172,18 +179,21 @@ with col_header_left:
         <img src='data:image/png;base64,{logo_liquipedia_b64}' style='height: 30px; object-fit: contain;'>
     </div>
     """, unsafe_allow_html=True)
-        
+
+# Dropdown Musim Kanan        
 with col_header_right:
     if 'Season' in df_csv.columns:
         daftar_musim = sorted(df_csv['Season'].dropna().unique().tolist(), key=urutkan_musim, reverse=True)
-        # Menambahkan sedikit margin atas agar selectbox sejajar dengan logo
+        
+        # Penyesuaian margin atas agar selectbox sejajar dengan logo
         st.markdown("<div style='margin-top: -10px;'>", unsafe_allow_html=True)
+
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
         
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
         
-        # === MESIN TRANSLASI REBRANDING TIM ===
+        # === Penyesuaian jika tim berubah nama di tengah season ===
         if os.path.exists("IKL_Rebrands.csv"):
             df_rebrand = pd.read_csv("IKL_Rebrands.csv")
             rebrand_musim = df_rebrand[df_rebrand['Season'] == musim_pilihan]
@@ -196,24 +206,31 @@ with col_header_right:
         st.error("Kolom 'Season' tidak ditemukan!")
         st.stop()
 
-# 2. Baris Kedua: Judul Aplikasi (Rata Tengah)
+#                     ==================================================
+#                                       Judul Aplikasi
+
 st.markdown("""
 <div style='text-align: center; margin-top: 0px; margin-bottom: 30px;'>
     <h1 style='color: white; font-family: "Montserrat", sans-serif; font-weight: 900; font-size: 32px; margin-bottom: 5px; line-height: 1.2;'>Indonesia Kings Laga<br>Team Performance Analyst</h1>
     <p style='color: gray; font-family: "Montserrat", sans-serif; font-size: 16px; font-weight: 600; margin-top: 0;'>by @davaard</p>
 </div>
 """, unsafe_allow_html=True)
-# ==================================================
+# =================================================================================================
 
-# region UI HELPERS
-# UI Helpers dikembalikan ke bawah musim_pilihan agar tidak NameError
+# region                                 UI HELPERS
+
+# =================================================================================================
+#                                   Peta Line Up Pemain
+
+#                     ==================================================
+#                             fungsi menentukan background logo
+
 @st.cache_data(ttl=60)
 def get_dynamic_logo_map(season):
     if os.path.exists("IKL_Rosters.csv"):
         df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
         df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
         map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
-        
         df_season = df_ros[df_ros['Season'] == season].drop_duplicates(subset=['Team'])
         map_season = dict(zip(df_season['Team'], df_season['Logo_File']))
         
@@ -223,34 +240,35 @@ def get_dynamic_logo_map(season):
 
 TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
 
-# === HELPER FOTO PEMAIN & KOORDINAT MAP ===
+#                     ==================================================
+#                               fungsi menentukan foto pemain
+
 def get_player_path(player_name):
-    # Asumsi foto pemain ada di folder assets/players (sesuaikan jika berbeda)
     safe_name = str(player_name).replace(" ", "_")
     for ext in ['.png', '.jpg', '.jpeg']:
         path = f"assets/players/{safe_name}{ext}"
         if os.path.exists(path): return path
     return "assets/Recap/logo_background/roster_placeholder.png"
 
-# Koordinat CSS Absolute untuk meletakkan pemain di atas Map HOK
+#                     ==================================================
+#                        Koordinat CSS posisi pemain di atas Map HOK
+
 MAP_COORDINATES = {
-    # Clash Lane biasanya di area kiri atas
+    # Clash Lane
     'Top Lane': {'top': '25%', 'left': '25%', 'transform': 'translate(-50%, -50%)'},
-    
-    # Jungler biasanya mondar-mandir di area atas/tengah hutan
+    # Jungler
     'Jungler': {'top': '46%', 'left': '32%', 'transform': 'translate(-50%, -50%)'},
-    
-    # Mid Lane pas di tengah-tengah
+    # Mid Lane
     'Middle': {'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'},
-    
-    # Roamer biasanya di sungai area bawah
+    # Roamer
     'Roamer': {'top': '55%', 'left': '67%', 'transform': 'translate(-50%, -50%)'},
-    
-    # Farm Lane (Bottom) biasanya di area kanan bawah
+    # Farm Lane
     'Bottom Lane': {'top': '75%', 'left': '75%', 'transform': 'translate(-50%, -50%)'}
 }
 
-# Mapping Icon Role langsung ke Path Aset
+#                     ==================================================
+#                               fungsi menentukan icon role
+
 ROLE_ICONS = {
     'Top Lane': 'clashlane_icon.png',
     'Jungler': 'jungle_icon.png',
@@ -258,13 +276,16 @@ ROLE_ICONS = {
     'Bottom Lane': 'farmlane_icon.png',
     'Roamer': 'support_icon.png'
 }
+# =================================================================================================
+#                                        Atribut Tim
 
-# === MESIN PEMBACA PROFIL TIM (NAMA PANJANG, WARNA, & GRUP) ===
+#                       ==================================================
+#                         fungsi menentukan nama panjang, warna, & grup
+
 @st.cache_data(ttl=86400)
 def get_team_data():
     if os.path.exists("IKL_Teams.csv"):
         df_teams = pd.read_csv("IKL_Teams.csv")
-        # Ambil data paling baru untuk setiap tim agar nama & warna selalu up-to-date
         df_global = df_teams.drop_duplicates(subset=['Team'], keep='last')
         map_nama = dict(zip(df_global['Team'], df_global['Full_Name']))
         map_warna = dict(zip(df_global['Team'], df_global['Color_Hex']))
@@ -272,7 +293,12 @@ def get_team_data():
     return pd.DataFrame(), {}, {}
 
 DF_TEAMS_MASTER, TEAM_FULLNAME_MAP, TEAM_COLOR_MAP = get_team_data()
-# ==============================================================
+
+# =================================================================================================
+#                               Kartu Visual Kombinasi Hero
+
+#                     ==================================================
+#                             fungsi menentukan background kartu
 
 def get_team_bg_path(team_name):
     if team_name in TEAM_LOGO_MAP:
@@ -284,17 +310,26 @@ def get_team_bg_path(team_name):
         if os.path.exists(path): return path
     return "assets/Recap/logo_background/roster_placeholder.png"
 
+#                     ==================================================
+#                                 fungsi menentukan logo tim
+
 def get_logo_path(team_name):
     if team_name in TEAM_LOGO_MAP:
         path = os.path.join("assets", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
         if os.path.exists(path): return path
     return None
 
+#                     ==================================================
+#                                   fungsi menentukan hero
+
 def get_hero_path(hero_name):
     safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
     for ext in ['.png', '.jpg', '.jpeg']:
         if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
     return None
+
+#                     ==================================================
+#                                  fungsi penyusun kartu
 
 def render_combo_card(combo_tuple, warna, freq, wr, label):
     tema = {
@@ -323,25 +358,33 @@ def render_combo_card(combo_tuple, warna, freq, wr, label):
     
     st.markdown(html, unsafe_allow_html=True)
 
+#                     ==================================================
+#                                  fungsi menampilkan logo
+
 def render_logo_card(logo_path, team_name):
     if logo_path and os.path.exists(logo_path):
         st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'><img src='data:image/png;base64,{image_to_base64(logo_path)}' style='max-width: 100%; max-height: 100%;'></div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; justify-content: center; align-items: center; aspect-ratio: 1/1; margin-bottom: 8px;'><span style='color: gray; font-weight: bold; font-size: 20px;'>{team_name}</span></div>", unsafe_allow_html=True)
-# endregion
 
-# region NAVIGASI INTERNAL IKL
+# =================================================================================================
+# endregion
+# region                            NAVIGASI INTERNAL IKL
+
+# =================================================================================================
+#                                  Pengaturan Menu Aplikasi
+
 if "menu_ikl" not in st.session_state: 
-    st.session_state['menu_ikl'] = "🏆 Klasemen & Playoffs"
+    st.session_state['menu_ikl'] = "Klasemen & Playoffs"
 
 menu_utama = st.session_state['menu_ikl']
 
-if menu_utama == "🏆 Klasemen & Playoffs":
-    susunan = ["🛡️ Team Profiling", "🏆 Klasemen & Playoffs", "⚔️ Versus Mode (H2H)"]
-elif menu_utama == "🛡️ Team Profiling":
-    susunan = ["⚔️ Versus Mode (H2H)", "🛡️ Team Profiling", "🏆 Klasemen & Playoffs"]
+if menu_utama == "Klasemen & Playoffs":
+    susunan = ["Team Profiling", "Klasemen & Playoffs", "Versus Mode (H2H)"]
+elif menu_utama == "Team Profiling":
+    susunan = ["Versus Mode (H2H)", "Team Profiling", "Klasemen & Playoffs"]
 else: 
-    susunan = ["🏆 Klasemen & Playoffs", "⚔️ Versus Mode (H2H)", "🛡️ Team Profiling"]
+    susunan = ["Klasemen & Playoffs", "Versus Mode (H2H)", "Team Profiling"]
 
 st.markdown("<br>", unsafe_allow_html=True)
 col_nav1, col_nav2, col_nav3 = st.columns(3)
@@ -371,43 +414,62 @@ with col_nav3:
     if st.button(susunan[2], use_container_width=True): st.session_state['menu_ikl'] = susunan[2]; st.rerun()
 
 st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin-top: 10px; margin-bottom: 30px;'>", unsafe_allow_html=True)
+# =================================================================================================
 # endregion
+# region                              PRA-PROCESSING DATA
+#
+# =================================================================================================
+#                           Penyesuaian Data untuk Masing-masing Tim
 
-# (Pre-processing Data - Berjalan senyap di latar belakang)
 df_history = df_master[df_master['Status'] == 'History'].copy()
 
+# mengambil data tim kiri
 df_A = df_history.copy()
 df_A = df_A[['Date', 'Time', 'Week', 'Day', 'Match', 'Game', 'Team_(Blue)', 'Opponent_(Red)', 'Result', 'Duration_min', 'T_Gold', 'O_Gold', 'T_Kill', 'O_Kill', 'T_Assist', 'O_Assist', 'T_Objective', 'O_Objective', 'Heroes_Picked', 'Opponent_Picked', 'MVP']]
 kolom_standar = ['Date', 'Time', 'Week', 'Day', 'Match', 'Game', 'Team', 'Opponent', 'Win', 'Durasi', 'Gold', 'Opp_Gold', 'Kill', 'Opp_Kill', 'Ast', 'Opp_Ast', 'Obj', 'Opp_Obj', 'Heroes', 'Opp_Heroes', 'MVP']
 df_A.columns = kolom_standar
 
+# mengambil data tim kanan
 df_B = df_history.copy()
 df_B['Result_Red'] = 1 - df_B['Result'] 
 df_B = df_B[['Date', 'Time', 'Week', 'Day', 'Match', 'Game', 'Opponent_(Red)', 'Team_(Blue)', 'Result_Red', 'Duration_min', 'O_Gold', 'T_Gold', 'O_Kill', 'T_Kill', 'O_Assist', 'T_Assist', 'O_Objective', 'T_Objective', 'Opponent_Picked', 'Heroes_Picked', 'MVP']]
 df_B.columns = kolom_standar
 
+# menggabungkan data tim kanan dan tim kiri
 df_long = pd.concat([df_A, df_B], ignore_index=True)
 df_long = df_long.sort_values(by=['Week', 'Day', 'Match', 'Game']).reset_index(drop=True)
 
+# mengambil data hero
 def aman_split(x):
     if pd.isna(x) or str(x).strip().lower() in ['nan', '-', '']: return []
     return [h.strip() for h in str(x).split(',') if h.strip()]
 
 df_long['Heroes'] = df_long['Heroes'].apply(aman_split)
 df_long['Opp_Heroes'] = df_long['Opp_Heroes'].apply(aman_split)
-# endregion
 
-# region RADAR PENILAIAN & METRIK LAINNYA
+# =================================================================================================
+# endregion
+# region                       RADAR PENILAIAN & METRIK LAINNYA
+
+# =================================================================================================
+#                        Penentuan dan Pengaturan Peringkat Klasemen
+
 klasemen = df_long.groupby('Team')['Win'].agg(Total_Menang='sum', Total_Kalah=lambda x: (x == 0).sum()).reset_index()
 klasemen['Skor_IKL'] = klasemen['Total_Menang'] - klasemen['Total_Kalah']
 klasemen['Rank_Akhir'] = klasemen['Skor_IKL'].rank(method='min', ascending=False)
 df_long = df_long.merge(klasemen[['Team', 'Rank_Akhir']], on='Team', how='left').rename(columns={'Rank_Akhir': 'T_Rank'})
 df_long = df_long.merge(klasemen[['Team', 'Rank_Akhir']], left_on='Opponent', right_on='Team', how='left', suffixes=('', '_drop')).rename(columns={'Rank_Akhir': 'O_Rank'})
 df_long = df_long.drop(columns=['Team_drop'], errors='ignore') 
+
+#                     ==================================================
+#                                            DOMINASI
+
+# perhitungan nilai variable
 df_long['Points_Ratio'] = (df_long['Gold'] / df_long['Opp_Gold']) + (df_long['Kill'] / (df_long['Opp_Kill'] + 1))
 df_long['Points_Won'] = np.where(df_long['Win'] == 1, df_long['Points_Ratio'], np.nan)
 df_long['Points_Lost'] = np.where(df_long['Win'] == 0, df_long['Points_Ratio'], np.nan)
 
+# kalkulasi skor
 dominasi_df = df_long.groupby('Team').agg(
     Total_Wins=('Win', 'sum'), Total_Losses=('Win', lambda x: (x == 0).sum()),
     Sum_Points_Won=('Points_Won', 'sum'), Sum_Points_Lost=('Points_Lost', 'sum')
@@ -415,6 +477,10 @@ dominasi_df = df_long.groupby('Team').agg(
 dominasi_df.fillna(0, inplace=True)
 dominasi_df['Dominance_Skor'] = ((dominasi_df['Sum_Points_Won'] / (dominasi_df['Total_Losses'] + 1)) - (dominasi_df['Sum_Points_Lost'] / (dominasi_df['Total_Wins'] + 1)))
 
+#                     ==================================================
+#                                        KETANGGUHAN
+
+# perhitungan nilai variable
 def konversi_waktu(waktu):
     waktu = str(waktu).strip()
     if pd.isna(waktu) or waktu.lower() in ['nan', '-', '']: return 0.0
@@ -439,6 +505,7 @@ df_long['Offense_Multiplier'] = df_long['Kill'] / (df_long['Kill'] + df_long['Op
 df_long['Durasi_Menang_Berbobot'] = np.where(df_long['Win'] == 1, df_long['Durasi'] * df_long['Offense_Multiplier'], np.nan)
 df_long['Durasi_Kalah_Berbobot'] = np.where(df_long['Win'] == 0, df_long['Durasi'] * df_long['Defense_Multiplier'], np.nan)
 
+# kalkulasi skor
 seasonal_win_dur = df_long.groupby('Team')['Durasi_Menang_Berbobot'].mean().reset_index().rename(columns={'Durasi_Menang_Berbobot': 'Seasonal_Avg_Win_Bobot'})
 seasonal_win_dur['Seasonal_Avg_Win_Bobot'] = seasonal_win_dur['Seasonal_Avg_Win_Bobot'].fillna(7.5) 
 
@@ -448,10 +515,16 @@ series_df['Avg_Win_Series'] = series_df['Avg_Win_Series'].fillna(series_df['Seas
 series_df['Series_Toughness'] = series_df['Avg_Loss_Series'] - series_df['Avg_Win_Series']
 toughness_df = series_df.groupby('Team').agg(Toughness_Skor=('Series_Toughness', 'mean')).reset_index().fillna(0)
 
+#                     ==================================================
+#                                       KEDISIPLINAN
+
 df_long['Obj'] = pd.to_numeric(df_long['Obj'], errors='coerce').fillna(0)
 df_long['Opp_Obj'] = pd.to_numeric(df_long['Opp_Obj'], errors='coerce').fillna(0)
 df_long['Discipline_Game'] = (((df_long['Obj'] ** 2) / (df_long['Obj'] + df_long['Kill'] + 1)) - ((df_long['Opp_Obj'] ** 2) / (df_long['Opp_Obj'] + df_long['Opp_Kill'] + 1))) / df_long['Durasi']
 discipline_df = df_long.groupby('Team').agg(Discipline_Skor=('Discipline_Game', 'mean')).reset_index()
+
+#                     ==================================================
+#                                        KESTABILAN
 
 df_long['GPM'] = df_long['Gold'] / df_long['Durasi']
 volatility_df = df_long.groupby('Team').agg(Volatility=('GPM', 'std')).reset_index().fillna(0)
@@ -462,10 +535,16 @@ volatility_df['Best_Win_Rank'] = volatility_df['Best_Win_Rank'].fillna(10)
 volatility_df['Worst_Loss_Rank'] = volatility_df['Worst_Loss_Rank'].fillna(1)
 volatility_df['Volatility_Skor'] = volatility_df['Volatility'] * (volatility_df['Worst_Loss_Rank'] / volatility_df['Best_Win_Rank'])
 
+#                     ==================================================
+#                                         TEAMFIGHT
+
 df_long['Ast'] = pd.to_numeric(df_long['Ast'], errors='coerce').fillna(0)
 df_long['Opp_Ast'] = pd.to_numeric(df_long['Opp_Ast'], errors='coerce').fillna(0)
 df_long['TeamFight_Game'] = (df_long['Ast'] / (df_long['Kill'] + 1)) - (df_long['Opp_Ast'] / (df_long['Opp_Kill'] + 1))
 teamfight_df = df_long.groupby('Team').agg(TeamFight_Skor=('TeamFight_Game', 'mean')).reset_index()
+
+#                     ==================================================
+#                                       FLEKSIBELITAS
 
 import ast
 def parse_heroes(val):
@@ -475,6 +554,9 @@ def parse_heroes(val):
 df_long['Heroes_List'] = df_long['Heroes'].apply(parse_heroes)
 flexibility_df = df_long.explode('Heroes_List').groupby('Team')['Heroes_List'].nunique().reset_index().rename(columns={'Heroes_List': 'Flexibility_Skor'})
 
+# =================================================================================================
+#                                          RADAR CHART
+
 rapor_akhir = dominasi_df[['Team', 'Dominance_Skor']].merge(toughness_df[['Team', 'Toughness_Skor']], on='Team').merge(discipline_df[['Team', 'Discipline_Skor']], on='Team').merge(volatility_df[['Team', 'Volatility_Skor']], on='Team').merge(teamfight_df[['Team', 'TeamFight_Skor']], on='Team').merge(flexibility_df[['Team', 'Flexibility_Skor']], on='Team')
 
 metrik_mentah = ['Dominance_Skor', 'Toughness_Skor', 'Discipline_Skor', 'Volatility_Skor', 'TeamFight_Skor', 'Flexibility_Skor']
@@ -482,9 +564,14 @@ for col in metrik_mentah:
     min_val, max_val = rapor_akhir[col].min(), rapor_akhir[col].max()
     rapor_akhir[col.replace('_Skor', '_100')] = 100.0 if max_val == min_val else ((rapor_akhir[col] - min_val) / (max_val - min_val)) * 80 + 20
 rapor_radar = rapor_akhir[['Team'] + [c.replace('_Skor', '_100') for c in metrik_mentah]].round(2)
-# endregion
 
-# region MESIN KOMBINASI
+# =================================================================================================
+# endregion
+# region                              LOGIKA KOMBINASI
+
+# =================================================================================================
+
+# menentukan kombo global
 df_combo_history = df_long.dropna(subset=['Win']).copy()
 global_freq, global_wins = {}, {}
 for idx, row in df_combo_history.iterrows():
@@ -496,6 +583,7 @@ for idx, row in df_combo_history.iterrows():
                 global_freq[combo] = global_freq.get(combo, 0) + 1
                 global_wins[combo] = global_wins.get(combo, 0) + w
 
+# menentukan kombo tim
 def get_signature_combos(tim_target):
     team_freq, team_wins = {}, {}
     for idx, row in df_combo_history[df_combo_history['Team'] == tim_target].iterrows():
@@ -508,6 +596,7 @@ def get_signature_combos(tim_target):
                     team_wins[combo] = team_wins.get(combo, 0) + w
     team_valid = {k: {'freq': f, 'wr': (team_wins[k]/f)*100} for k, f in team_freq.items() if (len(k)==2 and f>=3) or (len(k)==3 and f>=3) or (len(k)>=4 and f>=2)}
     combos_to_remove = set()
+
     sorted_combos = sorted(list(team_valid.keys()), key=len, reverse=True)
     for i in range(len(sorted_combos)):
         c_large = sorted_combos[i]
@@ -534,7 +623,6 @@ def get_signature_combos(tim_target):
             is_red = g_wr > g_base_wr
         rasio = (g_freq / g_base * 100) if g_base > 0 else 0
         
-        # Emoji dihapus dan output diubah menjadi variabel mentah
         if rasio > 25.0:
             w, s = ("error", f"Supreme Meta ({rasio:.0f}%)") if is_red else ("warning", f"Global Meta ({rasio:.0f}%)")
         else:
@@ -543,12 +631,18 @@ def get_signature_combos(tim_target):
         hasil_ui.append({"warna": w, "freq": stats['freq'], "wr": stats['wr'], "label": s, "combo": combo})
         
     return hasil_ui
-# endregion
 
-# region HALAMAN 1: KLASEMEN, PLAYOFFS & HIGHLIGHTS
-if menu_utama == "🏆 Klasemen & Playoffs":
+# =================================================================================================
+# endregion
+# region                                   LEAGUE INFO
+
+# =================================================================================================
+
+if menu_utama == "Klasemen & Playoffs":
     
-    # === 1. LEAGUE INFO (LOGO KIRI, TEKS KANAN) ===
+    #                     ==================================================
+    #                                      Deskripsi Liga
+
     st.markdown("### Indonesia Kings Laga (IKL)")
     
     col_logo, col_teks = st.columns([1, 3.5])
@@ -558,21 +652,22 @@ if menu_utama == "🏆 Klasemen & Playoffs":
             st.markdown(f"""<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
                 <img src="data:image/png;base64,{image_to_base64(logo_ikl_path)}" style="width: 100%; max-width: 150px; object-fit: contain;">
             </div>""", unsafe_allow_html=True)
-            
+
+    # menentukan variable        
     with col_teks:
-        # 1. Hitung Total Tim Musim Ini
+        # Hitung Total Tim Musim Ini
         tim_biru_curr = set(df_master['Team_(Blue)'].dropna().unique())
         tim_merah_curr = set(df_master['Opponent_(Red)'].dropna().unique())
         tim_musim_ini = tim_biru_curr.union(tim_merah_curr)
         total_team = len(tim_musim_ini)
         
-        # 2. Setup Variabel Sejarah Musim
+        # Setup Variabel Sejarah Musim
         total_musim_berjalan = len(daftar_musim)
         idx_musim_ini = daftar_musim.index(musim_pilihan)
         musim_pertama = daftar_musim[-1]
         is_musim_pertama = (musim_pilihan == musim_pertama)
         
-        # 3. Mencari Tim Baru
+        # Mencari Tim Baru
         tim_baru_list = []
         if not is_musim_pertama:
             # Ambil semua tim dari semua musim SEBELUM musim pilihan ini
@@ -591,7 +686,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
         elif not is_musim_pertama:
             teks_tim_baru = " tanpa ada penambahan tim baru dari musim sebelumnya."
             
-        # 4. Logika Juara Bertahan (Membaca Data Grand Final Musim Sebelumnya)
+        # Logika Juara Bertahan (Membaca Data Grand Final Musim Sebelumnya)
         teks_bertahan = ""
         if not is_musim_pertama:
             musim_lalu = daftar_musim[idx_musim_ini + 1]
@@ -634,7 +729,9 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # === 2. UPCOMING MATCH (LOGIKA HARI BERBEDA - DESAIN CANVA) ===
+    #                     ==================================================
+    #                                      Upcoming Match
+
     st.markdown("### Upcoming Match")
     
     df_jadwal = df_master[df_master['Status'] == 'Upcoming'].copy()
@@ -648,7 +745,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
          
          col_up1, col_up2 = st.columns(2)
          
-         # Fungsi pembantu untuk menerjemahkan Week/Day
+         # Fungsi membaca kode Week/Day
          def get_match_phase(row_data):
              w = str(row_data['Week']).strip()
              d = str(row_data['Day']).strip()
@@ -1508,7 +1605,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
 # endregion
 
 # region PROFILING
-elif menu_utama == "🛡️ Team Profiling":
+elif menu_utama == "Team Profiling":
     
     if 'profiling_team' not in st.session_state:
         st.session_state['profiling_team'] = None
@@ -2050,7 +2147,7 @@ elif menu_utama == "🛡️ Team Profiling":
 # endregion
 
 # region H2H
-elif menu_utama == "⚔️ Versus Mode (H2H)":
+elif menu_utama == "Versus Mode (H2H)":
 
     if 'h2h_team_A' not in st.session_state:
         st.session_state['h2h_team_A'] = None
