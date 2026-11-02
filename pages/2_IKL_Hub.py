@@ -246,8 +246,8 @@ df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
 
 @st.cache_data(ttl=86400)
 def load_season_config():
-    if os.path.exists("IKL_Seasons.csv"):
-        return pd.read_csv("IKL_Seasons.csv")
+    if os.path.exists("assets/IKL/IKL_Seasons.csv"):
+        return pd.read_csv("assets/IKL/IKL_Seasons.csv")
     return pd.DataFrame(columns=['Season', 'Group_Names', 'Group_Teams'])
 
 df_seasons = load_season_config()
@@ -293,7 +293,7 @@ with col_header_right:
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
         
         # Penyesuaian jika tim berubah nama di tengah season
-        if os.path.exists("IKL_Rebrands.csv"):
+        if os.path.exists("assets/IKL/IKL_Rebrands.csv"):
             df_rebrand = pd.read_csv("assets/IKL/IKL_Rebrands.csv")
             rebrand_musim = df_rebrand[df_rebrand['Season'] == musim_pilihan]
             
@@ -338,7 +338,7 @@ TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
 
 @st.cache_data(ttl=86400)
 def get_team_data():
-    if os.path.exists("IKL_Teams.csv"):
+    if os.path.exists("assets/IKL/IKL_Teams.csv"):
         df_teams = pd.read_csv("assets/IKL/IKL_Teams.csv")
         df_global = df_teams.drop_duplicates(subset=['Team'], keep='last')
         map_nama = dict(zip(df_global['Team'], df_global['Full_Name']))
