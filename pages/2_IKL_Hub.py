@@ -1839,7 +1839,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
 
         # 5. TOMBOL RESET TEAM DI ATAS MATCH HISTORY
         col_space_r, col_btn_r = st.columns([5, 1.5])
-        icon_reset_b64 = image_to_base64("assets/IKL/kembali_icon.png")
+        icon_reset_b64 = image_to_base64("assets/IKL/reset_icon.png")
         icon_reset_b64 = icon_reset_b64.replace('\n', '').replace('\r', '') if icon_reset_b64 else ""
         
         with col_btn_r:
