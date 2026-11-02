@@ -2,222 +2,236 @@ import streamlit as st
 import os
 import base64
 
-st.set_page_config(page_title="Portofolio | Dava Arya Danendra", page_icon="👨‍💻", layout="wide", initial_sidebar_state="collapsed")
+# Konfigurasi Halaman 
+st.set_page_config(page_title="Portofolio | Dava Arya Danendra", page_icon="👨‍💻", layout="wide", initial_sidebar_state="expanded")
 
 def image_to_base64(img_path):
     if img_path and os.path.exists(img_path):
         with open(img_path, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-# === STYLING CSS (CYBER-SCIENCE THEME) ===
+# === STYLING CSS (GAYA KLASIK & ELEGAN) ===
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Montserrat:wght@300;400;600;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
     
-    html, body, [class*="css"] { font-family: 'Montserrat', sans-serif; }
-    
-    .hero-name {
-        font-weight: 900; font-size: 55px; line-height: 1.1; margin-bottom: 10px;
-        background: linear-gradient(90deg, #ffffff, #00e6e6);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    html, body, [class*="css"] {
+        font-family: 'Montserrat', sans-serif;
     }
     
     .hero-title {
-        font-family: 'Fira Code', monospace; font-weight: 600; font-size: 20px; color: #a78bfa; margin-bottom: 25px;
+        font-weight: 800;
+        font-size: 42px;
+        color: white;
+        margin-bottom: 5px;
+        line-height: 1.2;
     }
     
-    .hero-desc { font-weight: 400; font-size: 16px; color: #d1d1d1; line-height: 1.8; text-align: justify; margin-bottom: 30px; }
-    
-    .section-header {
-        font-family: 'Fira Code', monospace; font-weight: 700; font-size: 22px; color: #00e6e6; 
-        margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 230, 230, 0.3); padding-bottom: 10px;
+    .hero-subtitle {
+        font-weight: 600;
+        font-size: 20px;
+        color: #00d2ff;
+        margin-bottom: 20px;
     }
     
-    .timeline-container { border-left: 2px solid #333; padding-left: 25px; position: relative; margin-bottom: 30px; }
-    .timeline-container::before {
-        content: ''; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; 
-        background-color: #00e6e6; border-radius: 50%; box-shadow: 0 0 10px #00e6e6;
+    .hero-text {
+        font-weight: 400;
+        font-size: 15px;
+        color: #d1d1d1;
+        line-height: 1.7;
+        text-align: justify;
+        margin-bottom: 15px;
     }
     
-    .tl-title { font-weight: 800; font-size: 18px; color: white; margin-bottom: 5px; }
-    .tl-subtitle { font-family: 'Fira Code', monospace; font-weight: 600; font-size: 13px; color: #a78bfa; margin-bottom: 15px; }
-    .tl-content { font-weight: 400; font-size: 14.5px; color: #c4c4c4; line-height: 1.7; text-align: justify; }
+    .section-title {
+        font-weight: 700;
+        font-size: 24px;
+        color: white;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+    }
     
-    .glass-tag {
-        display: inline-block; background: rgba(0, 230, 230, 0.05); border: 1px solid rgba(0, 230, 230, 0.2); 
-        border-radius: 4px; padding: 6px 14px; margin: 4px 6px 4px 0; font-family: 'Fira Code', monospace; 
-        font-size: 12px; font-weight: 600; color: #00e6e6;
+    .timeline-title {
+        font-weight: 700;
+        font-size: 18px;
+        color: #ffffff;
+        margin-bottom: 2px;
+    }
+    
+    .timeline-subtitle {
+        font-weight: 600;
+        font-size: 14px;
+        color: #d4af37;
+        margin-bottom: 10px;
+    }
+    
+    .skill-tag {
+        display: inline-block;
+        background-color: #2a2a35;
+        border: 1px solid #444;
+        border-radius: 20px;
+        padding: 6px 15px;
+        margin: 5px 5px 5px 0;
+        font-size: 12px;
+        font-weight: 600;
+        color: #e0e0e0;
+    }
+    
+    /* Modifikasi tombol detail agar terlihat elegan */
+    div[data-testid="stButton"] button {
+        border-radius: 6px !important;
+        border: 1px solid #00d2ff !important;
+        color: #00d2ff !important;
+        background-color: transparent !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    div[data-testid="stButton"] button:hover {
+        background-color: #00d2ff !important;
+        color: black !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Navigasi Utama menggunakan Tabs besar
-tab_home, tab_cv = st.tabs(["🏠 BERANDA UTAMA", "📜 REKAM JEJAK (CV)"])
+# === BAGIAN HERO (PROFIL UTAMA) ===
+st.markdown("<br>", unsafe_allow_html=True)
+col_foto, col_intro = st.columns([1, 2.5])
 
-# =====================================================================
-# TAB 1: BERANDA (ELEVATOR PITCH)
-# =====================================================================
-with tab_home:
+with col_foto:
+    path_foto = "assets/foto_dava.png" 
+    b64_foto = image_to_base64(path_foto)
+    
+    if b64_foto:
+        st.markdown(f"""
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+            <img src="data:image/png;base64,{b64_foto}" style="width: 100%; max-width: 280px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 2px solid #333;">
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="display: flex; justify-content: center; align-items: center; height: 280px; background: #222; border-radius: 15px; border: 2px dashed #444;">
+            <span style="color: gray;">[Masukkan Foto Profil di sini]</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+with col_intro:
+    st.markdown("""
+    <div class="hero-title">Dava Arya Danendra</div>
+    <div class="hero-subtitle">S.Si. Fisika | Data Science, AI & Instrumentation</div>
+    <div class="hero-text">
+        Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) dengan spesialisasi pada pemodelan numerik, pengembangan kecerdasan buatan (AI), serta kalibrasi instrumentasi geofisika. Memiliki rekam jejak dalam <i>fine-tuning</i> model <i>Deep Learning</i> (IndoBERT), pemodelan data spasial dengan Logika Fuzzy, hingga akuisisi data perangkat keras lapangan (IoT). Berkomitmen mengubah data mentah menjadi metrik dan visualisasi interaktif yang akurat guna mendukung inovasi perusahaan.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_btn1, col_btn2, col_btn3, _ = st.columns([1, 1, 1, 3])
+    with col_btn1: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu", use_container_width=True)
+    with col_btn2: st.link_button("🐙 GitHub", "https://github.com/username_kamu", use_container_width=True)
+    with col_btn3: st.link_button("📧 Email", "mailto:daryadarendra@gmail.com", use_container_width=True)
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+# === TABS RINGKASAN REKAM JEJAK ===
+tab_pengalaman, tab_pendidikan, tab_projek, tab_keahlian = st.tabs([
+    "💼 Pengalaman Profesional", 
+    "🎓 Pendidikan", 
+    "🚀 Pencapaian & Inovasi", 
+    "🛠️ Kemampuan Inti"
+])
+
+# --- TAB 1: PENGALAMAN ---
+with tab_pengalaman:
+    st.markdown("<div class='section-title'>Pengalaman Kerja & Organisasi</div>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="timeline-title">Staf Magang Instrumentasi dan Kalibrasi Geofisika</div>
+    <div class="timeline-subtitle">BMKG Pusat, Deputi Bidang Infrastruktur MKG | Feb 2025 – Jun 2025</div>
+    <div class="hero-text">
+        Mendiagnosis <i>downtime server</i> jarak jauh, memelihara perangkat keras lapangan (Digitizer, Panel Surya), serta mengeksekusi kalibrasi sensor gempa (Seismometer & Accelerometer).
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Lihat Log Kalibrasi & Dokumentasi BMKG ➔", key="btn_bmkg"):
+        st.switch_page("pages/1_Rekam_Jejak.py") # Pastikan path ini sesuai dengan nama file pages kamu
+        
     st.markdown("<br>", unsafe_allow_html=True)
-    col_img, col_text = st.columns([1, 2.2])
     
-    with col_img:
-        # Ganti dengan path fotomu
-        b64_foto = image_to_base64("assets/foto_dava.png")
-        if b64_foto:
-            st.markdown(f"""
-            <div style="display: flex; justify-content: center; align-items: flex-start; padding-top: 10px;">
-                <div style="position: relative; padding: 4px; background: linear-gradient(135deg, #00e6e6, #a78bfa); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,230,230,0.2);">
-                    <img src="data:image/png;base64,{b64_foto}" style="width: 100%; max-width: 320px; border-radius: 16px; display: block;">
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("<div style='height:300px; background:#222; border-radius:15px; display:flex; align-items:center; justify-content:center; color:gray;'>[Foto Profil]</div>", unsafe_allow_html=True)
-            
-    with col_text:
-        st.markdown("""
-        <div class="hero-name">Dava Arya Danendra</div>
-        <div class="hero-title">> Fisikawan Komputasi & Pengembang AI</div>
-        <div class="hero-desc">
-            Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) yang berfokus pada integrasi sains numerik, analisis data, dan kecerdasan buatan. 
-            Mampu menjembatani kompleksitas perangkat keras (instrumentasi IoT/sensor) hingga pengembangan model komputasi tingkat tinggi 
-            seperti <i>fine-tuning Deep Learning</i> (NLP) dan pemodelan prediktif berbasis <i>Fuzzy Logic</i>. Terbiasa mengorkestrasi alur data mentah 
-            menjadi wawasan strategis interaktif yang berdampak langsung pada efisiensi sistem dan pengambilan keputusan.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Quick Highlight / Top Skills
-        st.markdown("<div>", unsafe_allow_html=True)
-        st.markdown("""
-        <span class="glass-tag">Python & MATLAB</span>
-        <span class="glass-tag">Deep Learning (NLP)</span>
-        <span class="glass-tag">Data Visualization</span>
-        <span class="glass-tag">C++ & Arduino (IoT)</span>
-        <span class="glass-tag">Numerical Modeling</span>
-        """, unsafe_allow_html=True)
-        st.markdown("</div><br><br>", unsafe_allow_html=True)
-        
-        col_btn1, col_btn2, col_btn3, _ = st.columns([1, 1, 1.2, 2])
-        with col_btn1: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username", use_container_width=True)
-        with col_btn2: st.link_button("🐙 GitHub", "https://github.com/username", use_container_width=True)
-        with col_btn3: st.link_button("📧 daryadarendra@gmail.com", "mailto:daryadarendra@gmail.com", use_container_width=True)
+    st.markdown("""
+    <div class="timeline-title">Wakil Gubernur</div>
+    <div class="timeline-subtitle">BEM FMIPA UNNES | Feb 2025 – Feb 2026</div>
+    <div class="hero-text">
+        Mengelola manajemen SDM 125 anggota dalam mengeksekusi 9 program kerja strategis, mengevaluasi KPI departemen, serta bertindak sebagai <i>problem solver</i> utama organisasi.
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Lihat Metrik & Kinerja Organisasi ➔", key="btn_bem"):
+        st.switch_page("pages/1_Rekam_Jejak.py")
 
-# =====================================================================
-# TAB 2: REKAM JEJAK (CURRICULUM VITAE)
-# =====================================================================
-with tab_cv:
-    st.markdown("<br>", unsafe_allow_html=True)
+# --- TAB 2: PENDIDIKAN ---
+with tab_pendidikan:
+    st.markdown("<div class='section-title'>Riwayat Pendidikan</div>", unsafe_allow_html=True)
     
-    # Membagi layout menjadi 2 kolom utama agar terlihat seperti CV profesional
-    col_kiri, col_kanan = st.columns([1.8, 1.2], gap="large")
+    st.markdown("""
+    <div class="timeline-title">Universitas Negeri Semarang (UNNES)</div>
+    <div class="timeline-subtitle">S1 - Fisika | 2022 – 2026</div>
+    <div class="hero-text">
+        <b>IPK: 3.44</b><br>
+        Berfokus pada pemodelan numerik (Python, MATLAB), pengembangan kecerdasan buatan, sistem instrumentasi, dan kalibrasi sensor geofisika. Aktif dalam riset akademik dan pendanaan nasional.
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- TAB 3: PENCAPAIAN & INOVASI ---
+with tab_projek:
+    st.markdown("<div class='section-title'>Sorotan Pencapaian</div>", unsafe_allow_html=True)
     
-    with col_kiri:
-        # --- PENGALAMAN PROFESIONAL ---
-        st.markdown("<div class='section-header'>// PENGALAMAN PROFESIONAL</div>", unsafe_allow_html=True)
-        
+    st.markdown("""
+    <div class="timeline-title">Pengembang Aplikasi AI: IndoBERT Emotion Classifier Web App</div>
+    <div class="hero-text">Membangun aplikasi web klasifikasi emosi teks berbasis arsitektur IndoBERT dan Gradio dengan evaluasi performa F1-Score mencapai <b>0.89</b>.</div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="timeline-title">Presenter Kongres Ilmuwan Muda Indonesia / KIMI V (2026)</div>
+    <div class="hero-text">Mempresentasikan riset rancang bangun model numerik prediksi cuaca pesisir berbasis Logika Fuzzy Mamdani.</div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="timeline-title">Penerima Pendanaan DPA LPPM UNNES Tahun (2025)</div>
+    <div class="hero-text">Hibah riset inventarisasi emisi gas rumah kaca yang menghasilkan luaran tersertifikasi Hak Cipta resmi Kemenkumham RI.</div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("Lihat Detail & Repositori Proyek ➔", key="btn_projek"):
+        st.switch_page("pages/1_Rekam_Jejak.py")
+
+# --- TAB 4: KEMAMPUAN ---
+with tab_keahlian:
+    st.markdown("<div class='section-title'>Kemampuan Teknis & Non-Teknis</div>", unsafe_allow_html=True)
+    
+    col_tech, col_non = st.columns(2)
+    with col_tech:
+        st.markdown("<b>Komputasi & Data</b>", unsafe_allow_html=True)
         st.markdown("""
-        <div class="timeline-container">
-            <div class="tl-title">Staf Magang Instrumentasi dan Kalibrasi Geofisika</div>
-            <div class="tl-subtitle">BMKG Pusat, Deputi Bidang Infrastruktur MKG | Feb 2025 – Jun 2025</div>
-            <div class="tl-content">
-                <ul>
-                    <li>Memantau transmisi data instrumen geofisika secara <i>real-time</i> dan mendiagnosis <i>downtime server</i> jarak jauh.</li>
-                    <li>Melaksanakan pemeliharaan dan perbaikan fisik perangkat keras lapangan (Sensor, Digitizer, Modul GPS, Panel Surya, dan Sistem Catu Daya).</li>
-                    <li>Mengeksekusi proses kalibrasi tingkat tinggi pada instrumen sensor gempa, meliputi Seismometer dan Accelerometer.</li>
-                    <li>Menyusun laporan analitis dan log historis kalibrasi guna memastikan tingkat akurasi operasional instrumen teknis.</li>
-                </ul>
-            </div>
-        </div>
+        <span class="skill-tag">Python & MATLAB</span>
+        <span class="skill-tag">Deep Learning (IndoBERT)</span>
+        <span class="skill-tag">Logika Fuzzy</span>
+        <span class="skill-tag">Pemodelan Numerik</span>
         """, unsafe_allow_html=True)
         
-        # --- KEPEMIMPINAN ---
-        st.markdown("<div class='section-header'>// KEPEMIMPINAN & ORGANISASI</div>", unsafe_allow_html=True)
-        
+        st.markdown("<br><b>Instrumentasi & Hardware</b>", unsafe_allow_html=True)
         st.markdown("""
-        <div class="timeline-container">
-            <div class="tl-title">Wakil Gubernur</div>
-            <div class="tl-subtitle">BEM FMIPA UNNES | Feb 2025 – Feb 2026</div>
-            <div class="tl-content">
-                <ul>
-                    <li>Merumuskan Anggaran Rumah Tangga (ART), arsitektur kabinet, dan <i>blueprint</i> program kerja strategis untuk 1 periode kepengurusan.</li>
-                    <li>Mengeksekusi manajemen SDM berskala besar dengan mengorkestrasi 125 anggota pengurus ke dalam 9 program kerja melalui analisis kompetensi.</li>
-                    <li>Memonitor metrik dan <i>Key Performance Indicators</i> (KPI) seluruh departemen untuk akurasi target capaian.</li>
-                    <li>Menjadi fasilitator utama dalam resolusi konflik dan penyelesaian masalah guna menjamin stabilitas operasional internal.</li>
-                </ul>
-            </div>
-        </div>
+        <span class="skill-tag">Kalibrasi Alat Ukur</span>
+        <span class="skill-tag">Akuisisi Data Lapangan</span>
+        <span class="skill-tag">Elektronika (C++, Arduino, Modbus)</span>
+        <span class="skill-tag">K3 Lab. Lingkungan</span>
         """, unsafe_allow_html=True)
         
-        # --- PENDIDIKAN ---
-        st.markdown("<div class='section-header'>// PENDIDIKAN</div>", unsafe_allow_html=True)
-        
+    with col_non:
+        st.markdown("<b>Manajemen & Profesional</b>", unsafe_allow_html=True)
         st.markdown("""
-        <div class="timeline-container">
-            <div class="tl-title">Universitas Negeri Semarang (UNNES)</div>
-            <div class="tl-subtitle">Sarjana Sains (S.Si.) Fisika | 2022 – 2026</div>
-            <div class="tl-content">
-                <b>IPK: 3.44</b><br>
-                Fokus Akademik: Pemodelan Numerik, Kecerdasan Buatan (AI), Integrasi Perangkat Keras IoT, dan Telemetri Jarak Jauh.
-            </div>
-        </div>
+        <span class="skill-tag">Manajemen Proyek & SDM</span>
+        <span class="skill-tag">Pemecahan Masalah Operasional</span>
+        <span class="skill-tag">Resolusi Konflik</span>
+        <span class="skill-tag">Analisis Kritis</span>
+        <span class="skill-tag">Komunikasi Efektif</span>
         """, unsafe_allow_html=True)
 
-    with col_kanan:
-        # --- PENCAPAIAN RISET & PROYEK ---
-        st.markdown("<div class='section-header'>// PENCAPAIAN & INOVASI</div>", unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="timeline-container">
-            <div class="tl-title">Kongres Ilmuwan Muda Indonesia (KIMI) V</div>
-            <div class="tl-subtitle">Presenter Ilmiah Nasional | 2026</div>
-            <div class="tl-content">Mempresentasikan riset rancang bangun model numerik prediksi cuaca pesisir yang dioptimasi menggunakan algoritma <b>Logika Fuzzy Mamdani</b>.</div>
-        </div>
-        
-        <div class="timeline-container">
-            <div class="tl-title">IndoBERT Emotion Classifier Web App</div>
-            <div class="tl-subtitle">Pengembang Aplikasi AI</div>
-            <div class="tl-content">Membangun arsitektur NLP untuk pemrosesan bahasa alami menggunakan model <i>Deep Learning</i> IndoBERT dan <i>framework</i> Gradio. Meraih tingkat akurasi evaluasi performa pada <b>F1-Score 0.89</b>.</div>
-        </div>
-        
-        <div class="timeline-container">
-            <div class="tl-title">Inventarisasi Emisi Gas Rumah Kaca</div>
-            <div class="tl-subtitle">DPA LPPM UNNES | 2025</div>
-            <div class="tl-content">Meraih pendanaan hibah riset universitas yang berhasil bermuara pada luaran tersertifikasi Hak Cipta resmi dari Kemenkumham RI.</div>
-        </div>
-        
-        <div class="timeline-container">
-            <div class="tl-title">Tsunami Ready Community</div>
-            <div class="tl-subtitle">Pelaksana Program BMKG | 2025</div>
-            <div class="tl-content">Mengeksekusi mitigasi bencana di Kalurahan Parangtritis dengan memetakan dan mendistribusikan penanda evakuasi di 78 titik rumah kelompok rentan.</div>
-        </div>
-        
-        <div class="timeline-container">
-            <div class="tl-title">Program Peningkatan Kapasitas Ormawa</div>
-            <div class="tl-subtitle">PPK Nasional Kemdikbudristek | 2024</div>
-            <div class="tl-content">Merancang 6 modul kurikulum pelatihan inovasi agrikultur untuk memacu pemberdayaan ekonomi masyarakat Desa Singosari, Boyolali.</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # --- KEAHLIAN TEKNIS ---
-        st.markdown("<div class='section-header'>// KEAHLIAN INTI</div>", unsafe_allow_html=True)
-        
-        st.markdown("<b>Teknis & Komputasi:</b>", unsafe_allow_html=True)
-        st.markdown("""
-        <span class="glass-tag">Pemodelan Numerik (Python, MATLAB)</span>
-        <span class="glass-tag">Elektronika (C++, Arduino, Modbus)</span>
-        <span class="glass-tag">Akuisisi Data Lapangan</span>
-        <span class="glass-tag">Kalibrasi Alat Ukur</span>
-        <span class="glass-tag">K3 Laboratorium Lingkungan</span>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<br><b>Manajemen & Strategi:</b>", unsafe_allow_html=True)
-        st.markdown("""
-        <span class="glass-tag">Manajemen Proyek & SDM</span>
-        <span class="glass-tag">Resolusi Konflik</span>
-        <span class="glass-tag">Pemecahan Masalah Operasional</span>
-        <span class="glass-tag">Analisis Kritis</span>
-        """, unsafe_allow_html=True)
-
-st.markdown("<br><br><hr style='border-color: rgba(0,230,230,0.2);'>", unsafe_allow_html=True)
+st.markdown("<br><br><hr style='border-color: #333;'>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>© 2026 Dava Arya Danendra. Engineered with Streamlit.</p>", unsafe_allow_html=True)
