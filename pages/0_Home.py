@@ -152,7 +152,7 @@ with tab_pengalaman:
     </div>
     """, unsafe_allow_html=True)
     if st.button("Lihat Log Kalibrasi & Dokumentasi BMKG ➔", key="btn_bmkg"):
-        st.switch_page("pages/1_Rekam_Jejak.py") # Pastikan path ini sesuai dengan nama file pages kamu
+        st.switch_page("pages/1_Track_Record.py")
         
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -164,7 +164,7 @@ with tab_pengalaman:
     </div>
     """, unsafe_allow_html=True)
     if st.button("Lihat Metrik & Kinerja Organisasi ➔", key="btn_bem"):
-        st.switch_page("pages/1_Rekam_Jejak.py")
+        st.switch_page("pages/1_Track_Record.py")
 
 # --- TAB 2: PENDIDIKAN ---
 with tab_pendidikan:
@@ -199,7 +199,7 @@ with tab_projek:
     """, unsafe_allow_html=True)
     
     if st.button("Lihat Detail & Repositori Proyek ➔", key="btn_projek"):
-        st.switch_page("pages/1_Rekam_Jejak.py")
+        st.switch_page("pages/1_Track_Record.py")
 
 # --- TAB 4: KEMAMPUAN ---
 with tab_keahlian:
