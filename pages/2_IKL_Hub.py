@@ -242,7 +242,7 @@ def load_and_preprocess_data(filepath):
     df = df.drop(columns=['Week_str', 'Day_str', 'Match_str', 'Game_str'])
     return df
 
-df_csv = load_and_preprocess_data("Data_Set_IKL_HOK.csv")
+df_csv = load_and_preprocess_data("assets/IKL/Data_Set_IKL_HOK.csv")
 
 @st.cache_data(ttl=86400)
 def load_season_config():
