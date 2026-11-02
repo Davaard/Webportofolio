@@ -15,7 +15,7 @@ TAHUN = "2026"
 MUSIM = "Fall"
 HALAMAN_DASAR = f"Indonesia_Kings_Laga/{TAHUN}/{MUSIM}"
 SEASON_NAME = f"{MUSIM} {TAHUN}"
-DIR_LOGO = "assets/logo_tim"
+DIR_LOGO = "assets/IKL/logo_tim"
 
 HEADERS = {
     'User-Agent': 'IKL_Hub_Master_Bot/5.2_Final (Contact: daryadarendra@gmail.com)',

@@ -33,7 +33,7 @@ def build_map_cards(tim_nama, coords_dict, bg_b64, max_hero=3):
     df_hist_player = df_long[(df_long['Team'] == tim_nama) & (df_long['Win'].notna())]
     
     try:
-        df_roster_temp = pd.read_csv("IKL_Rosters.csv")
+        df_roster_temp = pd.read_csv("assets/IKL/IKL_Rosters.csv")
         if 'Season' in df_roster_temp.columns and 'musim_pilihan' in globals():
             df_roster_temp = df_roster_temp[df_roster_temp['Season'] == musim_pilihan]
         df_roster_tim = df_roster_temp[df_roster_temp['Team'] == tim_nama]
@@ -50,7 +50,7 @@ def build_map_cards(tim_nama, coords_dict, bg_b64, max_hero=3):
         if not pemain_data.empty:
             nama_pemain = str(pemain_data.iloc[0]['Player_ID'])
             foto_b64 = image_to_base64(get_player_path(nama_pemain))
-            icon_role_b64 = image_to_base64(f"assets/{ROLE_ICONS.get(role_csv)}")
+            icon_role_b64 = image_to_base64(f"assets/IKL/{ROLE_ICONS.get(role_csv)}")
             
             idx_lane = role_idx_map.get(role_csv, 0)
             hero_counts = {}
@@ -270,8 +270,8 @@ col_header_left, col_header_space, col_header_right = st.columns([1.5, 3, 1.5])
 
 # Logo Kiri
 with col_header_left:
-    logo_liquipedia_b64 = image_to_base64("assets/liquipedia_logo.png")
-    logo_hok_b64 = image_to_base64("assets/hok_logo.png")
+    logo_liquipedia_b64 = image_to_base64("assets/IKL/liquipedia_logo.png")
+    logo_hok_b64 = image_to_base64("assets/IKL/hok_logo.png")
     
     st.markdown(f"""
     <div style='display: flex; align-items: center; gap: 10px; padding-top: 5px;'>
@@ -294,7 +294,7 @@ with col_header_right:
         
         # Penyesuaian jika tim berubah nama di tengah season
         if os.path.exists("IKL_Rebrands.csv"):
-            df_rebrand = pd.read_csv("IKL_Rebrands.csv")
+            df_rebrand = pd.read_csv("assets/IKL/IKL_Rebrands.csv")
             rebrand_musim = df_rebrand[df_rebrand['Season'] == musim_pilihan]
             
             if not rebrand_musim.empty:
@@ -323,8 +323,8 @@ st.markdown("""
 
 @st.cache_data(ttl=60)
 def get_dynamic_logo_map(season):
-    if os.path.exists("IKL_Rosters.csv"):
-        df_ros = pd.read_csv("IKL_Rosters.csv").dropna(subset=['Logo_File'])
+    if os.path.exists("assets/IKL/IKL_Rosters.csv"):
+        df_ros = pd.read_csv("assets/IKL/IKL_Rosters.csv").dropna(subset=['Logo_File'])
         df_global = df_ros.drop_duplicates(subset=['Team', 'Logo_File'], keep='last').drop_duplicates(subset=['Team'])
         map_global = dict(zip(df_global['Team'], df_global['Logo_File']))
         df_season = df_ros[df_ros['Season'] == season].drop_duplicates(subset=['Team'])
@@ -339,7 +339,7 @@ TEAM_LOGO_MAP = get_dynamic_logo_map(musim_pilihan)
 @st.cache_data(ttl=86400)
 def get_team_data():
     if os.path.exists("IKL_Teams.csv"):
-        df_teams = pd.read_csv("IKL_Teams.csv")
+        df_teams = pd.read_csv("assets/IKL/IKL_Teams.csv")
         df_global = df_teams.drop_duplicates(subset=['Team'], keep='last')
         map_nama = dict(zip(df_global['Team'], df_global['Full_Name']))
         map_warna = dict(zip(df_global['Team'], df_global['Color_Hex']))
@@ -354,13 +354,13 @@ def get_team_bg_path(team_name):
         if filename.endswith(".png"): bg_filename = filename.replace(".png", "_bg.png")
         elif filename.endswith(".jpg"): bg_filename = filename.replace(".jpg", "_bg.jpg")
         else: bg_filename = filename
-        path = os.path.join("assets", "Recap", "logo_background", bg_filename)
+        path = os.path.join("assets", "IKL", "Recap", "logo_background", bg_filename)
         if os.path.exists(path): return path
-    return "assets/Recap/logo_background/roster_placeholder.png"
+    return "assets/IKL/Recap/logo_background/roster_placeholder.png"
 
 def get_logo_path(team_name):
     if team_name in TEAM_LOGO_MAP:
-        path = os.path.join("assets", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
+        path = os.path.join("assets", "IKL", "logo_tim", str(TEAM_LOGO_MAP[team_name]))
         if os.path.exists(path): return path
     return None
 
@@ -370,14 +370,14 @@ def get_logo_path(team_name):
 def get_player_path(player_name):
     safe_name = str(player_name).replace(" ", "_")
     for ext in ['.png', '.jpg', '.jpeg']:
-        path = f"assets/players/{safe_name}{ext}"
+        path = f"assets/IKL/players/{safe_name}{ext}"
         if os.path.exists(path): return path
-    return "assets/Recap/logo_background/roster_placeholder.png"
+    return "assets/IKL/Recap/logo_background/roster_placeholder.png"
 
 def get_hero_path(hero_name):
     safe_name = hero_name.replace(" ", "_").replace(".png", "").replace(".jpg", "")
     for ext in ['.png', '.jpg', '.jpeg']:
-        if os.path.exists(f"assets/heroes/{safe_name}{ext}"): return f"assets/heroes/{safe_name}{ext}"
+        if os.path.exists(f"assets/IKL/heroes/{safe_name}{ext}"): return f"assets/IKL/heroes/{safe_name}{ext}"
     return None
 
 #                     ==================================================
@@ -400,9 +400,9 @@ ROLE_ICONS = {
     'Roamer': 'support_icon.png'
 }
 
-VS_GOLD_B64 = image_to_base64("assets/Match/vs_full_gold.png")
-VS_OUTLINE_B64 = image_to_base64("assets/Match/vs_outline_gold.png")
-BANNED_B64 = image_to_base64("assets/Match/banned.png")
+VS_GOLD_B64 = image_to_base64("assets/IKL/Match/vs_full_gold.png")
+VS_OUTLINE_B64 = image_to_base64("assets/IKL/Match/vs_outline_gold.png")
+BANNED_B64 = image_to_base64("assets/IKL/Match/banned.png")
 
 #                     ==================================================
 #                                  Fungsi Penyusun Kartu UI
@@ -454,7 +454,7 @@ else:
 st.markdown("<br>", unsafe_allow_html=True)
 col_nav1, col_nav2, col_nav3 = st.columns(3)
 
-nav_bg_path = "assets/selected_mode_display.png"
+nav_bg_path = "assets/IKL/selected_mode_display.png"
 nav_bg_base64 = image_to_base64(nav_bg_path) if os.path.exists(nav_bg_path) else ""
 
 with col_nav1:
@@ -695,7 +695,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     col_logo, col_teks = st.columns([1, 3.5])
     with col_logo:
-        logo_ikl_path = "assets/ikl_gold.png"
+        logo_ikl_path = "assets/IKL/ikl_gold.png"
         if os.path.exists(logo_ikl_path):
             st.markdown(f"""<div style="display: flex; justify-content: center; align-items: center; height: 100%;">
                 <img src="data:image/png;base64,{image_to_base64(logo_ikl_path)}" style="width: 100%; max-width: 150px; object-fit: contain;">
@@ -949,7 +949,7 @@ if menu_utama == "🏆 Klasemen & Playoffs":
                 tim_a, tim_b = str(row_data['Team_(Blue)']), str(row_data['Opponent_(Red)'])
                 logo_a = get_logo_path(tim_a) if tim_a != "nan" else None
                 logo_b = get_logo_path(tim_b) if tim_b != "nan" else None
-                bg_b64 = image_to_base64(f"assets/Recap/{bg_filename}")
+                bg_b64 = image_to_base64(f"assets/IKL/Recap/{bg_filename}")
                 
                 html_a = f"<img src='data:image/png;base64,{image_to_base64(logo_a)}' style='height: 38px; width: 38px; object-fit: contain;'>" if logo_a else f"<span style='color: white; font-weight: bold; font-size: 11px;'>{tim_a}</span>"
                 html_b = f"<img src='data:image/png;base64,{image_to_base64(logo_b)}' style='height: 38px; width: 38px; object-fit: contain;'>" if logo_b else f"<span style='color: white; font-weight: bold; font-size: 11px;'>{tim_b}</span>"
@@ -977,11 +977,11 @@ if menu_utama == "🏆 Klasemen & Playoffs":
     
     if not mvp_counts.empty:
         cols_mvp = st.columns(5) 
-        player_avatar_b64 = image_to_base64("assets/Recap/logo_background/roster_placeholder.png")
+        player_avatar_b64 = image_to_base64("assets/IKL/Recap/logo_background/roster_placeholder.png")
         
         PLAYER_ROLE_MAP = {}
         try:
-            df_roster_map = pd.read_csv('IKL_Rosters.csv')
+            df_roster_map = pd.read_csv('assets/IKL/IKL_Rosters.csv')
             role_to_idx = {'Top Lane': 0, 'Jungler': 1, 'Middle': 2, 'Bottom Lane': 3, 'Roamer': 4}
             for _, r in df_roster_map.dropna(subset=['Player_ID', 'Role']).iterrows():
                 if r['Role'] in role_to_idx: PLAYER_ROLE_MAP[r['Player_ID']] = role_to_idx[r['Role']]
@@ -1387,7 +1387,7 @@ elif menu_utama == "🛡️ Team Profiling":
         # 2. TEAM LINE UP MAP & STAFF
         st.markdown("### 🗺️ Team Line Up")
         
-        df_roster = pd.read_csv("IKL_Rosters.csv")
+        df_roster = pd.read_csv("assets/IKL/IKL_Rosters.csv")
         df_roster_tim = df_roster[df_roster['Team'] == tim_pilihan].copy()
         if musim_pilihan in df_roster_tim['Season'].values: df_roster_tim = df_roster_tim[df_roster_tim['Season'] == musim_pilihan]
         df_roster_tim['Status_Score'] = df_roster_tim['Status'].astype(str).str.strip().str.lower().map({'main': 1, 'active': 1, 'core': 1, 'subs': 2, 'cadangan': 2}).fillna(3)
@@ -1395,7 +1395,7 @@ elif menu_utama == "🛡️ Team Profiling":
         
         col_map, col_staff = st.columns([2, 1])
         with col_map:
-            map_b64 = image_to_base64("assets/HOK_map-layout.png")
+            map_b64 = image_to_base64("assets/IKL/HOK_map-layout.png")
             bg_b64_tim = image_to_base64(get_team_bg_path(tim_pilihan))
             
             html_container = f"<div id='map_container' style='position: relative; width: 100%; max-width: 850px; aspect-ratio: 1/1; margin: 0 auto;'><img src='data:image/png;base64,{map_b64}' style='width: 100%; height: 100%; object-fit: contain; display: block;'>"
@@ -1406,8 +1406,8 @@ elif menu_utama == "🛡️ Team Profiling":
             components.html(html_container, height=750) 
             
         with col_staff:
-            b64_bg_staff = image_to_base64("assets/Recap/logo_background/IKL_bg.png")
-            b64_bg_subs = image_to_base64("assets/Recap/logo_background/IKL_bgs.png")
+            b64_bg_staff = image_to_base64("assets/IKL/Recap/logo_background/IKL_bg.png")
+            b64_bg_subs = image_to_base64("assets/IKL/Recap/logo_background/IKL_bgs.png")
             
             html_staff_col = """
             <style>@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');</style>
@@ -1427,7 +1427,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 
             for _, row in df_staff.iterrows():
                 nama, jabatan = str(row['Player_ID']), str(row['Role'])
-                b64_foto, b64_icon = image_to_base64(get_player_path(nama)), image_to_base64(f"assets/{get_staff_icon(jabatan)}")
+                b64_foto, b64_icon = image_to_base64(get_player_path(nama)), image_to_base64(f"assets/IKL/{get_staff_icon(jabatan)}")
                 html_staff_col += f"""<div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;"><img src="data:image/png;base64,{b64_bg_staff}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);"><img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 5px; left: 5px; width: 20px; height: 20px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));"><div style="position: absolute; top: 0; left: 0; width: 100%; height: 75%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;"><img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;"></div><div style="position: absolute; bottom: 28%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px;">{nama}</div><div style="position: absolute; bottom: 9%; width: 100%; text-align: center; color: #ffffff; font-weight: 800; font-size: 9px; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; text-transform: uppercase;">{jabatan}</div></div>"""
             
             html_staff_col += "</div><h4 style='color: #ffffff; margin-bottom: 15px;'>Substitutes</h4><div style='display: flex; flex-wrap: wrap; gap: 15px;'>"
@@ -1444,7 +1444,7 @@ elif menu_utama == "🛡️ Team Profiling":
                 
             for _, row in df_subs.iterrows():
                 nama = str(row['Player_ID'])
-                b64_foto, b64_icon = image_to_base64(get_player_path(nama)), image_to_base64(f"assets/{get_subs_icon(str(row['Role']))}")
+                b64_foto, b64_icon = image_to_base64(get_player_path(nama)), image_to_base64(f"assets/IKL/{get_subs_icon(str(row['Role']))}")
                 html_staff_col += f"""<div style="position: relative; width: 95px; border-radius: 2px; box-shadow: 0 4px 8px rgba(0,0,0,0.7); background: #222;"><img src="data:image/png;base64,{b64_bg_subs}" style="width: 100%; height: auto; display: block; border-radius: 2px; filter: brightness(0.65);"><img src="data:image/png;base64,{b64_icon}" style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; z-index: 5; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.9));"><div style="position: absolute; top: 0; left: 0; width: 100%; height: 99%; z-index: 2; overflow: hidden; border-radius: 2px 5px 0 0;"><img src="data:image/png;base64,{b64_foto}" style="width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.95;"></div><div style="position: absolute; bottom: 8%; width: 100%; text-align: center; color: white; font-weight: 800; font-size: 9px; text-shadow: 1px 1px 2px black; z-index: 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px;">{nama}</div></div>"""
             
             html_staff_col += "</div></div>"
@@ -1549,8 +1549,8 @@ elif menu_utama == "🛡️ Team Profiling":
         
         # 5. NAVIGASI BAWAH (CSS Hitbox Buttons)
         col_btn1, col_space, col_btn2 = st.columns([1.5, 7, 1.5])
-        icon_kembali_b64 = image_to_base64("assets/kembali_icon.png")
-        icon_banding_b64 = image_to_base64("assets/bandingkan_icon.png")
+        icon_kembali_b64 = image_to_base64("assets/IKL/kembali_icon.png")
+        icon_banding_b64 = image_to_base64("assets/IKL/bandingkan_icon.png")
         
         with col_btn1:
             st.markdown("""<style>div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button {height: 45px !important; background-color: transparent !important; border: 1px solid rgba(255,255,255,0.1) !important; color: transparent !important; transition: all 0.3s ease !important;} div[data-testid="column"]:nth-child(1) div[data-testid="stButton"] > button:hover {border-color: #d4af37 !important; box-shadow: 0 4px 12px rgba(212,175,55,0.2) !important;}</style>""", unsafe_allow_html=True)
@@ -1595,7 +1595,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
     #                               Fase Pemilihan Tim H2H (A & B)
 
     if tim_A is None or tim_B is None:
-        ikl_silver_b64 = image_to_base64("assets/ikl_Silver.png")
+        ikl_silver_b64 = image_to_base64("assets/IKL/ikl_Silver.png")
         col_a, col_vs, col_b = st.columns([3, 1.5, 3])
 
         def render_selected_team_profile(tim_nama, key_btn):
@@ -1756,7 +1756,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
             'Bottom Lane': {'top': '49%', 'left': '78%', 'transform': 'translate(-50%, -50%)'}
         }
 
-        map_b64 = image_to_base64("assets/HOK_map-layout.png")
+        map_b64 = image_to_base64("assets/IKL/HOK_map-layout.png")
         bg_b64_A = image_to_base64(get_team_bg_path(tim_A))
         bg_b64_B = image_to_base64(get_team_bg_path(tim_B))
         
@@ -1839,7 +1839,7 @@ elif menu_utama == "⚔️ Versus Mode (H2H)":
 
         # 5. TOMBOL RESET TEAM DI ATAS MATCH HISTORY
         col_space_r, col_btn_r = st.columns([5, 1.5])
-        icon_reset_b64 = image_to_base64("assets/kembali_icon.png")
+        icon_reset_b64 = image_to_base64("assets/IKL/kembali_icon.png")
         icon_reset_b64 = icon_reset_b64.replace('\n', '').replace('\r', '') if icon_reset_b64 else ""
         
         with col_btn_r:
