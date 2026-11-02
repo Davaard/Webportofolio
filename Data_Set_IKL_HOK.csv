@@ -743,9 +743,36 @@ Fall 2026,10/25/2026,17:30,Pl,St,2,3.0,OG,DMT,,,0.0,Cy,08:18,,,,,,,,,"Biron,Zilo
 Fall 2026,10/25/2026,17:30,Pl,St,2,4.0,DMT,OG,,,1.0,JerL,11:22,,,,,,,,,"Guan Yu,Luna,Xiao Qiao,Alessio,Lian Po","Dunshan,Pei,Ukyo Tachibana,Ying","Ata,Jing,Angela,Arli,Dyadia","Lorion,Haya,Chano,Loong"
 Fall 2026,10/30/2026,14:20,Up,Sf,1,1.0,BTR,KAGE,,,1.0,ZhanQ,21:16,,,,,,,,,"Guan Yu,Feyd,Mai Shiranui,Luara,Zhang Fei","Haya,Zilong,Umbrosa,Chano","Florentino,Pei,Yuhuan,Flowborn (Marksman),Lapulapu","Dunshan,Loong,Arli,Chicha"
 Fall 2026,10/30/2026,14:20,Up,Sf,1,2.0,KAGE,BTR,,,1.0,Fei,21:52,,,,,,,,,"Fatih,Jing,Lorion,Erin,Dunshan","Lapulapu,Chano,Kui,Lian Po","Dharma,Zilong,Xiao Qiao,Chicha,Annette","Haya,Loong,Biron,Guan Yu"
-Fall 2026,10/30/2026,14:20,Up,Sf,1,3.0,BTR,KAGE,,,0.0,,,,,,,,,,,"Charlotte,Nezha,Wang Wei,Loong,Lian Po","Zilong,Haya,Feyd,Ukyo Tachibana","Biron,Agudo,Mai Shiranui,Chano,Zhang Fei","Jing,Dunshan,Liu Bang,Dyadia"
-Fall 2026,10/30/2026,18:15,Up,Sf,2,,RRQ,DMT,,,,,,,,,,,,,,,,,
-Fall 2026,10/31/2026,10:15,Up,Fl,0,,,,,,,,,,,,,,,,,,,,
-Fall 2026,10/31/2026,14:25,Lw,Sf,0,,,,,,,,,,,,,,,,,,,,
-Fall 2026,10/31/2026,19:10,Lw,Fl,0,,,,,,,,,,,,,,,,,,,,
-Fall 2026,11/1/2026,18:20,Gr,Fl,0,,,,,,,,,,,,,,,,,,,,
+Fall 2026,10/30/2026,14:20,Up,Sf,1,3.0,BTR,KAGE,,,0.0,Fei,15:11,,,,,,,,,"Charlotte,Nezha,Wang Wei,Loong,Lian Po","Zilong,Haya,Feyd,Ukyo Tachibana","Biron,Agudo,Mai Shiranui,Chano,Zhang Fei","Jing,Dunshan,Liu Bang,Dyadia"
+Fall 2026,10/30/2026,14:20,Up,Sf,1,4.0,KAGE,BTR,,,0.0,ZhanQ,22:34,,,,,,,,,"Dharma,Zilong,Nuwa,Chicha,Lian Po","Jing,Dunshan,Luna,Augran","Devara,Dun,Angela,Chano,Dyadia","Haya,Guan Yu,Feyd,Nezha"
+Fall 2026,10/30/2026,14:20,Up,Sf,1,5.0,KAGE,BTR,,,1.0,Zaan,25:26,,,,,,,,,"Charlotte,Musashi,Wang Zhaojun,Loong,Liang","Jing,Dunshan,Kaizer,Shouyue","Florentino,Yang Jian,Lorion,Flowborn (Marksman),Lapulapu","Haya,Guan Yu,Luna,Feyd"
+Fall 2026,10/30/2026,14:20,Up,Sf,1,6.0,KAGE,BTR,,,1.0,Fei,19:35,,,,,,,,,"Bai Qi,Feyd,Wang Wei,Shouyue,Dyadia","Jing,Dunshan,Luna,Pei","Biron,Ying,Nuwa,Erin,Mozi","Haya,Guan Yu,Arli,Xiao Qiao"
+Fall 2026,10/30/2026,18:15,Up,Sf,2,1.0,DMT,RRQ,,,1.0,eL,10:41,,,,,,,,,"Fatih,Dun,Lorion,Lady Sun,Dunshan","Jing,Guan Yu,Chicha,Flowborn (Marksman)","Dharma,Musashi,Xiao Qiao,Hou Yi,Kui","Mai Shiranui,Erin,Menki,Kaizer"
+Fall 2026,10/30/2026,18:15,Up,Sf,2,2.0,DMT,RRQ,,,1.0,Clean,11:05,,,,,,,,,"Charlotte,Pei,Yuhuan,Loong,Lian Po","Dunshan,Jing,Fatih,Ata","Florentino,Ukyo Tachibana,Mai Shiranui,Chano,Lapulapu","Haya,Guan Yu,Dharma,Biron"
+Fall 2026,10/30/2026,18:15,Up,Sf,2,3.0,RRQ,DMT,,,0.0,Clean,13:49,,,,,,,,,"Fatih,Dun,Haya,Di Renjie,Flowborn (Roamer)","Mai Shiranui,Lapulapu,Nuwa,Garuda","Biron,Zilong,Angela,Arli,Annette","Jing,Dunshan,Guan Yu,Yang Jian"
+Fall 2026,10/30/2026,18:15,Up,Sf,2,4.0,RRQ,DMT,,,0.0,Cy,14:35,,,,,,,,,"Guan Yu,Luna,Garuda,Devara,Annette","Haya,Mai Shiranui,Ying,Wang Wei","Ata,Musashi,Xiao Qiao,Chicha,Zhang Fei","Dunshan,Jing,Loong,Lian Po"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,1.0,KAGE,DMT,,,1.0,Fei,19:10,,,,,,,,,"Florentino,Agudo,Haya,Loong,Lapulapu","Guan Yu,Chano,Lorion,Nuwa","Biron,Zilong,Garuda,Flowborn (Marksman),Zhang Fei","Dunshan,Jing,Pei,Feyd"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,2.0,DMT,KAGE,,,0.0,Senko,17:11,,,,,,,,,"Fatih,Pei,Mai Shiranui,Alessio,Lian Po","Guan Yu,Jing,Zhang Fei,Dyadia","Biron,Ukyo Tachibana,Yuhuan,Chano,Annette","Dunshan,Haya,Chicha,Luna"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,3.0,KAGE,DMT,,,0.0,Cy,16:08,,,,,,,,,"Dharma,Pei,Lorion,Devara,Lian Po","Haya,Arli,Augran,Loong","Guan Yu,Ying,Wang Wei,Chicha,Dyadia","Dunshan,Jing,Mozi,Zhang Fei"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,4.0,KAGE,DMT,,,1.0,Zaan,11:03,,,,,,,,,"Guan Yu,Feyd,Mai Shiranui,Fang,Zhang Fei","Haya,Arli,Annette,Lapulapu","Ata,Musashi,Yuhuan,Loong,Mozi","Dunshan,Jing,Flowborn (Marksman),Zilong"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,5.0,DMT,KAGE,,,1.0,Clean,15:22,,,,,,,,,"Charlotte,Yang Jian,Haya,Chano,Lapulapu","Jing,Zilong,Musashi,Mozi","Fatih,Umbrosa,Nuwa,Flowborn (Marksman),Dyadia","Arli,Dunshan,Luna,Feyd"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,6.0,KAGE,DMT,,,0.0,Cy,16:46,,,,,,,,,"Charlotte,Zilong,Wang Zhaojun,Lady Sun,Liang","Dharma,Arli,Shouyue,Luna","Xiang Yu,Agudo,Angela,Yango,Zhuangzi","Dunshan,Jing,Chicha,Nezha"
+Fall 2026,10/31/2026,10:25,Up,Fl,0,7.0,KAGE,DMT,,,0.0,,11:03,,,,,,,,,"Florentino,Jing,Haya,Loong,Lapulapu",,"Fatih,Agudo,Haya,Lady Sun,Dunshan",
+Fall 2026,10/31/2026,15:00,Lw,Sf,0,1.0,BTR,RRQ,,,1.0,ZhanQ,12:08,,,,,,,,,"Dharma,Augran,Yuhuan,Luara,Zhang Fei","Haya,Jing,Biron,Fatih","Florentino,Pei,Mai Shiranui,Loong,Lapulapu","Dunshan,Guan Yu,Chano,Ukyo Tachibana"
+Fall 2026,10/31/2026,15:00,Lw,Sf,0,2.0,RRQ,BTR,,,0.0,LanFeng,12:07,,,,,,,,,"Ata,Yang Jian,Xiao Qiao,Erin,Dunshan","Pei,Loong,Nezha,Lorion","Guan Yu,Zilong,Wang Wei,Alessio,Lapulapu","Haya,Jing,Ying,Musashi"
+Fall 2026,10/31/2026,15:00,Lw,Sf,0,3.0,BTR,RRQ,,,1.0,ZhanQ,17:01,,,,,,,,,"Biron,Jing,Ziya,Chano,Lian Po","Haya,Zhang Fei,Chicha,Arli","Charlotte,Flowborn (Tank),Lorion,Consort Yu,Dyadia","Pei,Dunshan,Florentino,Fatih"
+Fall 2026,10/31/2026,15:00,Lw,Sf,0,4.0,BTR,RRQ,,,1.0,Dyspoo,20:48,,,,,,,,,"Charlotte,Dun,Nuwa,Erin,Dunshan","Zhang Fei,Jing,Guan Yu,Dharma","Bai Qi,Zilong,Haya,Arli,Mozi","Chicha,Loong,Feyd,Florentino"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,1.0,KAGE,BTR,,,1.0,Fei,15:24,,,,,,,,,"Ata,Feyd,Yuhuan,Erin,Dunshan","Lorion,Loong,Zilong,Nuwa","Guan Yu,Ying,Xiao Qiao,Alessio,Zhang Fei","Haya,Mai Shiranui,Jing,Musashi"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,2.0,KAGE,BTR,,,0.0,Dyspoo,11:57,,,,,,,,,"Florentino,Agudo,Ziya,Chano,Lapulapu","Dunshan,Jing,Charlotte,Nuwa","Fatih,Zilong,Heino,Chicha,Lian Po","Zhang Fei,Loong,Ying,Pei"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,3.0,BTR,KAGE,,,1.0,JenMyth,17:24,,,,,,,,,"Florentino,Augran,Lorion,Loong,Dyadia","Zhang Fei,Pei,Flowborn (Marksman),Shouyue","Biron,Zilong,Haya,Arli,Mozi","Dunshan,Jing,Lapulapu,Annette"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,4.0,KAGE,BTR,,,1.0,Lu,21:05,,,,,,,,,"Dharma,Yang Jian,Mai Shiranui,Loong,Dyadia","Dunshan,Haya,Yuhuan,Nuwa","Biron,Jing,Angela,Chano,Lapulapu","Pei,Zhang Fei,Nezha,Dolia"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,5.0,KAGE,BTR,,,1.0,Fei,14:51,,,,,,,,,"Bai Qi,Pei,Lorion,Consort Yu,Liu Bang","Dunshan,Mai Shiranui,Annette,Flowborn (Roamer)","Dharma,Ukyo Tachibana,Nuwa,Flowborn (Marksman),Mozi","Zhang Fei,Liang,Lian Po,Chicha"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,6.0,KAGE,BTR,,,1.0,Fei,14:57,,,,,,,,,"Guan Yu,Ukyo Tachibana,Wang Wei,Flowborn (Marksman),Lian Po","Dunshan,Mai Shiranui,Kaizer,Arli","Devara,Nezha,Yuhuan,Shouyue,Dolia","Zhang Fei,Jing,Annette,Liang"
+Fall 2026,10/31/2026,18:40,Lw,Fl,0,7.0,KAGE,BTR,,,1.0,,25:30,,,,,,,,,"Florentino,Zilong,Haya,Loong,Lapulapu",,"Dharma,Zilong,Lorion,Luara,Zhang Fei",
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,1.0,KAGE,DMT,,,0.0,Clean,12:01,,,,,,,,,"Charlotte,Zilong,Lorion,Flowborn (Marksman),Lapulapu","Guan Yu,Chano,Biron,Chicha","Fatih,Ying,Haya,Marco Polo,Lian Po","Dunshan,Loong,Florentino,Dharma"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,2.0,KAGE,DMT,,,0.0,Cy,17:59,,,,,,,,,"Bai Qi,Pei,Mai Shiranui,Di Renjie,Zhang Fei","Lapulapu,Guan Yu,Arli,Augran","Dharma,Yang Jian,Yuhuan,Chicha,Dyadia","Dunshan,Loong,Florentino,Biron"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,3.0,DMT,KAGE,,,0.0,Fei,19:12,,,,,,,,,"Charlotte,Musashi,Lorion,Loong,Zhang Fei","Haya,Guan Yu,Feyd,Jing","Biron,Agudo,Yuhuan,Chano,Lian Po","Mai Shiranui,Dunshan,Nezha,Luna"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,4.0,DMT,KAGE,,,0.0,Fei,12:20,,,,,,,,,"Ata,Luna,Ziya,Arli,Annette","Haya,Loong,Xiao Qiao,Wang Wei","Guan Yu,Jing,Shi,Shouyue,Dyadia","Mai Shiranui,Dunshan,Pei,Feyd"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,5.0,KAGE,DMT,,,1.0,Fei,15:39,,,,,,,,,"Florentino,Yang Jian,Nuwa,Loong,Kui","Lapulapu,Mai Shiranui,Liang,Zhang Fei","Biron,Agudo,Angela,Chano,Mozi","Dunshan,Feyd,Liu Bang,Dolia"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,6.0,DMT,KAGE,,,1.0,,14:57,,,,,,,,,"Guan Yu,Pei,Garuda,Devara,Lapulapu","Feyd,Haya,Liu Bang,Zhuangzi","Dharma,Ukyo Tachibana,Wang Wei,Arli,Annette","Dunshan,Mai Shiranui,Nuwa,Flowborn (Marksman)"
+Fall 2026,11/1/2026,18:30,Gr,Fl,0,7.0,KAGE,DMT,,,0.0,,10:47,,,,,,,,,"Florentino,Zilong,Haya,Loong,Lapulapu",,"Fatih,Agudo,Haya,Lady Sun,Dunshan",
