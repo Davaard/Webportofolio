@@ -751,7 +751,8 @@ if menu_utama == "Klasemen & Playoffs":
              d = str(row_data['Day']).strip()
              fase_dict = {'Pl St': 'Play-in Stages', 'Up Sf': 'Upper Bracket<br>Semifinal', 'Lw Sf': 'Lower Bracket<br>Semifinal', 'Up Fl': 'Upper Bracket<br>Final', 'Lw Fl': 'Lower Bracket<br>Final', 'Gr Fl': 'Grand Final'}
              return fase_dict.get(f"{w} {d}", f"Week {w}<br>Day {d}").replace('\n', '<br>')
-         
+
+         # fungsi visual pertandingan
          def render_match_card(row_data):
              tim_biru = str(row_data['Team_(Blue)'])
              tim_merah = str(row_data['Opponent_(Red)'])
@@ -793,10 +794,13 @@ if menu_utama == "Klasemen & Playoffs":
                      st.markdown(render_match_card(row_data), unsafe_allow_html=True)
                  
     st.markdown("<br><br>", unsafe_allow_html=True)
+
+    #                     ==================================================
+    #                                     REGULAR SEASON
     
-    # === 3. REGULAR SEASON (KLASEMEN CLEAN HTML) ===
     st.markdown("### Regular Season")
-    
+
+    # mengambil data regular season
     df_reguler = df_long[df_long['Week'].astype(str).str.isdigit()]
     
     if not df_reguler.empty:
@@ -813,7 +817,6 @@ if menu_utama == "Klasemen & Playoffs":
         df_tampil = klasemen_baru.sort_values(by='Rank')[['Rank', 'Team', 'Match', 'Match_WL', 'Game_WL', 'Windiff']]
         
         def render_clean_table(df_data):
-            # Penulisan HTML tanpa indentasi multi-line agar terhindar dari bug rendering Code Block Streamlit
             html_table = "<table class='clean-table'><thead><tr><th>Rank</th><th style='text-align: left;'>Team</th><th>Match</th><th>Match<br>W - L</th><th>Game<br>W - L</th><th>Windiff</th></tr></thead><tbody>"
             for _, row in df_data.iterrows():
                 tim_singkat = row['Team']
@@ -829,7 +832,7 @@ if menu_utama == "Klasemen & Playoffs":
             html_table += "</tbody></table>"
             st.markdown(html_table, unsafe_allow_html=True)
         
-        # === SISTEM KLASEMEN MULTI-GRUP OTOMATIS ===
+        # otomatisasi reguler season dengan grup
         if not DF_TEAMS_MASTER.empty:
             # Ambil daftar tim khusus untuk musim yang sedang dipilih
             df_season_teams = DF_TEAMS_MASTER[DF_TEAMS_MASTER['Season'] == musim_pilihan]
@@ -869,8 +872,10 @@ if menu_utama == "Klasemen & Playoffs":
         st.info("Data Regular Season belum tersedia.")
 
     st.markdown("<hr style='border-color: #333; margin-top: 40px; margin-bottom: 40px;'>", unsafe_allow_html=True)
-    
-    # 4. BRACKET PLAYOFFS
+
+    #                     ==================================================
+    #                                         PLAYOFFS
+
     st.markdown("### Playoff")
     df_playoff = df_master[df_master['Week'].isin(['Pl', 'Up', 'Lw', 'Gr'])].copy()
     
@@ -879,7 +884,7 @@ if menu_utama == "Klasemen & Playoffs":
     else:
         col_b1, col_b2, col_b3, col_b4 = st.columns(4)
         
-        # === FUNGSI BRACKET CUSTOM CSS ===
+        # Fungsi visual bracket
         def render_bracket_box(df_match_filtered, title):
             st.markdown(f"<div style='text-align: center; color: white; font-size: 15px; font-weight: bold; margin-bottom: 12px;'>{title}</div>", unsafe_allow_html=True)
             
@@ -894,7 +899,7 @@ if menu_utama == "Klasemen & Playoffs":
                 st.markdown(html, unsafe_allow_html=True)
                 return
                 
-            # Filter per Match (Seri)
+            # Filter per Match
             series_list = df_match_filtered.drop_duplicates(subset=['Week', 'Day', 'Match'])
             
             for idx, row in series_list.iterrows():
@@ -917,7 +922,7 @@ if menu_utama == "Klasemen & Playoffs":
                         elif (g['Team_(Blue)'] == tim_b and g['Result'] == 1.0) or (g['Opponent_(Red)'] == tim_b and g['Result'] == 0.0): win_b += 1
                     skor_a, skor_b = str(win_a), str(win_b)
                     
-                # Rangkaian HTML Murni untuk membuat kotak skor
+                # Visual kotak skor
                 html = "<div style='display: flex; height: 45px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; border-left: 4px solid #d4af37; background-color: #3b3b40;'>"
                 html += f"<div style='width: 20%; background-color: #55555d; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;'>{skor_a}</div>"
                 html += f"<div style='width: 60%; display: flex; align-items: center; justify-content: center; gap: 10px;'>{html_a}<img src='data:image/png;base64,{image_to_base64(vs_logo)}' style='height: 20px;'>{html_b}</div>"
@@ -925,7 +930,7 @@ if menu_utama == "Klasemen & Playoffs":
                 
                 st.markdown(html, unsafe_allow_html=True)
 
-        # === RENDER KOLOM BRACKET ===
+        # Render kolom bracket
         with col_b1:
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Pl'], "Play-in Stages")
             
@@ -945,8 +950,9 @@ if menu_utama == "Klasemen & Playoffs":
             render_bracket_box(df_playoff[df_playoff['Week'] == 'Gr'], "Grand Final")
 
     st.markdown("---")
-    
-    # === 5. SEASON RECAP (HIGHLIGHTS) ===
+
+    #                     ==================================================
+    #                                       SEASON RECAP
     st.markdown("### 📰 Season Recap")
     
     # --- A. MOST EXCITING MATCH ---
@@ -2092,7 +2098,7 @@ elif menu_utama == "Team Profiling":
             if st.button("  ", key="btn_bandingkan", use_container_width=True):
                 st.session_state['h2h_team_A'] = tim_pilihan 
                 st.session_state['h2h_team_B'] = None        
-                st.session_state['menu_ikl'] = "⚔️ Versus Mode (H2H)" 
+                st.session_state['menu_ikl'] = "Versus Mode (H2H)" 
                 st.rerun()
                 
             if icon_banding_b64:
