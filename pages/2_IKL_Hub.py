@@ -14,6 +14,14 @@ import itertools
 
 st.set_page_config(page_title="IKL Dashboard", layout="wide", initial_sidebar_state="expanded")
 
+# === MENYEMBUNYIKAN SIDEBAR JIKA URL MENGANDUNG mode=hok ===
+if st.query_params.get("mode") == "hok":
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarNav"] {display: none !important;}
+        </style>
+    """, unsafe_allow_html=True)
+
 # =================================================================================================
 #                                           FUNGSI UNIVERSAL
 
