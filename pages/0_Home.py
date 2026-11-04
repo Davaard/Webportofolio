@@ -65,13 +65,17 @@ with col_intro:
     """, unsafe_allow_html=True)
 
 # === BARIS 2: SOSIAL MEDIA (UJUNG KANAN) ===
-# Menggunakan trik rasio kolom (kolom pertama sangat besar sebagai spasi pendorong ke kanan)
-col_space, col_li, col_gh, col_em = st.columns([4, 1.2, 1.2, 1.6])
-with col_li: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu")
-with col_gh: st.link_button("🐙 GitHub", "https://github.com/username_kamu")
-with col_em: st.link_button("📧 Email", "mailto:daryadarendra@gmail.com")
+# Memperbesar pendorong spasi (rasio 6.5) dan merapatkan celah antar tombol dengan gap="small"
+col_space, col_li, col_gh, col_em = st.columns([6.5, 1, 1, 1.2], gap="small")
 
-# === BARIS 4: KEMAMPUAN INTI (FULL 1 KOLOM) ===
+with col_li: 
+    st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu", use_container_width=True)
+with col_gh: 
+    st.link_button("🐙 GitHub", "https://github.com/username_kamu", use_container_width=True)
+with col_em: 
+    st.link_button("📧 Email", "mailto:daryadarendra@gmail.com", use_container_width=True)
+
+# === BARIS 3: KEMAMPUAN INTI (FULL 1 KOLOM) ===
 st.markdown("<div class='section-title' style='margin-top: 0px;'>Kemampuan Inti</div>", unsafe_allow_html=True)
 
 st.markdown("""
@@ -89,7 +93,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === BARIS 5: UNDUH CV ===
+# === BARIS 4: UNDUH CV ===
 st.markdown("<div class='section-title'>📥 Unduh Curriculum Vitae (CV)</div>", unsafe_allow_html=True)
 st.markdown("<p style='color: gray; font-size: 14px;'>Pilih spesialisasi CV yang relevan sebelum mengunduh dokumen:</p>", unsafe_allow_html=True)
 
