@@ -82,7 +82,7 @@ with tab_pendidikan:
             <ul>
                 <li>Pemodelan Numerik & Komputasi Sains</li>
                 <li>Pemrosesan Data & <i>Machine Learning</i> Terapan</li>
-                <li>Sistem Instrumentasi & Kalibrasi Geofisika</li>
+                <li>Sistem Instrumentasi, Sensor & Kalibrasi</li>
                 <li>Integrasi Perangkat Keras (IoT) & Telemetri</li>
             </ul>
         </div>
