@@ -44,7 +44,7 @@ else:
 
     nav = st.navigation({
         "Profil Utama": [home, track_record],
-        "Esports Analytics": [ikl_hub],
+        "Personal Project": [ikl_hub],
         "Learning Hub": [data_analyst]
     })
     
