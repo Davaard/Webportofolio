@@ -42,7 +42,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_kiri, col_kanan = st.columns([1.2, 2.5], gap="large")
 
 with col_kiri:
-    path_foto = "assets/foto_dava.png" 
+    path_foto = "assets/foto_dava.jpg" 
     b64_foto = image_to_base64(path_foto)
     
     if b64_foto:
