@@ -67,7 +67,7 @@ with col_btn:
 
 try:
     # Menanamkan aplikasi Gradio dengan tinggi yang disesuaikan (dikurangi agar tidak terlalu jauh ke bawah)
-    components.iframe(HUGGING_FACE_URL, height=650, scrolling=True)
+    components.iframe(HUGGING_FACE_URL, height=680, scrolling=True)
 except Exception as e:
     st.error("Gagal memuat antarmuka dari Hugging Face.")
 
