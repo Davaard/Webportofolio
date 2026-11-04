@@ -21,13 +21,11 @@ DATABASE_PORTFOLIO = [
             "Menyusun laporan teknis terkait hasil diagnosis kerusakan dan log kalibrasi alat"
         ],
         "ada_dokumentasi": True,
-        "dok_teks": "Mendiagnosis kendala teknis dan memastikan reliabilitas akuisisi data sensor seismik secara langsung di stasiun pemantau lapangan.",
+        "dok_teks": "Surat Keterangan dan Dokumentasi Magang Staff Instrumentasi dan Kalibrasi",
         "dok_gambar": [
-            {"path": "assets/Profile/BMKG/foto-bersama-magang.jpg", "caption": "Foto Bersama"},
-            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-sensor.png", "caption": "Pemeliharaan Sensor Seismik"},
-            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-digitizer.jpg", "caption": "Pemeliharaan Digitizer"},
-            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-digitizer-2.jpg", "caption": "Pemeliharaan Digitizer"},
-            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-solar-panel.jpg", "caption": "Monitoring dan Pemeliharaan Solar Panel"}
+            {"path": "assets/Profile/BMKG/bmkg-1.png", "caption": "Foto Bersama"},
+            {"path": "assets/Profile/BMKG/bmkg-2.png", "caption": "Pemeliharaan Sensor Seismik"},
+            {"path": "assets/Profile/BMKG/bmkg-3.png", "caption": "Pemeliharaan Digitizer"}
         ],
         "dok_tools": "💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer."
     },
