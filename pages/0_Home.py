@@ -39,16 +39,23 @@ st.markdown("""
 
 # === BAGIAN HERO (PROFIL UTAMA) ===
 st.markdown("<br>", unsafe_allow_html=True)
-col_kiri, col_kanan = st.columns([1.2, 2.5], gap="large")
+
+# Rasio kolom kiri dikecilkan dari 1.2 menjadi 0.9 agar foto tidak terlalu lebar
+col_kiri, col_kanan = st.columns([0.9, 2.5], gap="large")
 
 with col_kiri:
     path_foto = "assets/foto_dava.jpg" 
     b64_foto = image_to_base64(path_foto)
     
     if b64_foto:
-        st.markdown(f"""<div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;"><img src="data:image/png;base64,{b64_foto}" style="width: 100%; max-width: 250px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 2px solid #333;"></div>""", unsafe_allow_html=True)
+        # max-width dihapus, diganti width: 100% agar presisi sejajar dengan tombol Streamlit
+        st.markdown(f"""
+        <div style="margin-bottom: 15px;">
+            <img src="data:image/png;base64,{b64_foto}" style="width: 100%; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); border: 2px solid #333; display: block;">
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.markdown("<div style='height:250px; background:#222; border-radius:15px; border: 2px dashed #444; display:flex; align-items:center; justify-content:center; color:gray; margin-bottom:20px;'>[Foto Profil]</div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:250px; background:#222; border-radius:15px; border: 2px dashed #444; display:flex; align-items:center; justify-content:center; color:gray; margin-bottom:15px;'>[Foto Profil]</div>", unsafe_allow_html=True)
     
     # Sosmed Link
     col_s1, col_s2 = st.columns(2)
