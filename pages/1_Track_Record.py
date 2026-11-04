@@ -2,45 +2,136 @@ import streamlit as st
 
 st.set_page_config(page_title="Rekam Jejak | Dava Arya Danendra", page_icon="📜", layout="wide", initial_sidebar_state="expanded")
 
-# === DEFINISI FUNGSI POP-UP (ST.DIALOG) ===
-@st.dialog("📸 Dokumentasi: Magang BMKG Pusat", width="large")
-def modal_bmkg():
-    st.markdown("<div style='text-align: justify; color: #d1d1d1; margin-bottom: 15px;'>Mendiagnosis kendala teknis dan memastikan reliabilitas akuisisi data sensor seismik secara langsung di stasiun pemantau lapangan.</div>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("assets/Dokumentasi/bmkg_1.jpg", caption="Kalibrasi Sensor Seismik")
-        st.image("assets/Dokumentasi/bmkg_3.jpg", caption="Monitoring Transmisi Data")
-    with col2:
-        st.image("assets/Dokumentasi/bmkg_2.jpg", caption="Perbaikan Modul Catu Daya")
-    st.info("💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer.")
+# =====================================================================================
+# 1. DATABASE REKAM JEJAK (DATABASE LOKAL)
+# Ke depannya, kamu HANYA PERLU mengedit bagian ini untuk menambah/mengubah riwayat
+# =====================================================================================
+DATABASE_PORTFOLIO = [
+    {
+        "id": "bmkg_2025",
+        "kategori": "Kerja",  # Opsi: Kerja, Riset, Pendidikan
+        "tahun": 2025,
+        "judul": "Staf Magang Instrumentasi dan Kalibrasi Geofisika",
+        "subjudul": "BMKG Pusat, Deputi Bidang Infrastruktur MKG | Feb 2025 – Jun 2025",
+        "deskripsi": [
+            "Memantau transmisi data instrumen geofisika secara real-time dan mendiagnosis penyebab downtime server dari jarak jauh.",
+            "Melaksanakan tindakan pemeliharaan kuratif dan perbaikan fisik pada perangkat keras lapangan.",
+            "Mengeksekusi proses kalibrasi tingkat tinggi pada instrumen sensor gempa (Seismometer dan Accelerometer)."
+        ],
+        "ada_dokumentasi": True,
+        "dok_teks": "Mendiagnosis kendala teknis dan memastikan reliabilitas akuisisi data sensor seismik secara langsung di stasiun pemantau lapangan.",
+        "dok_gambar": [
+            {"path": "assets/Dokumentasi/bmkg_1.jpg", "caption": "Kalibrasi Sensor Seismik"},
+            {"path": "assets/Dokumentasi/bmkg_2.jpg", "caption": "Perbaikan Modul Catu Daya"},
+            {"path": "assets/Dokumentasi/bmkg_3.jpg", "caption": "Monitoring Transmisi Data"}
+        ],
+        "dok_tools": "💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer."
+    },
+    {
+        "id": "bem_2025",
+        "kategori": "Kerja",
+        "tahun": 2025,
+        "judul": "Wakil Gubernur",
+        "subjudul": "BEM FMIPA Universitas Negeri Semarang | Feb 2025 – Feb 2026",
+        "deskripsi": [
+            "Merumuskan blueprint program kerja strategis dan mengelola manajemen SDM 125 anggota pengurus.",
+            "Memonitor evaluasi Key Performance Indicators (KPI) seluruh departemen.",
+            "Bertindak sebagai fasilitator utama dalam memimpin resolusi konflik internal tim."
+        ],
+        "ada_dokumentasi": True,
+        "dok_teks": "Dokumentasi kegiatan strategis dan rapat evaluasi manajerial bersama jajaran departemen.",
+        "dok_gambar": [
+            {"path": "assets/Dokumentasi/bem_1.jpg", "caption": "Rapat Evaluasi KPI Departemen"},
+            {"path": "assets/Dokumentasi/bem_2.jpg", "caption": "Eksekusi Program Kerja Utama"}
+        ],
+        "dok_tools": ""
+    },
+    {
+        "id": "indobert_2026",
+        "kategori": "Riset",
+        "tahun": 2026,
+        "judul": "Pengembang Aplikasi AI: IndoBERT Emotion Classifier",
+        "subjudul": "Kecerdasan Buatan & NLP",
+        "deskripsi": [
+            "Membangun arsitektur aplikasi web interaktif untuk klasifikasi emosi teks berbasis Deep Learning menggunakan model bahasa IndoBERT dan framework Gradio.",
+            "Meraih tingkat akurasi evaluasi performa pada metrik F1-Score 0.89."
+        ],
+        "ada_dokumentasi": True,
+        "dok_teks": "Tangkapan layar antarmuka pengguna (Gradio) yang menampilkan hasil kalkulasi matriks probabilitas sentimen dan emosi dari teks berbahasa Indonesia.",
+        "dok_gambar": [
+            {"path": "assets/Dokumentasi/indobert_ui.jpg", "caption": "Analisis Probabilitas Multi-label"}
+        ],
+        "dok_tools": ""
+    },
+    {
+        "id": "kimi_2026",
+        "kategori": "Riset",
+        "tahun": 2026,
+        "judul": "Kongres Ilmuwan Muda Indonesia (KIMI) V",
+        "subjudul": "Presenter Ilmiah Nasional | 2026",
+        "deskripsi": [
+            "Tampil sebagai pemateri untuk mempresentasikan riset inovatif mengenai rancang bangun model numerik prediksi cuaca pesisir.",
+            "Model dioptimasi menggunakan algoritma Logika Fuzzy Mamdani di forum sains tingkat nasional."
+        ],
+        "ada_dokumentasi": True,
+        "dok_teks": "Sesi pemaparan dan tanya jawab riset mengenai rancang bangun model numerik cuaca.",
+        "dok_gambar": [
+            {"path": "assets/Dokumentasi/kimi_1.jpg", "caption": "Sesi Presentasi Riset KIMI V 2026"}
+        ],
+        "dok_tools": ""
+    },
+    {
+        "id": "grk_2025",
+        "kategori": "Riset",
+        "tahun": 2025,
+        "judul": "Inventarisasi Emisi Gas Rumah Kaca",
+        "subjudul": "DPA LPPM UNNES | 2025",
+        "deskripsi": [
+            "Berhasil meraih pendanaan hibah riset perguruan tinggi dengan luaran tersertifikasi Hak Cipta resmi dari Kementerian Hukum dan HAM RI."
+        ],
+        "ada_dokumentasi": False
+    },
+    {
+        "id": "unnes_2026",
+        "kategori": "Pendidikan",
+        "tahun": 2026,
+        "judul": "Universitas Negeri Semarang (UNNES)",
+        "subjudul": "Sarjana Sains (S.Si.) - Fisika | 2022 – 2026",
+        "deskripsi": [
+            "<b>IPK: 3.44</b>",
+            "<b>Tugas Akhir / Skripsi:</b><br><i>Simulasi Lagrangian Particle Tracking (LPT) 2D & 3D untuk Pemodelan Dispersi Gas Non-Kondensabel (H2S dan CO2) di Kawasan Panas Bumi Dieng.</i>",
+            "<b>Fokus Keilmuan:</b><br>• Pemodelan Numerik & Komputasi Sains<br>• Pemrosesan Data & Machine Learning Terapan<br>• Sistem Instrumentasi & Kalibrasi Geofisika<br>• Integrasi Perangkat Keras (IoT) & Telemetri"
+        ],
+        "ada_dokumentasi": False
+    },
+    {
+        "id": "toefl_2026",
+        "kategori": "Pendidikan",
+        "tahun": 2026, # Asumsi tahun untuk sorting
+        "judul": "Sertifikasi & Kemampuan Bahasa",
+        "subjudul": "Kualifikasi Profesional",
+        "deskripsi": [
+            "<b>Bahasa Inggris:</b> UNNES-TEP / TOEFL Prediction (Score: <b>580</b>).",
+            "Mampu membaca dan menganalisis dokumentasi teknis atau jurnal ilmiah internasional secara mendalam."
+        ],
+        "ada_dokumentasi": False
+    }
+]
 
-@st.dialog("📸 Dokumentasi: BEM FMIPA", width="large")
-def modal_bem():
-    col1, col2 = st.columns(2)
-    with col1: st.image("assets/Dokumentasi/bem_1.jpg", caption="Rapat Evaluasi KPI Departemen")
-    with col2: st.image("assets/Dokumentasi/bem_2.jpg", caption="Eksekusi Program Kerja Utama")
+# =====================================================================================
+# 2. MESIN RENDER (UI & FUNGSI)
+# =====================================================================================
 
-@st.dialog("💻 UI/UX: IndoBERT Emotion Classifier", width="large")
-def modal_indobert():
-    st.markdown("<div style='text-align: justify; color: #d1d1d1; margin-bottom: 15px;'>Tangkapan layar antarmuka pengguna (Gradio) yang menampilkan hasil kalkulasi matriks probabilitas sentimen dan emosi dari teks berbahasa Indonesia (F1-Score 0.89).</div>", unsafe_allow_html=True)
-    st.image("assets/Dokumentasi/indobert_ui.jpg", caption="Analisis Probabilitas Multi-label")
-
-@st.dialog("🎤 Presentasi: KIMI V", width="large")
-def modal_kimi():
-    st.markdown("<div style='text-align: justify; color: #d1d1d1; margin-bottom: 15px;'>Sesi pemaparan dan tanya jawab riset mengenai rancang bangun model numerik cuaca berbasis Logika Fuzzy Mamdani.</div>", unsafe_allow_html=True)
-    st.image("assets/Dokumentasi/kimi_1.jpg", caption="Sesi Presentasi Riset KIMI V 2026")
-
-
-# === STYLING CSS TIMELINE ===
+# --- Styling CSS Universal ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
     html, body, [class*="css"] { font-family: 'Montserrat', sans-serif; }
     
     .page-title { font-weight: 900; font-size: 34px; color: white; margin-bottom: 10px; line-height: 1.2;}
-    .page-subtitle { font-weight: 500; font-size: 16px; color: gray; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;}
+    .page-subtitle { font-weight: 500; font-size: 16px; color: gray; margin-bottom: 15px;}
     
-    .timeline-container { border-left: 2px solid #333; padding-left: 25px; position: relative; margin-bottom: 15px; }
+    .timeline-container { border-left: 2px solid #333; padding-left: 25px; position: relative; margin-bottom: 15px; margin-top: 15px;}
     .timeline-container::before {
         content: ''; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; 
         background-color: #00d2ff; border-radius: 50%; box-shadow: 0 0 8px #00d2ff;
@@ -49,12 +140,11 @@ st.markdown("""
     .tl-title { font-weight: 800; font-size: 20px; color: white; margin-bottom: 5px; }
     .tl-subtitle { font-weight: 600; font-size: 14.5px; color: #d4af37; margin-bottom: 12px; }
     .tl-content { font-weight: 400; font-size: 15px; color: #d1d1d1; line-height: 1.7; text-align: justify; margin-bottom: 15px;}
-    .tl-content ul { margin-top: 5px; padding-left: 20px; }
+    .tl-content ul { margin-top: 5px; padding-left: 20px; margin-bottom: 0px;}
     .tl-content li { margin-bottom: 8px; }
     
     div[data-testid="stTabs"] button { font-family: 'Montserrat', sans-serif !important; font-weight: 600 !important; font-size: 16px !important; }
     
-    /* Styling tombol trigger Pop-up */
     div[data-testid="stButton"] button {
         border-radius: 6px !important; border: 1px solid #444 !important; background-color: #222 !important; color: #00d2ff !important; font-weight: 600 !important; transition: all 0.3s ease !important;
     }
@@ -62,129 +152,90 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='page-title'>Rekam Jejak & Dokumentasi</div>", unsafe_allow_html=True)
-st.markdown("<div class='page-subtitle'>Rincian kronologis perjalanan profesional, akademik, dan inovasi teknologi yang pernah dikembangkan.</div>", unsafe_allow_html=True)
+# --- Fungsi Pop-Up Universal ---
+@st.dialog("📸 Dokumentasi Detail", width="large")
+def buka_modal_dokumentasi(item_data):
+    st.markdown(f"<h4 style='margin-top: 0; color: white;'>{item_data['judul']}</h4>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: justify; color: #d1d1d1; margin-bottom: 20px;'>{item_data.get('dok_teks', '')}</div>", unsafe_allow_html=True)
+    
+    gambar_list = item_data.get('dok_gambar', [])
+    if gambar_list:
+        # Membagi gambar ke dalam 2 kolom agar rapi
+        cols = st.columns(2)
+        for idx, img in enumerate(gambar_list):
+            with cols[idx % 2]:
+                st.image(img['path'], caption=img['caption'])
+                
+    if item_data.get('dok_tools'):
+        st.info(item_data['dok_tools'])
 
+# --- Fungsi Pembangun HTML Timeline ---
+def render_timeline_item(item):
+    # Menyusun HTML List Bullet Points
+    deskripsi_html = "<ul>"
+    for poin in item["deskripsi"]:
+        deskripsi_html += f"<li>{poin}</li>"
+    deskripsi_html += "</ul>"
+    
+    # Render Kotak HTML
+    html_str = f"""
+    <div class="timeline-container">
+        <div class="tl-title">{item['judul']}</div>
+        <div class="tl-subtitle">{item['subjudul']}</div>
+        <div class="tl-content">{deskripsi_html}</div>
+    </div>
+    """
+    st.markdown(html_str, unsafe_allow_html=True)
+    
+    # Render Tombol Dokumentasi (Jika Ada)
+    if item.get("ada_dokumentasi"):
+        if st.button(f"🖼️ Lihat Dokumentasi", key=f"btn_dok_{item['id']}"):
+            buka_modal_dokumentasi(item)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+
+# =====================================================================================
+# 3. TATA LETAK HALAMAN (LAYOUTING)
+# =====================================================================================
+
+col_header, col_filter = st.columns([3, 1])
+with col_header:
+    st.markdown("<div class='page-title'>Rekam Jejak & Dokumentasi</div>", unsafe_allow_html=True)
+    st.markdown("<div class='page-subtitle'>Rincian kronologis perjalanan profesional, akademik, dan inovasi.</div>", unsafe_allow_html=True)
+with col_filter:
+    sort_option = st.selectbox("Urutkan Berdasarkan:", ["Terbaru (Tahun)", "Terlama (Tahun)", "Abjad (A - Z)"])
+
+st.markdown("<hr style='border-color: #333; margin-top: 0px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+
+# --- Logika Pengurutan (Sorting) ---
+if sort_option == "Terbaru (Tahun)":
+    data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['tahun'], reverse=True)
+elif sort_option == "Terlama (Tahun)":
+    data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['tahun'], reverse=False)
+else:
+    data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['judul'])
+
+# --- Pembagian Tab & Eksekusi Render ---
 tab_kerja, tab_projek, tab_pendidikan = st.tabs([
     "💼 Pengalaman & Kepemimpinan", 
     "🚀 Riset & Inovasi", 
     "🎓 Akademik & Kualifikasi"
 ])
 
-# --- TAB 1: PENGALAMAN & KEPEMIMPINAN ---
 with tab_kerja:
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- BMKG ---
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Staf Magang Instrumentasi dan Kalibrasi Geofisika</div>
-        <div class="tl-subtitle">BMKG Pusat, Deputi Bidang Infrastruktur MKG | Feb 2025 – Jun 2025</div>
-        <div class="tl-content">
-            <ul>
-                <li>Memantau transmisi data instrumen geofisika secara <i>real-time</i> dan mendiagnosis penyebab <i>downtime server</i> dari jarak jauh.</li>
-                <li>Melaksanakan tindakan pemeliharaan kuratif dan perbaikan fisik pada perangkat keras lapangan.</li>
-                <li>Mengeksekusi proses kalibrasi tingkat tinggi pada instrumen sensor gempa (Seismometer dan Accelerometer).</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("🖼️ Lihat Dokumentasi BMKG", key="btn_bmkg"): modal_bmkg()
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    
-    # --- BEM ---
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Wakil Gubernur</div>
-        <div class="tl-subtitle">BEM FMIPA Universitas Negeri Semarang | Feb 2025 – Feb 2026</div>
-        <div class="tl-content">
-            <ul>
-                <li>Merumuskan <i>blueprint</i> program kerja strategis dan mengelola manajemen SDM 125 anggota pengurus.</li>
-                <li>Memonitor evaluasi <i>Key Performance Indicators</i> (KPI) seluruh departemen.</li>
-                <li>Bertindak sebagai fasilitator utama dalam memimpin resolusi konflik internal tim.</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("🖼️ Lihat Dokumentasi BEM", key="btn_bem"): modal_bem()
+    for data in data_terurut:
+        if data["kategori"] == "Kerja":
+            render_timeline_item(data)
 
-# --- TAB 2: RISET & INOVASI ---
 with tab_projek:
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- INDOBERT ---
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Pengembang Aplikasi AI: IndoBERT Emotion Classifier Web App</div>
-        <div class="tl-subtitle">Kecerdasan Buatan & NLP</div>
-        <div class="tl-content">Membangun arsitektur aplikasi web interaktif untuk klasifikasi emosi teks berbasis <i>Deep Learning</i> menggunakan model bahasa IndoBERT dan <i>framework</i> Gradio. Meraih tingkat akurasi evaluasi performa pada metrik <b>F1-Score 0.89</b>.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("💻 Lihat Antarmuka Aplikasi", key="btn_nlp"): modal_indobert()
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    
-    # --- KIMI V ---
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Kongres Ilmuwan Muda Indonesia (KIMI) V</div>
-        <div class="tl-subtitle">Presenter Ilmiah Nasional | 2026</div>
-        <div class="tl-content">Tampil sebagai pemateri untuk mempresentasikan riset inovatif mengenai rancang bangun model numerik prediksi cuaca pesisir yang dioptimasi menggunakan algoritma <b>Logika Fuzzy Mamdani</b> di forum sains tingkat nasional.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("🎤 Dokumentasi Presentasi", key="btn_kimi"): modal_kimi()
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    
-    # Sisa pencapaian
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Inventarisasi Emisi Gas Rumah Kaca</div>
-        <div class="tl-subtitle">DPA LPPM UNNES | 2025</div>
-        <div class="tl-content">Berhasil meraih pendanaan hibah riset perguruan tinggi dengan luaran tersertifikasi Hak Cipta resmi dari Kementerian Hukum dan HAM RI.</div>
-    </div>
-    <div class="timeline-container">
-        <div class="tl-title">Tsunami Ready Community 2025</div>
-        <div class="tl-subtitle">Pelaksana Program BMKG di Kelurahan Parangtritis</div>
-        <div class="tl-content">Memetakan spasial dan mendistribusikan "Stiker Prioritas Evakuasi Bencana" pada 78 titik rumah kelompok rentan.</div>
-    </div>
-    <div class="timeline-container">
-        <div class="tl-title">Penyusun Kurikulum Inovasi Agrikultur (PPK Ormawa)</div>
-        <div class="tl-subtitle">Pendanaan Nasional Kemdikbudristek RI | 2024</div>
-        <div class="tl-content">Menyusun kurikulum operasional 6 modul pelatihan agrikultur guna pemberdayaan ekonomi masyarakat di Desa Singosari, Boyolali.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    for data in data_terurut:
+        if data["kategori"] == "Riset":
+            render_timeline_item(data)
 
-# --- TAB 3: AKADEMIK & KUALIFIKASI ---
 with tab_pendidikan:
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Universitas Negeri Semarang (UNNES)</div>
-        <div class="tl-subtitle">Sarjana Sains (S.Si.) - Fisika | 2022 – 2026</div>
-        <div class="tl-content">
-            <b>IPK: 3.44</b><br><br>
-            <b>Tugas Akhir / Skripsi:</b><br>
-            <i>Simulasi Lagrangian Particle Tracking (LPT) 2D & 3D untuk Pemodelan Dispersi Gas Non-Kondensabel (H2S dan CO2) di Kawasan Panas Bumi Dieng.</i><br><br>
-            <b>Fokus Keilmuan:</b>
-            <ul>
-                <li>Pemodelan Numerik & Komputasi Sains</li>
-                <li>Pemrosesan Data & <i>Machine Learning</i> Terapan</li>
-                <li>Sistem Instrumentasi & Kalibrasi Geofisika</li>
-                <li>Integrasi Perangkat Keras (IoT) & Telemetri</li>
-            </ul>
-        </div>
-    </div>
-    
-    <div class="timeline-container">
-        <div class="tl-title">Sertifikasi & Kemampuan Bahasa</div>
-        <div class="tl-subtitle">Kualifikasi Profesional</div>
-        <div class="tl-content">
-            <ul>
-                <li><b>Bahasa Inggris:</b> UNNES-TEP / TOEFL Prediction (Score: <b>580</b>). Mampu membaca dan menganalisis dokumentasi teknis atau jurnal ilmiah internasional secara mendalam.</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    for data in data_terurut:
+        if data["kategori"] == "Pendidikan":
+            render_timeline_item(data)
