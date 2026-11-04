@@ -3,8 +3,7 @@ import streamlit as st
 st.set_page_config(page_title="Rekam Jejak | Dava Arya Danendra", page_icon="📜", layout="wide", initial_sidebar_state="expanded")
 
 # =====================================================================================
-# 1. DATABASE REKAM JEJAK (DATABASE LOKAL)
-# Ke depannya, kamu HANYA PERLU mengedit bagian ini untuk menambah/mengubah riwayat
+# 1. DATABASE
 # =====================================================================================
 DATABASE_PORTFOLIO = [
     {
@@ -21,13 +20,13 @@ DATABASE_PORTFOLIO = [
             "Menyusun laporan teknis terkait hasil diagnosis kerusakan dan log kalibrasi alat"
         ],
         "ada_dokumentasi": True,
-        "dok_teks": "Surat Keterangan dan Dokumentasi Magang Staff Instrumentasi dan Kalibrasi",
+        "dok_teks": "",
         "dok_gambar": [
-            {"path": "assets/Profile/BMKG/bmkg-1.png", "caption": "Foto Bersama"},
-            {"path": "assets/Profile/BMKG/bmkg-2.png", "caption": "Pemeliharaan Sensor Seismik"},
-            {"path": "assets/Profile/BMKG/bmkg-3.png", "caption": "Pemeliharaan Digitizer"}
+            {"path": "assets/Profile/BMKG/bmkg-1.png", "caption": "Surat Keterangan"},
+            {"path": "assets/Profile/BMKG/bmkg-2.png", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/BMKG/bmkg-3.png", "caption": "Dokumentasi"}
         ],
-        "dok_tools": "💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer."
+        "dok_tools": ""
     },
     {
         "id": "bem_2025",
@@ -40,18 +39,18 @@ DATABASE_PORTFOLIO = [
             "Memonitor evaluasi Key Performance Indicators (KPI) seluruh departemen.",
             "Bertindak sebagai fasilitator utama dalam memimpin resolusi konflik internal tim."
         ],
-        "ada_dokumentasi": True,
-        "dok_teks": "Dokumentasi kegiatan strategis dan rapat evaluasi manajerial bersama jajaran departemen.",
+        "ada_dokumentasi": False,
+        "dok_teks": "",
         "dok_gambar": [
-            {"path": "assets/Dokumentasi/bem_1.jpg", "caption": "Rapat Evaluasi KPI Departemen"},
-            {"path": "assets/Dokumentasi/bem_2.jpg", "caption": "Eksekusi Program Kerja Utama"}
+            {"path": "assets/", "caption": ""},
+            {"path": "assets/", "caption": ""}
         ],
         "dok_tools": ""
     },
     {
-        "id": "indobert_2026",
+        "id": "indobert_2025",
         "kategori": "Riset",
-        "tahun": 2026,
+        "tahun": 2025,
         "judul": "Pengembang Aplikasi AI: IndoBERT Emotion Classifier",
         "subjudul": "Kecerdasan Buatan & NLP",
         "deskripsi": [
@@ -61,7 +60,11 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": True,
         "dok_teks": "Tangkapan layar antarmuka pengguna (Gradio) yang menampilkan hasil kalkulasi matriks probabilitas sentimen dan emosi dari teks berbahasa Indonesia.",
         "dok_gambar": [
-            {"path": "assets/Dokumentasi/indobert_ui.jpg", "caption": "Analisis Probabilitas Multi-label"}
+            {"path": "assets/Penelitian/IndoBERT/bert_1.png", "caption": "Abstrak"},
+            {"path": "assets/Penelitian/IndoBERT/bert_2.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert_3.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert_4.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert_5.png", "caption": "Tampilan Sistem"}
         ],
         "dok_tools": ""
     },
@@ -72,13 +75,37 @@ DATABASE_PORTFOLIO = [
         "judul": "Kongres Ilmuwan Muda Indonesia (KIMI) V",
         "subjudul": "Presenter Ilmiah Nasional | 2026",
         "deskripsi": [
-            "Tampil sebagai pemateri untuk mempresentasikan riset inovatif mengenai rancang bangun model numerik prediksi cuaca pesisir.",
-            "Model dioptimasi menggunakan algoritma Logika Fuzzy Mamdani di forum sains tingkat nasional."
+            "Tampil sebagai presenter riset inovatif mengenai rancang bangun model numerik prediksi cuaca pesisir.",
+            "Model dibangun menggunakan algoritma Logika Fuzzy Mamdani dan dipaparkan di forum sains tingkat nasional."
         ],
         "ada_dokumentasi": True,
-        "dok_teks": "Sesi pemaparan dan tanya jawab riset mengenai rancang bangun model numerik cuaca.",
+        "dok_teks": "",
         "dok_gambar": [
-            {"path": "assets/Dokumentasi/kimi_1.jpg", "caption": "Sesi Presentasi Riset KIMI V 2026"}
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_1.jpg", "caption": "Sertifikat"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_2.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_3.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_4.jpg", "caption": "Dokumentasi"},
+        ],
+        "dok_tools": ""
+    },
+    {
+        "id": "ppko_2024",
+        "kategori": "Riset",
+        "tahun": 2024,
+        "judul": "Penerima Pendanaan Nasional PPK Ormawa 2024",
+        "subjudul": "Kurikulum Sanggar Tani Muda Desa Singasari, Boyolali | 2024",
+        "deskripsi": [
+            "Terlibat langsung dalam program pemberdayaan masyarakat di Desa Singosari, Kabupaten Boyolali",
+            "Bertanggung jawab dalam memimpin penyelenggaraan berbagai sesi pelatihan petani muda",
+            "Menyusun Kurikulum Program Peningkatan Kapasitas Sanggar Tani Muda secara komprehensif"
+        ],
+        "ada_dokumentasi": True,
+        "dok_teks": "",
+        "dok_gambar": [
+            {"path": "assets/Profile/Pengabdian/PPKO/ppko-1.png", "caption": "Sertifikat Belmawa"},
+            {"path": "assets/Profile/Pengabdian/PPKO/ppko-2.png", "caption": "Sertifikat Apresiasi"},
+            {"path": "assets/Profile/Pengabdian/PPKO/ppko-3.png", "caption": "Surat Keterangan"},
+            {"path": "assets/Profile/Pengabdian/PPKO/ppko-4.png", "caption": "Sampul Kurikulum"}
         ],
         "dok_tools": ""
     },
@@ -86,12 +113,18 @@ DATABASE_PORTFOLIO = [
         "id": "grk_2025",
         "kategori": "Riset",
         "tahun": 2025,
-        "judul": "Inventarisasi Emisi Gas Rumah Kaca",
-        "subjudul": "DPA LPPM UNNES | 2025",
+        "judul": "Penerima Pendanaan DPA LPPM UNNES Tahun 2025",
+        "subjudul": "Surat Pencatatan Ciptaan Video Profil Desa Jetak, Getasan | 2025",
         "deskripsi": [
             "Berhasil meraih pendanaan hibah riset perguruan tinggi dengan luaran tersertifikasi Hak Cipta resmi dari Kementerian Hukum dan HAM RI."
         ],
-        "ada_dokumentasi": False
+        "ada_dokumentasi": True,
+        "dok_teks": "Surat Pencatatan Ciptaan Video Profil Desa Jetak",
+        "dok_gambar": [
+            {"path": "assets/Profile/Pengabdian/UNNES/hal-1.png", "caption": ""},
+            {"path": "assets/Profile/Pengabdian/UNNES/hal-2.png", "caption": ""}
+        ],
+        "dok_tools": ""
     },
     {
         "id": "unnes_2026",
@@ -107,16 +140,21 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": False
     },
     {
-        "id": "toefl_2026",
+        "id": "topel_2026",
         "kategori": "Pendidikan",
-        "tahun": 2026, # Asumsi tahun untuk sorting
+        "tahun": 2026,
         "judul": "Sertifikasi & Kemampuan Bahasa",
         "subjudul": "Kualifikasi Profesional",
         "deskripsi": [
-            "<b>Bahasa Inggris:</b> UNNES-TEP / TOEFL Prediction (Score: <b>580</b>).",
+            "<b>Bahasa Inggris:</b> UNNES-TOPEL / Test of Proficiency in English Language (Score: <b>580</b>).",
             "Mampu membaca dan menganalisis dokumentasi teknis atau jurnal ilmiah internasional secara mendalam."
         ],
-        "ada_dokumentasi": False
+        "ada_dokumentasi": True,
+        "dok_teks": "",
+        "dok_gambar": [
+            {"path": "assets/Profile/Bahasa/Sertifikat-Topel.jpg", "caption": "Sertifikat dari LP3 UNNES"}
+        ],
+        "dok_tools": ""
     }
 ]
 
