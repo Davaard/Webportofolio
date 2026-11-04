@@ -287,7 +287,26 @@ with col_header_right:
         
         # Penyesuaian margin atas agar selectbox sejajar dengan logo
         st.markdown("<div style='margin-top: -10px;'>", unsafe_allow_html=True)
+        
+        # Baca musim yang sedang aktif di layar
         musim_pilihan = st.selectbox("Pilih Musim", daftar_musim, label_visibility="collapsed")
+        
+        # === LOGIKA PEMBERSIH TIM SAAT GANTI MUSIM ===
+        # Jika session_state untuk musim belum ada, buat baru
+        if 'last_selected_season' not in st.session_state:
+            st.session_state['last_selected_season'] = musim_pilihan
+            
+        # Jika musim di layar BERBEDA dengan musim di memori (artinya user baru saja mengganti dropdown)
+        if musim_pilihan != st.session_state['last_selected_season']:
+            # 1. Update memori musim dengan yang baru
+            st.session_state['last_selected_season'] = musim_pilihan
+            # 2. Hapus semua tim pilihan di Profiling dan H2H
+            st.session_state['profiling_team'] = None
+            st.session_state['h2h_team_A'] = None
+            st.session_state['h2h_team_B'] = None
+            # 3. Refresh halaman secara paksa agar perubahannya langsung terasa
+            st.rerun()
+            
         st.markdown("</div>", unsafe_allow_html=True)
         
         df_master = df_csv[df_csv['Season'] == musim_pilihan].copy()
