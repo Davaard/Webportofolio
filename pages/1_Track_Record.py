@@ -84,7 +84,7 @@ DATABASE_PORTFOLIO = [
             {"path": "assets/Profile/Penelitian/KIMI-V/kimi-1.jpg", "caption": "Sertifikat"},
             {"path": "assets/Profile/Penelitian/KIMI-V/kimi-2.jpg", "caption": "Dokumentasi"},
             {"path": "assets/Profile/Penelitian/KIMI-V/kimi-3.jpg", "caption": "Dokumentasi"},
-            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-4.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-4.jpg", "caption": "Dokumentasi"}
         ],
         "dok_tools": ""
     },
