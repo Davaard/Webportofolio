@@ -14,16 +14,20 @@ DATABASE_PORTFOLIO = [
         "judul": "Staf Magang Instrumentasi dan Kalibrasi Geofisika",
         "subjudul": "BMKG Pusat, Deputi Bidang Infrastruktur MKG | Feb 2025 – Jun 2025",
         "deskripsi": [
-            "Memantau transmisi data instrumen geofisika secara real-time dan mendiagnosis penyebab downtime server dari jarak jauh.",
-            "Melaksanakan tindakan pemeliharaan kuratif dan perbaikan fisik pada perangkat keras lapangan.",
-            "Mengeksekusi proses kalibrasi tingkat tinggi pada instrumen sensor gempa (Seismometer dan Accelerometer)."
+            "Memantau status operasional dan kontinuitas transmisi data instrumen geofisika dari seluruh stasiun pengamatan di Indonesia secara real-time",
+            "Melakukan diagnosis awal via server BMKG untuk melacak gangguan atau downtime pada perangkat jarak jauh",
+            "Melaksanakan pemeliharaan dan perbaikan fisik pada perangkat yang mengalami gangguan operasional (Sensor, Digitizer, Modul GPS, Panel Surya, dan Sistem Catu Daya)",
+            "Melakukan kalibrasi presisi pada instrumen sensor gempa, meliputi Seismometer (termasuk Broadband sensor) dan Accelerometer (baik tipe FBA maupun teknologi MEMS yang terintegrasi) untuk menjaga akurasi pembacaan aktivitas seismik",
+            "Menyusun laporan teknis terkait hasil diagnosis kerusakan dan log kalibrasi alat"
         ],
         "ada_dokumentasi": True,
         "dok_teks": "Mendiagnosis kendala teknis dan memastikan reliabilitas akuisisi data sensor seismik secara langsung di stasiun pemantau lapangan.",
         "dok_gambar": [
-            {"path": "assets/Dokumentasi/bmkg_1.jpg", "caption": "Kalibrasi Sensor Seismik"},
-            {"path": "assets/Dokumentasi/bmkg_2.jpg", "caption": "Perbaikan Modul Catu Daya"},
-            {"path": "assets/Dokumentasi/bmkg_3.jpg", "caption": "Monitoring Transmisi Data"}
+            {"path": "assets/profile/BMKG/foto-bersama-magang.jpg", "caption": "Foto Bersama"},
+            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-sensor.png", "caption": "Pemeliharaan Sensor Seismik"},
+            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-digitizer.jpg", "caption": "Pemeliharaan Digitizer"},
+            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-digitizer-2.jpg", "caption": "Pemeliharaan Digitizer"},
+            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-solar-panel.jpg", "caption": "Monitoring dan Pemeliharaan Solar Panel"}
         ],
         "dok_tools": "💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer."
     },
