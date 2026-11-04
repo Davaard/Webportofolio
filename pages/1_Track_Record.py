@@ -144,9 +144,9 @@ DATABASE_PORTFOLIO = [
         "kategori": "Pendidikan",
         "tahun": 2026,
         "judul": "Sertifikasi & Kemampuan Bahasa",
-        "subjudul": "Kualifikasi Profesional",
+        "subjudul": "UNNES-TOPEL / Test of Proficiency in English Language",
         "deskripsi": [
-            "<b>Bahasa Inggris:</b> UNNES-TOPEL / Test of Proficiency in English Language (Score: <b>580</b>).",
+            "Test of Proficiency in English Language Score: <b>580</b>.",
             "Mampu membaca dan menganalisis dokumentasi teknis atau jurnal ilmiah internasional secara mendalam."
         ],
         "ada_dokumentasi": True,
