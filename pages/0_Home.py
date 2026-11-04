@@ -43,7 +43,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_foto, col_intro = st.columns([0.9, 2.5], gap="large")
 
 with col_foto:
-    path_foto = "assets/foto_dava.jpg" 
+    path_foto = "assets/profile/foto_dava.jpg" 
     b64_foto = image_to_base64(path_foto)
     
     if b64_foto:
@@ -60,7 +60,7 @@ with col_intro:
     <div class="hero-title">Dava Arya Danendra</div>
     <div class="hero-subtitle">S.Si. Fisika | Data Science, Computational Physics & Instrumentation</div>
     <div class="hero-text">
-        Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) dengan spesialisasi pada pemodelan numerik, pemrosesan data kompleks, serta kalibrasi instrumentasi geofisika. Memiliki rekam jejak dalam membangun visualisasi data interaktif, penerapan algoritma <i>Machine Learning</i> (seperti NLP & Logika Fuzzy), hingga akuisisi data perangkat keras lapangan (IoT). Berkomitmen mengubah data mentah menjadi metrik dan <i>dashboard</i> analitik yang akurat guna mendukung inovasi perusahaan.
+        Lulusan Fisika Universitas Negeri Semarang (UNNES) yang memiliki minat besar pada pengembangan Internet of Things (IoT) dan otomasi data. Terampil merancang sistem berbasis mikrokontroler (terkhusus ESP32) menggunakan bahasa pemrograman C++ melalui Arduino IDE untuk pembacaan sensor lingkungan, serta mengintegrasikan perangkat keras tersebut ke sistem pemantauan industri seperti SCADA menggunakan protokol Modbus RTU atau TCP-IP. Memiliki pengalaman berharga selama 5 bulan magang di BMKG untuk terjun langsung membantu pemeliharaan jaringan telemetri dan perangkat instrumentasi lapangan. Mampu menulis script pemrograman menggunakan Python, MATLAB, dan Google Apps Script untuk kebutuhan pemodelan numerik yang juga diterapkan dalam penyelesaian tugas akhir, maupun otomasi pengarsipan data, serta memiliki pemahaman dasar mengenai visualisasi data dan UI/UX. Pembelajar yang adaptif dan selalu antusias untuk memecahkan masalah teknis, baik pada sistem keras maupun logika perangkat lunak..
     </div>
     """, unsafe_allow_html=True)
 
