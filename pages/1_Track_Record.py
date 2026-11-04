@@ -116,9 +116,9 @@ DATABASE_PORTFOLIO = [
             "judul": "Pelaksana Program Tsunami Ready Community Tahun 2025",
             "subjudul": "Stiker Prioritas Evakuasi Bencana Tsunami Kalurahan Parangtritis, Bantul | 2025",
             "deskripsi": [
-                "Berhasil merancang dan mengimplementasikan Project Stiker Prioritas Evakuasi Bencana Tsunami di kawasan Kalurahan Parangtritis, Kabupaten Bantul"
-                "Program KKN Tsunami Ready Community yang secara resmi mendapatkan sertifikat penghargaan dan pengakuan dari Badan Meteorologi, Klimatologi, dan Geofisika (BMKG) Stasiun Geofisika Kelas I Sleman",
-                "Stiker evakuasi didesain secara khusus untuk mengidentifikasi kelompok rentan, termasuk penyandang disabilitas, dan telah diimplementasikan oleh aparat desa sebagai sarana edukasi serta mitigasi bencana berkelanjutan"
+                "Berhasil merancang dan mengimplementasikan Project Stiker Prioritas Evakuasi Bencana Tsunami di kawasan Kalurahan Parangtritis, Kabupaten Bantul",
+                "Stiker evakuasi didesain secara khusus untuk mengidentifikasi kelompok rentan, termasuk penyandang disabilitas, dan telah diimplementasikan oleh aparat desa sebagai sarana edukasi serta mitigasi bencana berkelanjutan",
+                "Program KKN Tsunami Ready Community secara resmi mendapatkan sertifikat penghargaan dan pengakuan dari Badan Meteorologi, Klimatologi, dan Geofisika (BMKG) Stasiun Geofisika Kelas I Sleman"
             ],
             "ada_dokumentasi": True,
             "dok_teks": "",
