@@ -37,9 +37,7 @@ else:
     # --- TAMPILAN LENGKAP STANDAR (HRD/UMUM) ---
     home = st.Page("pages/0_Home.py", title="Beranda & CV", icon="🏠", default=True)
     track_record = st.Page("pages/1_Track_Record.py", title="Rekam Jejak", icon="🏆")
-    
     ikl_hub = st.Page("pages/2_IKL_Hub.py", title="Esport Data Analyst", icon="📊")
-    
     data_analyst = st.Page("pages/3_Data_Analyst.py", title="Data Analyst", icon="📈")
 
     nav = st.navigation({
