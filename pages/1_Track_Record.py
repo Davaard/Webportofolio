@@ -60,11 +60,11 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": True,
         "dok_teks": "Tangkapan layar antarmuka pengguna (Gradio) yang menampilkan hasil kalkulasi matriks probabilitas sentimen dan emosi dari teks berbahasa Indonesia.",
         "dok_gambar": [
-            {"path": "assets/Penelitian/IndoBERT/bert-1.png", "caption": "Abstrak"},
-            {"path": "assets/Penelitian/IndoBERT/bert-2.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert-3.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert-4.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert-5.png", "caption": "Tampilan Sistem"}
+            {"path": "assets/Profile/Penelitian/IndoBERT/bert-1.png", "caption": "Abstrak"},
+            {"path": "assets/Profile/Penelitian/IndoBERT/bert-2.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Profile/Penelitian/IndoBERT/bert-3.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Profile/Penelitian/IndoBERT/bert-4.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Profile/Penelitian/IndoBERT/bert-5.png", "caption": "Tampilan Sistem"}
         ],
         "dok_tools": ""
     },
