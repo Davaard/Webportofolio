@@ -50,6 +50,6 @@ else:
     with st.sidebar:
         st.markdown("---")
         st.markdown("**Let's Connect!**")
-        st.markdown("🔗 [LinkedIn](#) | 💻 [GitHub](https://github.com/Davaard) | ✉️ [Email](mailto:daryadarendra@gmail.com)")
+        st.markdown("🔗 [LinkedIn](https://linkedin.com/in/darendra) | 💻 [GitHub](https://github.com/Davaard) | ✉️ [Email](mailto:daryadarendra@gmail.com)")
 
 nav.run()
