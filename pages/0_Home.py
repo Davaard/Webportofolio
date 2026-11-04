@@ -24,7 +24,7 @@ st.markdown("""
     
     .skill-tag {
         display: inline-block; background-color: #2a2a35; border: 1px solid #444; border-radius: 20px;
-        padding: 6px 15px; margin: 5px 5px 5px 0; font-size: 12px; font-weight: 600; color: #e0e0e0;
+        padding: 6px 15px; margin: 5px 8px 5px 0; font-size: 13px; font-weight: 600; color: #e0e0e0;
     }
     
     div[data-testid="stDownloadButton"] button {
@@ -37,58 +37,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === BAGIAN HERO (PROFIL UTAMA) ===
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Rasio kolom kiri dikecilkan dari 1.2 menjadi 0.9 agar foto tidak terlalu lebar
-col_kiri, col_kanan = st.columns([0.9, 2.5], gap="large")
+# === BARIS 1: FOTO (KIRI) & RESUME (KANAN) ===
+col_foto, col_intro = st.columns([0.9, 2.5], gap="large")
 
-with col_kiri:
+with col_foto:
     path_foto = "assets/foto_dava.jpg" 
     b64_foto = image_to_base64(path_foto)
     
     if b64_foto:
-        # max-width dihapus, diganti width: 100% agar presisi sejajar dengan tombol Streamlit
         st.markdown(f"""
-        <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 10px;">
             <img src="data:image/png;base64,{b64_foto}" style="width: 100%; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); border: 2px solid #333; display: block;">
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.markdown("<div style='height:250px; background:#222; border-radius:15px; border: 2px dashed #444; display:flex; align-items:center; justify-content:center; color:gray; margin-bottom:15px;'>[Foto Profil]</div>", unsafe_allow_html=True)
-    
-    # Sosmed Link
-    col_s1, col_s2 = st.columns(2)
-    with col_s1: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu")
-    with col_s2: st.link_button("🐙 GitHub", "https://github.com/username_kamu")
-    st.link_button("📧 Email: daryadarendra@gmail.com", "mailto:daryadarendra@gmail.com")
-    
-    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
-    
-    # DROPDOWN DOWNLOAD CV
-    st.markdown("<div style='font-weight: 600; color: white; margin-bottom: 10px; font-size: 14px;'>📥 Unduh Curriculum Vitae (CV)</div>", unsafe_allow_html=True)
-    
-    pilihan_cv = {
-        "CV Umum / General": "CV_Umum_Dava_Arya.pdf",
-        "CV Data Science & Analyst": "CV_Data Science_Dava Arya Danendra.pdf",
-        "CV Instrumentasi Geofisika": "CV_Instrumentasi_Dava Arya Danendra.pdf",
-        "CV IoT & Hardware": "CV_IoT_Dava Arya Danendra.pdf",
-        "CV Operasional & Manajemen": "CV_Operasional_Dava Arya Danendra.pdf",
-        "CV Sampling & Akuisisi Lapangan": "CV_Sampling_Dava Arya Danendra.pdf"
-    }
-    
-    cv_terpilih = st.selectbox("Pilih spesialisasi CV:", list(pilihan_cv.keys()), label_visibility="collapsed")
-    nama_file_cv = pilihan_cv[cv_terpilih]
-    path_file_cv = os.path.join("assets", "CV", nama_file_cv)
-    
-    try:
-        with open(path_file_cv, "rb") as pdf_file:
-            PDFbyte = pdf_file.read()
-        st.download_button(label=f"Unduh {cv_terpilih}", data=PDFbyte, file_name=nama_file_cv, mime='application/octet-stream')
-    except FileNotFoundError:
-        st.error(f"File {nama_file_cv} belum tersedia di folder assets/CV/")
+        st.markdown("<div style='aspect-ratio: 3/4; width:100%; background:#222; border-radius:15px; border: 2px dashed #444; display:flex; align-items:center; justify-content:center; color:gray; margin-bottom:10px;'>[Foto Profil]</div>", unsafe_allow_html=True)
 
-with col_kanan:
+with col_intro:
     st.markdown("""
     <div class="hero-title">Dava Arya Danendra</div>
     <div class="hero-subtitle">S.Si. Fisika | Data Science, Computational Physics & Instrumentation</div>
@@ -96,23 +63,63 @@ with col_kanan:
         Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) dengan spesialisasi pada pemodelan numerik, pemrosesan data kompleks, serta kalibrasi instrumentasi geofisika. Memiliki rekam jejak dalam membangun visualisasi data interaktif, penerapan algoritma <i>Machine Learning</i> (seperti NLP & Logika Fuzzy), hingga akuisisi data perangkat keras lapangan (IoT). Berkomitmen mengubah data mentah menjadi metrik dan <i>dashboard</i> analitik yang akurat guna mendukung inovasi perusahaan.
     </div>
     """, unsafe_allow_html=True)
-    
-    # Core Skills
-    st.markdown("<div class='section-title' style='margin-top: 20px;'>Kemampuan Inti</div>", unsafe_allow_html=True)
-    
-    st.markdown("<b>Komputasi & Data Analytics</b>", unsafe_allow_html=True)
-    st.markdown("""<span class="skill-tag">Python & MATLAB</span><span class="skill-tag">Data Visualization (Plotly)</span><span class="skill-tag">Machine Learning Terapan</span><span class="skill-tag">Pemodelan Numerik</span>""", unsafe_allow_html=True)
-    
-    st.markdown("<br><b>Instrumentasi & Hardware</b>", unsafe_allow_html=True)
-    st.markdown("""<span class="skill-tag">Kalibrasi Alat Ukur</span><span class="skill-tag">Akuisisi Data Lapangan</span><span class="skill-tag">Elektronika (C++, Arduino, Modbus)</span><span class="skill-tag">K3 Lab. Lingkungan</span>""", unsafe_allow_html=True)
-    
-    st.markdown("<br><b>Manajemen & Strategi</b>", unsafe_allow_html=True)
-    st.markdown("""<span class="skill-tag">Manajemen Proyek & SDM</span><span class="skill-tag">Pemecahan Masalah Operasional</span><span class="skill-tag">Resolusi Konflik</span><span class="skill-tag">Analisis Kritis</span>""", unsafe_allow_html=True)
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.info("Ingin melihat riwayat dan dokumentasi portofolio yang lebih detail?")
-    if st.button("Lihat Rekam Jejak Selengkapnya ➔", use_container_width=True):
-        st.switch_page("pages/1_Track_Record.py")
+
+# === BARIS 2: SOSIAL MEDIA (UJUNG KANAN) ===
+# Menggunakan trik rasio kolom (kolom pertama sangat besar sebagai spasi pendorong ke kanan)
+col_space, col_li, col_gh, col_em = st.columns([4, 1.2, 1.2, 1.6])
+with col_li: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu")
+with col_gh: st.link_button("🐙 GitHub", "https://github.com/username_kamu")
+with col_em: st.link_button("📧 Email", "mailto:daryadarendra@gmail.com")
+
+# === BARIS 3: GARIS PEMISAH ===
+st.markdown("<hr style='border-color: #333; margin-top: 20px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+
+# === BARIS 4: KEMAMPUAN INTI (FULL 1 KOLOM) ===
+st.markdown("<div class='section-title' style='margin-top: 0px;'>Kemampuan Inti</div>", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="margin-bottom: 15px;">
+    <b>Komputasi & Data Analytics</b><br>
+    <span class="skill-tag">Python & MATLAB</span><span class="skill-tag">Data Visualization (Plotly)</span><span class="skill-tag">Machine Learning Terapan</span><span class="skill-tag">Pemodelan Numerik</span>
+</div>
+<div style="margin-bottom: 15px;">
+    <b>Instrumentasi & Hardware</b><br>
+    <span class="skill-tag">Kalibrasi Alat Ukur</span><span class="skill-tag">Akuisisi Data Lapangan</span><span class="skill-tag">Elektronika (C++, Arduino, Modbus)</span><span class="skill-tag">K3 Lab. Lingkungan</span>
+</div>
+<div style="margin-bottom: 10px;">
+    <b>Manajemen & Strategi</b><br>
+    <span class="skill-tag">Manajemen Proyek & SDM</span><span class="skill-tag">Pemecahan Masalah Operasional</span><span class="skill-tag">Resolusi Konflik</span><span class="skill-tag">Analisis Kritis</span>
+</div>
+""", unsafe_allow_html=True)
+
+# === BARIS 5: UNDUH CV ===
+st.markdown("<div class='section-title'>📥 Unduh Curriculum Vitae (CV)</div>", unsafe_allow_html=True)
+st.markdown("<p style='color: gray; font-size: 14px;'>Pilih spesialisasi CV yang relevan sebelum mengunduh dokumen:</p>", unsafe_allow_html=True)
+
+# Membuat tata letak sejajar untuk dropdown dan tombol
+col_cv_drop, col_cv_btn, col_cv_space = st.columns([2.5, 1.5, 3])
+
+pilihan_cv = {
+    "CV Umum / General": "CV_Umum_Dava_Arya.pdf",
+    "CV Data Science & Analyst": "CV_Data Science_Dava Arya Danendra.pdf",
+    "CV Instrumentasi Geofisika": "CV_Instrumentasi_Dava Arya Danendra.pdf",
+    "CV IoT & Hardware": "CV_IoT_Dava Arya Danendra.pdf",
+    "CV Operasional & Manajemen": "CV_Operasional_Dava Arya Danendra.pdf",
+    "CV Sampling & Akuisisi Lapangan": "CV_Sampling_Dava Arya Danendra.pdf"
+}
+
+with col_cv_drop:
+    cv_terpilih = st.selectbox("Pilih spesialisasi CV:", list(pilihan_cv.keys()), label_visibility="collapsed")
+    nama_file_cv = pilihan_cv[cv_terpilih]
+    path_file_cv = os.path.join("assets", "CV", nama_file_cv)
+
+with col_cv_btn:
+    try:
+        with open(path_file_cv, "rb") as pdf_file:
+            PDFbyte = pdf_file.read()
+        st.download_button(label=f"Unduh File PDF", data=PDFbyte, file_name=nama_file_cv, mime='application/octet-stream')
+    except FileNotFoundError:
+        st.error("File belum tersedia")
 
 st.markdown("<br><br><hr style='border-color: #333;'>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>© 2026 Dava Arya Danendra. Engineered with Streamlit.</p>", unsafe_allow_html=True)
