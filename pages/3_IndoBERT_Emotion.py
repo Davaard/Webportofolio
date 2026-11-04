@@ -116,7 +116,7 @@ with tab_evaluasi:
         </div>
         """, unsafe_allow_html=True)
     with col_e2:
-        st.info("📝 Keterbukaan terhadap limitasi dataset ini membuktikan pentingnya perlakuan data yang seimbang sebelum memasuki tahap pemodelan NLP.")
+        st.info("📝 Keterbukaan terhadap limitasi dataset ini ditujukan untuk memahami pentingnya perlakuan data yang seimbang sebelum memasuki tahap pemodelan NLP, yang akan disempurnakan dikemudian hari")
 
 with tab_future:
     st.markdown("<br>", unsafe_allow_html=True)

@@ -103,7 +103,7 @@ col_cv_drop, col_cv_btn, col_cv_space = st.columns([2.5, 1.5, 3])
 pilihan_cv = {
     "CV Umum / General": "CV_Umum_Dava_Arya.pdf",
     "CV Data Science & Analyst": "CV_Data Science_Dava Arya Danendra.pdf",
-    "CV Instrumentasi Geofisika": "CV_Instrumentasi_Dava Arya Danendra.pdf",
+    "CV Instrumentasi": "CV_Instrumentasi_Dava Arya Danendra.pdf",
     "CV IoT & Hardware": "CV_IoT_Dava Arya Danendra.pdf",
     "CV Operasional & Manajemen": "CV_Operasional_Dava Arya Danendra.pdf",
     "CV Sampling & Akuisisi Lapangan": "CV_Sampling_Dava Arya Danendra.pdf"
