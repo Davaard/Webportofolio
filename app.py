@@ -38,11 +38,12 @@ else:
     home = st.Page("pages/0_Home.py", title="Beranda & CV", icon="🏠", default=True)
     track_record = st.Page("pages/1_Track_Record.py", title="Rekam Jejak", icon="🏆")
     ikl_hub = st.Page("pages/2_IKL_Hub.py", title="Esport Data Analyst", icon="📊")
-    data_analyst = st.Page("pages/3_Data_Analyst.py", title="Data Analyst", icon="📈")
+    Emo_Bert = st.Page("pages/3_IndoBERT_Emotion.py", title="AI Emotion Classification", icon="🐱")
+    data_analyst = st.Page("pages/4_Data_Analyst.py", title="Data Analyst", icon="📈")
 
     nav = st.navigation({
         "Profil Utama": [home, track_record],
-        "Personal Project": [ikl_hub],
+        "Personal Project": [ikl_hub, Emo_Bert],
         "Learning Hub": [data_analyst]
     })
     

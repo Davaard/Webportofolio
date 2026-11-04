@@ -71,7 +71,7 @@ col_space, col_li, col_gh, col_em = st.columns([6.5, 1, 1, 1.2], gap="small")
 with col_li: 
     st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_kamu", use_container_width=True)
 with col_gh: 
-    st.link_button("🐙 GitHub", "https://github.com/username_kamu", use_container_width=True)
+    st.link_button("🐙 GitHub", "https://github.com/Davaard", use_container_width=True)
 with col_em: 
     st.link_button("📧 Email", "mailto:daryadarendra@gmail.com", use_container_width=True)
 
