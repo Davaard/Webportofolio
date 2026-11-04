@@ -71,9 +71,6 @@ with col_li: st.link_button("🔗 LinkedIn", "https://linkedin.com/in/username_k
 with col_gh: st.link_button("🐙 GitHub", "https://github.com/username_kamu")
 with col_em: st.link_button("📧 Email", "mailto:daryadarendra@gmail.com")
 
-# === BARIS 3: GARIS PEMISAH ===
-st.markdown("<hr style='border-color: #333; margin-top: 20px; margin-bottom: 20px;'>", unsafe_allow_html=True)
-
 # === BARIS 4: KEMAMPUAN INTI (FULL 1 KOLOM) ===
 st.markdown("<div class='section-title' style='margin-top: 0px;'>Kemampuan Inti</div>", unsafe_allow_html=True)
 
