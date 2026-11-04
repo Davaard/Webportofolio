@@ -8,34 +8,42 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
     html, body, [class*="css"] { font-family: 'Montserrat', sans-serif; }
     
-    .page-title { font-weight: 800; font-size: 32px; color: white; margin-bottom: 25px; border-bottom: 2px solid #00d2ff; padding-bottom: 10px; display: inline-block;}
+    .page-title { font-weight: 900; font-size: 34px; color: white; margin-bottom: 10px; line-height: 1.2;}
+    .page-subtitle { font-weight: 500; font-size: 16px; color: gray; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;}
     
-    .timeline-container { border-left: 2px solid #333; padding-left: 25px; position: relative; margin-bottom: 35px; }
+    .timeline-container { border-left: 2px solid #333; padding-left: 25px; position: relative; margin-bottom: 40px; }
     .timeline-container::before {
         content: ''; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; 
         background-color: #00d2ff; border-radius: 50%; box-shadow: 0 0 8px #00d2ff;
     }
     
-    .tl-title { font-weight: 800; font-size: 19px; color: white; margin-bottom: 5px; }
-    .tl-subtitle { font-weight: 600; font-size: 14px; color: #d4af37; margin-bottom: 12px; }
+    .tl-title { font-weight: 800; font-size: 20px; color: white; margin-bottom: 5px; }
+    .tl-subtitle { font-weight: 600; font-size: 14.5px; color: #d4af37; margin-bottom: 12px; }
     .tl-content { font-weight: 400; font-size: 15px; color: #d1d1d1; line-height: 1.7; text-align: justify; }
     .tl-content ul { margin-top: 5px; padding-left: 20px; }
     .tl-content li { margin-bottom: 8px; }
+    
+    /* Mempercantik tampilan Tab Streamlit */
+    div[data-testid="stTabs"] button {
+        font-family: 'Montserrat', sans-serif !important; font-weight: 600 !important; font-size: 16px !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='page-title'>Rekam Jejak & Dokumentasi</div>", unsafe_allow_html=True)
+st.markdown("<div class='page-subtitle'>Rincian kronologis perjalanan profesional, akademik, dan inovasi teknologi yang pernah dikembangkan.</div>", unsafe_allow_html=True)
 
-tab_kerja, tab_org, tab_pendidikan, tab_projek = st.tabs([
-    "💼 Pengalaman Kerja", 
-    "👥 Pengalaman Organisasi", 
-    "🎓 Pendidikan", 
-    "🚀 Pencapaian & Projek"
+# Pembagian 3 Tab Strategis
+tab_kerja, tab_projek, tab_pendidikan = st.tabs([
+    "💼 Pengalaman & Kepemimpinan", 
+    "🚀 Riset & Inovasi", 
+    "🎓 Akademik & Kualifikasi"
 ])
 
-# --- TAB 1: KERJA ---
+# --- TAB 1: PENGALAMAN & KEPEMIMPINAN ---
 with tab_kerja:
     st.markdown("<br>", unsafe_allow_html=True)
+    
     st.markdown("""
     <div class="timeline-container">
         <div class="tl-title">Staf Magang Instrumentasi dan Kalibrasi Geofisika</div>
@@ -49,12 +57,7 @@ with tab_kerja:
             </ul>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-
-# --- TAB 2: ORGANISASI ---
-with tab_org:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
+    
     <div class="timeline-container">
         <div class="tl-title">Wakil Gubernur</div>
         <div class="tl-subtitle">BEM FMIPA Universitas Negeri Semarang | Feb 2025 – Feb 2026</div>
@@ -69,27 +72,7 @@ with tab_org:
     </div>
     """, unsafe_allow_html=True)
 
-# --- TAB 3: PENDIDIKAN ---
-with tab_pendidikan:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class="timeline-container">
-        <div class="tl-title">Universitas Negeri Semarang (UNNES)</div>
-        <div class="tl-subtitle">Sarjana Sains (S.Si.) - Fisika | 2022 – 2026</div>
-        <div class="tl-content">
-            <b>IPK: 3.44</b><br>
-            Fokus Keilmuan:<br>
-            <ul>
-                <li>Pemodelan Numerik & Komputasi Sains</li>
-                <li>Pemrosesan Data & <i>Machine Learning</i> Terapan</li>
-                <li>Sistem Instrumentasi, Sensor & Kalibrasi</li>
-                <li>Integrasi Perangkat Keras (IoT) & Telemetri</li>
-            </ul>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- TAB 4: PENCAPAIAN ---
+# --- TAB 2: RISET & INOVASI ---
 with tab_projek:
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -122,5 +105,38 @@ with tab_projek:
         <div class="tl-title">Penyusun Kurikulum Inovasi Agrikultur (PPK Ormawa)</div>
         <div class="tl-subtitle">Pendanaan Nasional Kemdikbudristek RI | 2024</div>
         <div class="tl-content">Merancang, menyusun, dan mengimplementasikan kurikulum operasional yang terdiri dari 6 modul pelatihan agrikultur guna memacu pemberdayaan ekonomi masyarakat di Desa Singosari, Boyolali.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- TAB 3: AKADEMIK & KUALIFIKASI ---
+with tab_pendidikan:
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="timeline-container">
+        <div class="tl-title">Universitas Negeri Semarang (UNNES)</div>
+        <div class="tl-subtitle">Sarjana Sains (S.Si.) - Fisika | 2022 – 2026</div>
+        <div class="tl-content">
+            <b>IPK: 3.44</b><br><br>
+            <b>Tugas Akhir / Skripsi:</b><br>
+            <i>Simulasi Lagrangian Particle Tracking (LPT) 2D & 3D untuk Pemodelan Dispersi Gas Non-Kondensabel (H2S dan CO2) di Kawasan Panas Bumi Dieng.</i><br><br>
+            <b>Fokus Keilmuan:</b>
+            <ul>
+                <li>Pemodelan Numerik & Komputasi Sains</li>
+                <li>Pemrosesan Data & <i>Machine Learning</i> Terapan</li>
+                <li>Sistem Instrumentasi & Kalibrasi Geofisika</li>
+                <li>Integrasi Perangkat Keras (IoT) & Telemetri</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="timeline-container">
+        <div class="tl-title">Sertifikasi & Kemampuan Bahasa</div>
+        <div class="tl-subtitle">Kualifikasi Profesional</div>
+        <div class="tl-content">
+            <ul>
+                <li><b>Bahasa Inggris:</b> UNNES-TEP / TOEFL Prediction (Score: <b>580</b>). Mampu membaca dan menganalisis dokumentasi teknis atau jurnal ilmiah internasional secara mendalam.</li>
+            </ul>
+        </div>
     </div>
     """, unsafe_allow_html=True)
