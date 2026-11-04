@@ -60,11 +60,11 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": True,
         "dok_teks": "Tangkapan layar antarmuka pengguna (Gradio) yang menampilkan hasil kalkulasi matriks probabilitas sentimen dan emosi dari teks berbahasa Indonesia.",
         "dok_gambar": [
-            {"path": "assets/Penelitian/IndoBERT/bert_1.png", "caption": "Abstrak"},
-            {"path": "assets/Penelitian/IndoBERT/bert_2.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert_3.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert_4.png", "caption": "Tampilan Sistem"},
-            {"path": "assets/Penelitian/IndoBERT/bert_5.png", "caption": "Tampilan Sistem"}
+            {"path": "assets/Penelitian/IndoBERT/bert-1.png", "caption": "Abstrak"},
+            {"path": "assets/Penelitian/IndoBERT/bert-2.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert-3.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert-4.png", "caption": "Tampilan Sistem"},
+            {"path": "assets/Penelitian/IndoBERT/bert-5.png", "caption": "Tampilan Sistem"}
         ],
         "dok_tools": ""
     },
@@ -81,10 +81,10 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": True,
         "dok_teks": "",
         "dok_gambar": [
-            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_1.jpg", "caption": "Sertifikat"},
-            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_2.jpg", "caption": "Dokumentasi"},
-            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_3.jpg", "caption": "Dokumentasi"},
-            {"path": "assets/Profile/Penelitian/KIMI-V/kimi_4.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-1.jpg", "caption": "Sertifikat"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-2.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-3.jpg", "caption": "Dokumentasi"},
+            {"path": "assets/Profile/Penelitian/KIMI-V/kimi-4.jpg", "caption": "Dokumentasi"},
         ],
         "dok_tools": ""
     },
