@@ -63,7 +63,7 @@ with col_kiri:
     
     pilihan_cv = {
         "CV Umum / General": "CV_Umum_Dava_Arya.pdf",
-        "CV Data Science & AI": "CV_Data Science_Dava Arya Danendra.pdf",
+        "CV Data Science & Analyst": "CV_Data Science_Dava Arya Danendra.pdf",
         "CV Instrumentasi Geofisika": "CV_Instrumentasi_Dava Arya Danendra.pdf",
         "CV IoT & Hardware": "CV_IoT_Dava Arya Danendra.pdf",
         "CV Operasional & Manajemen": "CV_Operasional_Dava Arya Danendra.pdf",
@@ -84,9 +84,9 @@ with col_kiri:
 with col_kanan:
     st.markdown("""
     <div class="hero-title">Dava Arya Danendra</div>
-    <div class="hero-subtitle">S.Si. Fisika | Data Science, AI & Instrumentation</div>
+    <div class="hero-subtitle">S.Si. Fisika | Data Science, Computational Physics & Instrumentation</div>
     <div class="hero-text">
-        Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) dengan spesialisasi pada pemodelan numerik, pengembangan kecerdasan buatan (AI), serta kalibrasi instrumentasi geofisika. Memiliki rekam jejak dalam <i>fine-tuning</i> model <i>Deep Learning</i> (IndoBERT), pemodelan data spasial dengan Logika Fuzzy, hingga akuisisi data perangkat keras lapangan (IoT). Berkomitmen mengubah data mentah menjadi metrik dan visualisasi interaktif yang akurat guna mendukung inovasi perusahaan.
+        Lulusan Fisika Universitas Negeri Semarang (IPK 3.44) dengan spesialisasi pada pemodelan numerik, pemrosesan data kompleks, serta kalibrasi instrumentasi geofisika. Memiliki rekam jejak dalam membangun visualisasi data interaktif, penerapan algoritma <i>Machine Learning</i> (seperti NLP & Logika Fuzzy), hingga akuisisi data perangkat keras lapangan (IoT). Berkomitmen mengubah data mentah menjadi metrik dan <i>dashboard</i> analitik yang akurat guna mendukung inovasi perusahaan.
     </div>
     """, unsafe_allow_html=True)
     
@@ -94,7 +94,7 @@ with col_kanan:
     st.markdown("<div class='section-title' style='margin-top: 20px;'>Kemampuan Inti</div>", unsafe_allow_html=True)
     
     st.markdown("<b>Komputasi & Data Analytics</b>", unsafe_allow_html=True)
-    st.markdown("""<span class="skill-tag">Python & MATLAB</span><span class="skill-tag">Deep Learning (NLP)</span><span class="skill-tag">Logika Fuzzy</span><span class="skill-tag">Pemodelan Numerik</span>""", unsafe_allow_html=True)
+    st.markdown("""<span class="skill-tag">Python & MATLAB</span><span class="skill-tag">Data Visualization (Plotly)</span><span class="skill-tag">Machine Learning Terapan</span><span class="skill-tag">Pemodelan Numerik</span>""", unsafe_allow_html=True)
     
     st.markdown("<br><b>Instrumentasi & Hardware</b>", unsafe_allow_html=True)
     st.markdown("""<span class="skill-tag">Kalibrasi Alat Ukur</span><span class="skill-tag">Akuisisi Data Lapangan</span><span class="skill-tag">Elektronika (C++, Arduino, Modbus)</span><span class="skill-tag">K3 Lab. Lingkungan</span>""", unsafe_allow_html=True)

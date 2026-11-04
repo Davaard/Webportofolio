@@ -81,7 +81,7 @@ with tab_pendidikan:
             Fokus Keilmuan:<br>
             <ul>
                 <li>Pemodelan Numerik & Komputasi Sains</li>
-                <li>Pengembangan Kecerdasan Buatan (AI) / <i>Deep Learning</i></li>
+                <li>Pemrosesan Data & <i>Machine Learning</i> Terapan</li>
                 <li>Sistem Instrumentasi & Kalibrasi Geofisika</li>
                 <li>Integrasi Perangkat Keras (IoT) & Telemetri</li>
             </ul>
