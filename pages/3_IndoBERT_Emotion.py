@@ -49,7 +49,7 @@ st.markdown("""
 st.markdown("### 🚀 Live Demo Interaktif")
 
 # GANTI URL DI BAWAH INI DENGAN URL HUGGING FACE SPACES MILIKMU
-HUGGING_FACE_URL = "https://davaard-indobert-emotion.hf.space" 
+HUGGING_FACE_URL = "https://darendra-bert-emotion-classification.hf.space"
 
 # Panel Peringatan Server Sleep
 st.markdown("""
