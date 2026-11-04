@@ -110,6 +110,27 @@ DATABASE_PORTFOLIO = [
         "dok_tools": ""
     },
     {
+            "id": "trc_2025",
+            "kategori": "Riset",
+            "tahun": 2025,
+            "judul": "Pelaksana Program Tsunami Ready Community Tahun 2025",
+            "subjudul": "Stiker Prioritas Evakuasi Bencana Tsunami Kalurahan Parangtritis, Bantul | 2025",
+            "deskripsi": [
+                "Berhasil merancang dan mengimplementasikan Project Stiker Prioritas Evakuasi Bencana Tsunami di kawasan Kalurahan Parangtritis, Kabupaten Bantul"
+                "Program KKN Tsunami Ready Community yang secara resmi mendapatkan sertifikat penghargaan dan pengakuan dari Badan Meteorologi, Klimatologi, dan Geofisika (BMKG) Stasiun Geofisika Kelas I Sleman",
+                "Stiker evakuasi didesain secara khusus untuk mengidentifikasi kelompok rentan, termasuk penyandang disabilitas, dan telah diimplementasikan oleh aparat desa sebagai sarana edukasi serta mitigasi bencana berkelanjutan"
+            ],
+            "ada_dokumentasi": True,
+            "dok_teks": "",
+            "dok_gambar": [
+                {"path": "assets/Profile/Pengabdian/TRC/trc-1.png", "caption": ""},
+                {"path": "assets/Profile/Pengabdian/TRC/trc-2.png", "caption": ""},
+                {"path": "assets/Profile/Pengabdian/TRC/trc-3.png", "caption": ""},
+                {"path": "assets/Profile/Pengabdian/TRC/trc-4.png", "caption": ""}
+            ],
+            "dok_tools": ""
+        },
+    {
         "id": "grk_2025",
         "kategori": "Riset",
         "tahun": 2025,
@@ -241,9 +262,9 @@ def render_timeline_item(item):
 col_header, col_filter = st.columns([3, 1])
 with col_header:
     st.markdown("<div class='page-title'>Rekam Jejak & Dokumentasi</div>", unsafe_allow_html=True)
-    st.markdown("<div class='page-subtitle'>Rincian kronologis perjalanan profesional, akademik, dan inovasi.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='page-subtitle'>Rincian pencapaian akademik, dan inovasi.</div>", unsafe_allow_html=True)
 with col_filter:
-    sort_option = st.selectbox("Urutkan Berdasarkan:", ["Terbaru (Tahun)", "Terlama (Tahun)", "Abjad (A - Z)"])
+    sort_option = st.selectbox("Urutkan Berdasarkan:", ["Terbaru (Tahun)", "Terlama (Tahun)"])
 
 st.markdown("<hr style='border-color: #333; margin-top: 0px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
@@ -252,8 +273,6 @@ if sort_option == "Terbaru (Tahun)":
     data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['tahun'], reverse=True)
 elif sort_option == "Terlama (Tahun)":
     data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['tahun'], reverse=False)
-else:
-    data_terurut = sorted(DATABASE_PORTFOLIO, key=lambda x: x['judul'])
 
 # --- Pembagian Tab & Eksekusi Render ---
 tab_kerja, tab_projek, tab_pendidikan = st.tabs([
