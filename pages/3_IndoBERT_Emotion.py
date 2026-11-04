@@ -41,7 +41,7 @@ st.markdown("""
 <div class='text-justify' style='margin-bottom: 25px;'>
     Aplikasi <i>Artificial Intelligence</i> ini dibangun menggunakan arsitektur <b>Bidirectional Encoder Representations from Transformers (BERT)</b> 
     untuk melakukan klasifikasi emosi multi-label pada teks berbahasa Indonesia. Model dilatih untuk memetakan teks ke dalam 8 spektrum emosi dasar manusia 
-    berdasarkan <i>Plutchik's Wheel of Emotions</i> (Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation).
+    berdasarkan <i>Plutchik's Wheel of Emotions</i> (Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation). Proyek ini merupakan pengembangan dari tugas akhir mata kuliah kecerdasan buatan dan masih dalam tahap pengembangan
 </div>
 """, unsafe_allow_html=True)
 
@@ -116,7 +116,7 @@ with tab_evaluasi:
         </div>
         """, unsafe_allow_html=True)
     with col_e2:
-        st.info("📝 Keterbukaan terhadap limitasi dataset ini ditujukan untuk memahami pentingnya perlakuan data yang seimbang sebelum memasuki tahap pemodelan NLP, yang akan disempurnakan dikemudian hari")
+        st.info("📝 limitasi proyek ini akan diperbaiki seiring dengan bertambahnya ketersediaan data untuk melatih model")
 
 with tab_future:
     st.markdown("<br>", unsafe_allow_html=True)
