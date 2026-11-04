@@ -40,12 +40,12 @@ DATABASE_PORTFOLIO = [
             "Bertindak sebagai fasilitator utama dalam memimpin resolusi konflik internal tim."
         ],
         "ada_dokumentasi": False,
-        "dok_teks": "",
-        "dok_gambar": [
-            {"path": "assets/", "caption": ""},
-            {"path": "assets/", "caption": ""}
-        ],
-        "dok_tools": ""
+        #"dok_teks": "",
+        #"dok_gambar": [
+        #    {"path": "assets/", "caption": ""},
+        #    {"path": "assets/", "caption": ""}
+        #],
+        #"dok_tools": ""
     },
     {
         "id": "indobert_2025",
