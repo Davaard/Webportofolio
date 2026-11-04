@@ -43,7 +43,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col_foto, col_intro = st.columns([0.9, 2.5], gap="large")
 
 with col_foto:
-    path_foto = "assets/profile/foto_dava.jpg" 
+    path_foto = "assets/Profile/foto_dava.jpg" 
     b64_foto = image_to_base64(path_foto)
     
     if b64_foto:

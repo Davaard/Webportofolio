@@ -23,11 +23,11 @@ DATABASE_PORTFOLIO = [
         "ada_dokumentasi": True,
         "dok_teks": "Mendiagnosis kendala teknis dan memastikan reliabilitas akuisisi data sensor seismik secara langsung di stasiun pemantau lapangan.",
         "dok_gambar": [
-            {"path": "assets/profile/BMKG/foto-bersama-magang.jpg", "caption": "Foto Bersama"},
-            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-sensor.png", "caption": "Pemeliharaan Sensor Seismik"},
-            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-digitizer.jpg", "caption": "Pemeliharaan Digitizer"},
-            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-digitizer-2.jpg", "caption": "Pemeliharaan Digitizer"},
-            {"path": "assets/profile/BMKG/dokumentasi-pemeliharaan-solar-panel.jpg", "caption": "Monitoring dan Pemeliharaan Solar Panel"}
+            {"path": "assets/Profile/BMKG/foto-bersama-magang.jpg", "caption": "Foto Bersama"},
+            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-sensor.png", "caption": "Pemeliharaan Sensor Seismik"},
+            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-digitizer.jpg", "caption": "Pemeliharaan Digitizer"},
+            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-digitizer-2.jpg", "caption": "Pemeliharaan Digitizer"},
+            {"path": "assets/Profile/BMKG/dokumentasi-pemeliharaan-solar-panel.jpg", "caption": "Monitoring dan Pemeliharaan Solar Panel"}
         ],
         "dok_tools": "💡 Tools: Multitester, Software Kalibrator, Modbus Analyzer."
     },
