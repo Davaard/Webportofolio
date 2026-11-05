@@ -249,44 +249,85 @@ with tab2:
                                 df_combined.at[sampel, logam] = round(rand_val, 4)
 
         # ----------------------------------------------------
-        # PROSES HILIR: FINAL REPORT & DUAL EXPORT
+        # PROSES HILIR: FINAL REPORT & COA DINAMIS
         # ----------------------------------------------------
         if df_combined is not None:
             try:
-                sampel_yg_diproses = [s for s in df_combined.index if str(s) in wo_flat]
-                
-                # SOLUSI ERROR: Tambahkan dtype=object dan inisialisasi kolom
-                # Agar kolom bisa menerima campuran angka desimal dan teks string ("N/A", "<0,08")
-                df_final = pd.DataFrame(index=sampel_yg_diproses, columns=df_combined.columns, dtype=object)
-                
-                for sampel in sampel_yg_diproses:
-                    logam_diminta = wo_flat.get(str(sampel), set())
-                    for logam in df_combined.columns:
-                        if logam in logam_diminta:
+                # 1. PERBEDAAN LOGIKA BERDASARKAN SUMBER DATA
+                if opsi_sumber == "📂 Upload File CSV Mesin Asli":
+                    # Mode CSV: Abaikan Work Order, ambil semua sampel kecuali Blanko/Standar
+                    kata_kunci_blanko = ['blk', 'cal', 'std', 'blank', 'ghost']
+                    sampel_valid = [s for s in df_combined.index if not any(k in str(s).lower() for k in kata_kunci_blanko)]
+                    
+                    df_final = pd.DataFrame(index=sampel_valid, columns=df_combined.columns, dtype=object)
+                    for sampel in sampel_valid:
+                        for logam in df_combined.columns:
                             nilai = df_combined.at[sampel, logam]
                             limit = LIMIT_DETEKSI.get(logam, 0)
-                            
                             if pd.isna(nilai):
-                                df_final.at[sampel, logam] = "N/A"
+                                df_final.at[sampel, logam] = np.nan # Gunakan NaN agar bisa di-drop
                             elif nilai < limit:
-                                limit_str = str(limit).replace('.', ',')
-                                df_final.at[sampel, logam] = f"<{limit_str}"
+                                df_final.at[sampel, logam] = f"<{str(limit).replace('.', ',')}"
                             else:
                                 df_final.at[sampel, logam] = round(nilai, 4)
+                else:
+                    # Mode Simulasi: Filter ketat berdasarkan Work Order (Demo Anti-Bocor)
+                    sampel_yg_diproses = [s for s in df_combined.index if str(s) in wo_flat]
+                    df_final = pd.DataFrame(index=sampel_yg_diproses, columns=df_combined.columns, dtype=object)
+                    
+                    for sampel in sampel_yg_diproses:
+                        logam_diminta = wo_flat.get(str(sampel), set())
+                        for logam in df_combined.columns:
+                            if logam in logam_diminta:
+                                nilai = df_combined.at[sampel, logam]
+                                limit = LIMIT_DETEKSI.get(logam, 0)
+                                if pd.isna(nilai):
+                                    df_final.at[sampel, logam] = np.nan
+                                elif nilai < limit:
+                                    df_final.at[sampel, logam] = f"<{str(limit).replace('.', ',')}"
+                                else:
+                                    df_final.at[sampel, logam] = round(nilai, 4)
+                            else:
+                                df_final.at[sampel, logam] = np.nan 
+
+                # Buang kolom logam yang 100% tidak ada isinya di tabel utama
+                df_final = df_final.dropna(axis=1, how='all')
                 
-                kolom_tersedia = [k for k in KOLOM_STANDAR if k in df_final.columns]
-                df_final = df_final[kolom_tersedia]
+                st.success(f"✅ Ekstraksi Selesai! Berhasil memproses {len(df_final)} Sampel Valid.")
                 
-                # Bersihkan sisa nilai kosong (NaN) bawaan dari inisialisasi kolom awal
-                df_final = df_final.dropna(axis=1, how='all').fillna("")
+                # =====================================================================
+                # 2. TAMPILAN TABEL KESELURUHAN (MASTER DATA)
+                # =====================================================================
+                st.markdown("### 📋 TABEL HASIL UJI KESELURUHAN")
+                st.markdown("*Tabel di bawah menampilkan seluruh hasil ekstraksi valid yang telah dibersihkan dari blanko.*")
                 
-                st.success(f"✅ Ekstraksi Selesai! Berhasil menyaring {len(df_final)} Sampel valid dari total {len(df_combined)} data bacaan mesin.")
+                # Tampilkan tabel, ubah NaN (kosong) jadi strip "-" agar rapi
+                st.dataframe(df_final.fillna("-"), use_container_width=True)
                 
                 st.markdown("---")
                 
                 # =====================================================================
-                # TAMPILAN SERTIFIKAT HASIL UJI (COA)
+                # 3. GENERATOR CERTIFICATE OF ANALYSIS (COA) PER BATCH PERUSAHAAN
                 # =====================================================================
+                st.markdown("### 🖨️ GENERATOR CERTIFICATE OF ANALYSIS")
+                st.markdown("*Pilih kode batch/perusahaan untuk mencetak CoA yang bersih, spesifik, dan siap rilis.*")
+                
+                # Ekstrak daftar Prefix (misal: "802" dari "802.1")
+                prefixes = sorted(list(set([str(s).split('.')[0] for s in df_final.index])))
+                
+                col_sel1, col_sel2 = st.columns([1, 2])
+                with col_sel1:
+                    selected_group = st.selectbox("Pilih Kode Batch (Perusahaan):", prefixes)
+                
+                # Filter DataFrame KHUSUS untuk prefix yang dipilih
+                df_coa = df_final[df_final.index.astype(str).str.match(f"^{selected_group}(\\.|$)")].copy()
+                
+                # MAGIC TRICK: Buang kolom logam yang sama sekali tidak dipesan oleh batch perusahaan ini!
+                df_coa = df_coa.dropna(axis=1, how='all')
+                
+                # Ubah sisa NaN menjadi strip "-" agar tabel CoA terlihat super elegan
+                df_coa_display = df_coa.fillna("-")
+                
                 import datetime
                 tanggal_hari_ini = datetime.date.today().strftime("%d %B %Y")
                 
@@ -300,24 +341,23 @@ with tab2:
                     col_info1, col_info2 = st.columns(2)
                     with col_info1:
                         st.markdown("**Instrumen:** Shimadzu ICP-OES")
-                        st.markdown("**Metode Uji:** Ekstraksi Asam Nitrat / Multi-Elemen")
+                        st.markdown(f"**Kode Batch / Klien:** {selected_group}")
                     with col_info2:
                         st.markdown(f"<p style='text-align: right;'><b>Tanggal Terbit:</b> {tanggal_hari_ini}</p>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align: right;'><b>Validasi Sistem:</b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
                         
                     st.markdown("<br>", unsafe_allow_html=True)
                     
-                    # Teks Narasi Pengantar Sesuai Standar ISO/Lab
-                    st.markdown("""
+                    st.markdown(f"""
                     Dengan hormat,  
-                    Berdasarkan pengujian spektrometri emisi optik yang telah dilakukan terhadap sampel yang diserahkan, berikut adalah laporan hasil analisis konsentrasi logam:
+                    Berdasarkan pengujian spektrometri emisi optik yang telah dilakukan terhadap sampel dengan identitas batch **{selected_group}**, berikut adalah laporan hasil analisis konsentrasi logam:
                     """)
                     
-                    # Tabel Hasil Uji
-                    st.dataframe(df_final, use_container_width=True)
+                    # Tabel Hasil Uji Spesifik
+                    st.dataframe(df_coa_display, use_container_width=True)
                     
-                    # Keterangan Tambahan (Footnote standar CoA)
-                    st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan bahwa konsentrasi analit berada di bawah Limit Deteksi (Limit of Detection / LoD) instrumen. Nilai N/A menunjukkan bahwa pengujian tersebut tidak direquest pada saat registrasi Work Order.</i></p>", unsafe_allow_html=True)
+                    # Keterangan Tambahan
+                    st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan konsentrasi analit berada di bawah Limit Deteksi (LoD) instrumen. Tanda strip (-) menunjukkan pengujian parameter tersebut tidak diminta oleh klien untuk sampel terkait.</i></p>", unsafe_allow_html=True)
                     
                     # Tanda Tangan Footer
                     st.markdown("<br>", unsafe_allow_html=True)
