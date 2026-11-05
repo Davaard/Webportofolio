@@ -1,0 +1,26 @@
+[
+    {
+        "no_sampel": "802.1",
+        "logam": [
+            "Fe",
+            "Mn",
+            "Zn",
+            "Ba"
+        ]
+    },
+    {
+        "no_sampel": "805.1",
+        "logam": [
+            "Fe",
+            "Cu",
+            "Ni",
+            "Pb"
+        ]
+    },
+    {
+        "no_sampel": "810.1",
+        "logam": [
+            "B"
+        ]
+    }
+]

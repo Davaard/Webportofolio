@@ -40,10 +40,11 @@ else:
     ikl_hub = st.Page("pages/2_IKL_Hub.py", title="Esport Data Analyst", icon="📊")
     Emo_Bert = st.Page("pages/3_IndoBERT_Emotion.py", title="AI Emotion Classification", icon="🐱")
     data_analyst = st.Page("pages/4_Data_Analyst.py", title="Data Analyst", icon="📈")
+    ICP_LIMS = st.Page("pages/5_ICP-LIMS.py", title="Laboratory Information Management System", icon="🧪")
 
     nav = st.navigation({
         "Profil Utama": [home, track_record],
-        "Personal Project": [ikl_hub, Emo_Bert],
+        "Personal Project": [ikl_hub, Emo_Bert, ICP_LIMS],
         "Learning Hub": [data_analyst]
     })
     
