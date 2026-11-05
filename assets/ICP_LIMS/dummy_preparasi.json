@@ -1,26 +1,131 @@
 [
     {
-        "no_sampel": "802.1",
+        "no_sampel": "654.10",
         "logam": [
             "Fe",
             "Mn",
             "Zn",
-            "Ba"
+            "Cu"
+        ]
+    },
+    {
+        "no_sampel": "654.11",
+        "logam": [
+            "Fe",
+            "Mn",
+            "Zn",
+            "Cu"
+        ]
+    },
+    {
+        "no_sampel": "654.12",
+        "logam": [
+            "Fe",
+            "Mn",
+            "Zn",
+            "Cu",
+            "Pb",
+            "Cd"
+        ]
+    },
+    {
+        "no_sampel": "802.1",
+        "logam": [
+            "Ba",
+            "Cr",
+            "Ni"
+        ]
+    },
+    {
+        "no_sampel": "802.2",
+        "logam": [
+            "Ba",
+            "Cr",
+            "Ni",
+            "B"
         ]
     },
     {
         "no_sampel": "805.1",
         "logam": [
-            "Fe",
-            "Cu",
-            "Ni",
-            "Pb"
+            "Hg",
+            "As",
+            "Se",
+            "Sb"
+        ]
+    },
+    {
+        "no_sampel": "805.2",
+        "logam": [
+            "Hg",
+            "As"
         ]
     },
     {
         "no_sampel": "810.1",
         "logam": [
             "B"
+        ]
+    },
+    {
+        "no_sampel": "810.2",
+        "logam": [
+            "B"
+        ]
+    },
+    {
+        "no_sampel": "810.3",
+        "logam": [
+            "B",
+            "Fe",
+            "Mn"
+        ]
+    },
+    {
+        "no_sampel": "901.5",
+        "logam": [
+            "Al",
+            "Ti",
+            "Mo",
+            "Sn"
+        ]
+    },
+    {
+        "no_sampel": "901.6",
+        "logam": [
+            "Al",
+            "Ti"
+        ]
+    },
+    {
+        "no_sampel": "429.8",
+        "logam": [
+            "Zn",
+            "Cu",
+            "Pb",
+            "Cd",
+            "Hg",
+            "As",
+            "B"
+        ]
+    },
+    {
+        "no_sampel": "429.9",
+        "logam": [
+            "Zn",
+            "Cu",
+            "Pb",
+            "Cd"
+        ]
+    },
+    {
+        "no_sampel": "429.10",
+        "logam": [
+            "Fe",
+            "Mn",
+            "Ba",
+            "Ni",
+            "Co"
         ]
     }
 ]

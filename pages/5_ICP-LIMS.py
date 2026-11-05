@@ -105,7 +105,7 @@ with tab1:
         
         st.markdown("### ⚙️ Pengaturan Kapasitas Pengujian")
         if st.checkbox("Gunakan kapasitas slot yang sama untuk semua", value=True):
-            slot_mix_a = slot_mix_b = slot_boron = st.number_input("Maks. Sampel per Run", min_value=1, value=40)
+            slot_mix_a = slot_mix_b = slot_boron = st.number_input("Maks. Sampel per Run", min_value=1, value=5)
         else:
             col_s1, col_s2, col_s3 = st.columns(3)
             with col_s1: slot_mix_a = st.number_input("Maks. MIX A", value=40)
