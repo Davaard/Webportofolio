@@ -275,32 +275,34 @@ with tab2:
         # ----------------------------------------------------
         # PROSES HILIR: FINAL REPORT & COA DINAMIS
         # ----------------------------------------------------
-        # 💡 PANGGIL DARI MEMORI (Bukan dari variabel lokal sementara)
         if st.session_state.df_combined_cache is not None:
             df_combined = st.session_state.df_combined_cache
             sumber_aktif = st.session_state.sumber_cache
             
             try:
-                # 1. PERBEDAAN LOGIKA BERDASARKAN SUMBER DATA
+                df_final = pd.DataFrame(index=df_combined.index, columns=df_combined.columns, dtype=object)
+                
+                # 1. PERBEDAAN LOGIKA FILTER AWAL
                 if sumber_aktif == "📂 Upload File CSV Mesin Asli":
+                    # Mode CSV: Ambil semua data bacaan mesin untuk sampel yang bukan blanko
                     kata_kunci_blanko = ['blk', 'cal', 'std', 'blank', 'ghost']
                     sampel_valid = [s for s in df_combined.index if not any(k in str(s).lower() for k in kata_kunci_blanko)]
+                    df_final = df_final.loc[sampel_valid]
                     
-                    df_final = pd.DataFrame(index=sampel_valid, columns=df_combined.columns, dtype=object)
                     for sampel in sampel_valid:
                         for logam in df_combined.columns:
                             nilai = df_combined.at[sampel, logam]
                             limit = LIMIT_DETEKSI.get(logam, 0)
                             if pd.isna(nilai):
-                                df_final.at[sampel, logam] = np.nan # Gunakan NaN agar bisa di-drop
+                                df_final.at[sampel, logam] = np.nan
                             elif nilai < limit:
                                 df_final.at[sampel, logam] = f"<{str(limit).replace('.', ',')}"
                             else:
                                 df_final.at[sampel, logam] = round(nilai, 4)
                 else:
-                    # Mode Simulasi: Filter ketat berdasarkan Work Order (Demo Anti-Bocor)
+                    # Mode Simulasi: Wajib mematuhi pesanan di Work Order secara ketat (Anti-Bocor)
                     sampel_yg_diproses = [s for s in df_combined.index if str(s) in wo_flat]
-                    df_final = pd.DataFrame(index=sampel_yg_diproses, columns=df_combined.columns, dtype=object)
+                    df_final = df_final.loc[sampel_yg_diproses]
                     
                     for sampel in sampel_yg_diproses:
                         logam_diminta = wo_flat.get(str(sampel), set())
@@ -315,82 +317,80 @@ with tab2:
                                 else:
                                     df_final.at[sampel, logam] = round(nilai, 4)
                             else:
+                                # Kunci Utama: Jika logam tidak dipesan, paksa nilainya menjadi None/NaN
                                 df_final.at[sampel, logam] = np.nan 
 
-                # Buang kolom logam yang 100% tidak ada isinya di tabel utama
+                # Hapus baris yang mungkin seluruh isinya kosong
+                df_final = df_final.dropna(how='all')
+                
+                # Hapus kolom logam (seperti Boron atau lainnya) HANYA JIKA memang tidak ada satupun sampel yang memesannya di seluruh tabel
                 df_final = df_final.dropna(axis=1, how='all')
                 
                 st.success(f"✅ Ekstraksi Selesai! Berhasil memproses {len(df_final)} Sampel Valid.")
                 
-                # =====================================================================
-                # 2. TAMPILAN TABEL KESELURUHAN (MASTER DATA)
-                # =====================================================================
                 st.markdown("### 📋 TABEL HASIL UJI KESELURUHAN")
                 st.markdown("*Tabel di bawah menampilkan seluruh hasil ekstraksi valid yang telah dibersihkan dari blanko.*")
-                
-                # Tampilkan tabel, ubah NaN (kosong) jadi strip "-" agar rapi
+                # Tampilkan keseluruhan tabel dengan mengganti NaN menjadi strip "-"
                 st.dataframe(df_final.fillna("-"), use_container_width=True)
                 
                 st.markdown("---")
                 
                 # =====================================================================
-                # 3. GENERATOR CERTIFICATE OF ANALYSIS (COA) PER BATCH PERUSAHAAN
+                # GENERATOR CERTIFICATE OF ANALYSIS (COA) PER BATCH PERUSAHAAN
                 # =====================================================================
                 st.markdown("### 🖨️ GENERATOR CERTIFICATE OF ANALYSIS")
-                st.markdown("*Pilih kode pesanan/perusahaan untuk mencetak CoA yang bersih, spesifik, dan siap rilis.*")
                 
-                # Ekstrak daftar Prefix (misal: "802" dari "802.1")
+                # Ambil prefix ratusan dari daftar sampel yang ada di df_final (misal: 654, 802, 810)
                 prefixes = sorted(list(set([str(s).split('.')[0] for s in df_final.index])))
                 
-                col_sel1, col_sel2 = st.columns([1, 2])
-                with col_sel1:
-                    selected_group = st.selectbox("Pilih Kode Batch (Perusahaan):", prefixes)
-                
-                # Filter DataFrame KHUSUS untuk prefix yang dipilih
-                df_coa = df_final[df_final.index.astype(str).str.match(f"^{selected_group}(\\.|$)")].copy()
-                
-                # MAGIC TRICK: Buang kolom logam yang sama sekali tidak dipesan oleh batch perusahaan ini!
-                df_coa = df_coa.dropna(axis=1, how='all')
-                
-                # Ubah sisa NaN menjadi strip "-" agar tabel CoA terlihat super elegan
-                df_coa_display = df_coa.fillna("-")
-                
-                import datetime
-                tanggal_hari_ini = datetime.date.today().strftime("%d %B %Y")
-                
-                with st.container(border=True):
-                    # Kop Sertifikat
-                    st.markdown("<h2 style='text-align: center; color: #4CAF50;'>📄 CERTIFICATE OF ANALYSIS</h2>", unsafe_allow_html=True)
-                    st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'><b>Laboratorium Pengujian Kualitas Terpadu</b></p>", unsafe_allow_html=True)
-                    st.divider()
+                if not prefixes:
+                    st.warning("Tidak ada data batch yang bisa dicetak.")
+                else:
+                    col_sel1, col_sel2 = st.columns([1, 2])
+                    with col_sel1:
+                        selected_group = st.selectbox("Pilih Kode Pesanan / Klien:", prefixes)
                     
-                    # Informasi Meta Analisis
-                    col_info1, col_info2 = st.columns(2)
-                    with col_info1:
-                        st.markdown("**Instrumen:** Shimadzu ICP-OES")
-                        st.markdown(f"**Kode Pesanan / Klien:** {selected_group}")
-                    with col_info2:
-                        st.markdown(f"<p style='text-align: right;'><b>Tanggal Terbit:</b> {tanggal_hari_ini}</p>", unsafe_allow_html=True)
-                        st.markdown("<p style='text-align: right;'><b>Validasi Sistem:</b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
+                    # 1. Tarik hanya baris yang cocok dengan prefix (batch) yang dipilih
+                    df_coa = df_final[df_final.index.astype(str).str.match(f"^{selected_group}(\\.|$)")].copy()
+                    
+                    # 2. Hancurkan/buang kolom logam yang tidak dipesan oleh batch ini secara spesifik
+                    # (Inilah yang akan membuang MIX A jika Klien 810 hanya pesan Boron)
+                    df_coa = df_coa.dropna(axis=1, how='all')
+                    
+                    # 3. Ubah sisa ruang kosong menjadi strip (untuk logam kombinasi di dalam satu batch)
+                    df_coa_display = df_coa.fillna("-")
+                    
+                    import datetime
+                    tanggal_hari_ini = datetime.date.today().strftime("%d %B %Y")
+                    
+                    with st.container(border=True):
+                        st.markdown("<h2 style='text-align: center; color: #4CAF50;'>📄 CERTIFICATE OF ANALYSIS</h2>", unsafe_allow_html=True)
+                        st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'><b>Laboratorium Pengujian Kualitas Terpadu</b></p>", unsafe_allow_html=True)
+                        st.divider()
                         
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    Dengan hormat,  
-                    Berdasarkan pengujian spektrometri emisi optik yang telah dilakukan terhadap sampel dengan identitas batch **{selected_group}**, berikut adalah laporan hasil analisis konsentrasi logam:
-                    """)
-                    
-                    # Tabel Hasil Uji Spesifik
-                    st.dataframe(df_coa_display, use_container_width=True)
-                    
-                    # Keterangan Tambahan
-                    st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan konsentrasi analit berada di bawah Limit Deteksi (LoD) instrumen. Tanda strip (-) menunjukkan pengujian parameter tersebut tidak diminta oleh klien untuk sampel terkait.</i></p>", unsafe_allow_html=True)
-                    
-                    # Tanda Tangan Footer
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_sig1, col_sig2 = st.columns([2, 1])
-                    with col_sig2:
-                        st.markdown("<div style='text-align: center;'><b>Disetujui oleh,</b><br><br><br><i>( Quality Control Manager )</i></div>", unsafe_allow_html=True)
-                
+                        col_info1, col_info2 = st.columns(2)
+                        with col_info1:
+                            st.markdown("**Instrumen:** Shimadzu ICP-OES")
+                            st.markdown(f"**Kode Pesanan / Klien:** {selected_group}")
+                        with col_info2:
+                            st.markdown(f"<p style='text-align: right;'><b>Tanggal Terbit:</b> {tanggal_hari_ini}</p>", unsafe_allow_html=True)
+                            st.markdown("<p style='text-align: right;'><b>Validasi Sistem:</b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
+                            
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        
+                        st.markdown(f"""
+                        Dengan hormat,  
+                        Berdasarkan pengujian spektrometri emisi optik yang telah dilakukan terhadap sampel dengan identitas batch **{selected_group}**, berikut adalah laporan hasil analisis konsentrasi logam:
+                        """)
+                        
+                        st.dataframe(df_coa_display, use_container_width=True)
+                        
+                        st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan konsentrasi analit berada di bawah Limit Deteksi (LoD) instrumen. Tanda strip (-) menunjukkan pengujian parameter tersebut tidak diminta oleh klien untuk sampel terkait.</i></p>", unsafe_allow_html=True)
+                        
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        col_sig1, col_sig2 = st.columns([2, 1])
+                        with col_sig2:
+                            st.markdown("<div style='text-align: center;'><b>Disetujui oleh,</b><br><br><br><i>( Quality Control Manager )</i></div>", unsafe_allow_html=True)
+                            
             except Exception as e:
                 st.error(f"Terjadi kesalahan saat memproses tabel akhir: {e}")
