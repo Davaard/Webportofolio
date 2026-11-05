@@ -140,6 +140,7 @@ with tab1:
                 "MIX A": pecah(wm["MIX A"], slot_mix_a), "MIX B": pecah(wm["MIX B"], slot_mix_b), "BORON": pecah(wm["BORON"], slot_boron)
             }
             st.session_state.status_selesai = {}
+            st.session_state.df_combined_cache = None
             st.success("✓ Work Order berhasil dicetak!")
 
     if st.session_state.work_order_final:
@@ -197,8 +198,22 @@ with tab2:
                     if s not in wo_flat: wo_flat[s] = set()
                     wo_flat[s].update(item["logam"])
 
-        df_combined = None 
-        
+        # ==========================================
+        # INISIALISASI CACHE UNTUK TAB 2
+        # ==========================================
+        if "df_combined_cache" not in st.session_state:
+            st.session_state.df_combined_cache = None
+        if "sumber_cache" not in st.session_state:
+            st.session_state.sumber_cache = None
+            
+        wo_flat = {}
+        for kat, batches in wo_data.items():
+            for batch in batches:
+                for item in batch:
+                    s = str(item["no_sampel"])
+                    if s not in wo_flat: wo_flat[s] = set()
+                    wo_flat[s].update(item["logam"])
+
         # ----------------------------------------------------
         # CABANG 1: UPLOAD CSV
         # ----------------------------------------------------
@@ -214,7 +229,7 @@ with tab2:
                                 df_raw = pd.read_csv(f_csv, header=None, on_bad_lines='skip', low_memory=False)
                                 df_unk = df_raw[df_raw[1] == "UNK"].copy()
                                 
-                                df_unk[9] = pd.to_numeric(df_unk[9], errors='coerce') # Optimum
+                                df_unk[9] = pd.to_numeric(df_unk[9], errors='coerce') 
                                 df_opt = df_unk[df_unk[9] == 1].copy()
                                 
                                 df_clean = df_opt[[2, 6, 11]].copy()
@@ -223,10 +238,15 @@ with tab2:
                                 df_pivot = df_clean.pivot_table(index="No_Sampel", columns="Logam", values="Konsentrasi", aggfunc='first')
                                 all_dfs.append(df_pivot)
                             
-                            df_combined = pd.concat(all_dfs)
-                            df_combined = df_combined.groupby(df_combined.index).first()
+                            df_temp = pd.concat(all_dfs)
+                            df_temp = df_temp.groupby(df_temp.index).first()
+                            
+                            # 💡 SIMPAN KE MEMORI STREAMLIT
+                            st.session_state.df_combined_cache = df_temp
+                            st.session_state.sumber_cache = opsi_sumber
+                            
                         except Exception as e:
-                            st.error(f"Gagal membaca CSV. Pastikan formatnya benar (dari mesin Shimadzu). Error: {e}")
+                            st.error(f"Gagal membaca CSV. Error: {e}")
 
         # ----------------------------------------------------
         # CABANG 2: DATA SINTETIS
@@ -237,25 +257,32 @@ with tab2:
             if st.button("⚙️ Jalankan Simulasi Mesin ICP", type="primary", use_container_width=True):
                 with st.spinner("Membuat data sintetis..."):
                     semua_sampel_mesin = list(wo_flat.keys()) + ["blk", "CAL1", "CAL2", "999.9_GHOST"]
-                    df_combined = pd.DataFrame(index=semua_sampel_mesin, columns=KOLOM_STANDAR)
+                    df_temp = pd.DataFrame(index=semua_sampel_mesin, columns=KOLOM_STANDAR)
                     
-                    for sampel in df_combined.index:
-                        for logam in df_combined.columns:
+                    for sampel in df_temp.index:
+                        for logam in df_temp.columns:
                             if np.random.rand() > 0.7:
-                                df_combined.at[sampel, logam] = np.nan
+                                df_temp.at[sampel, logam] = np.nan
                             else:
                                 limit = LIMIT_DETEKSI.get(logam, 0.01)
                                 rand_val = np.random.uniform(limit / 2, limit * 10)
-                                df_combined.at[sampel, logam] = round(rand_val, 4)
+                                df_temp.at[sampel, logam] = round(rand_val, 4)
+                                
+                    # 💡 SIMPAN KE MEMORI STREAMLIT
+                    st.session_state.df_combined_cache = df_temp
+                    st.session_state.sumber_cache = opsi_sumber
 
         # ----------------------------------------------------
         # PROSES HILIR: FINAL REPORT & COA DINAMIS
         # ----------------------------------------------------
-        if df_combined is not None:
+        # 💡 PANGGIL DARI MEMORI (Bukan dari variabel lokal sementara)
+        if st.session_state.df_combined_cache is not None:
+            df_combined = st.session_state.df_combined_cache
+            sumber_aktif = st.session_state.sumber_cache
+            
             try:
                 # 1. PERBEDAAN LOGIKA BERDASARKAN SUMBER DATA
-                if opsi_sumber == "📂 Upload File CSV Mesin Asli":
-                    # Mode CSV: Abaikan Work Order, ambil semua sampel kecuali Blanko/Standar
+                if sumber_aktif == "📂 Upload File CSV Mesin Asli":
                     kata_kunci_blanko = ['blk', 'cal', 'std', 'blank', 'ghost']
                     sampel_valid = [s for s in df_combined.index if not any(k in str(s).lower() for k in kata_kunci_blanko)]
                     
