@@ -337,7 +337,7 @@ with tab2:
                 # 3. GENERATOR CERTIFICATE OF ANALYSIS (COA) PER BATCH PERUSAHAAN
                 # =====================================================================
                 st.markdown("### 🖨️ GENERATOR CERTIFICATE OF ANALYSIS")
-                st.markdown("*Pilih kode batch/perusahaan untuk mencetak CoA yang bersih, spesifik, dan siap rilis.*")
+                st.markdown("*Pilih kode pesanan/perusahaan untuk mencetak CoA yang bersih, spesifik, dan siap rilis.*")
                 
                 # Ekstrak daftar Prefix (misal: "802" dari "802.1")
                 prefixes = sorted(list(set([str(s).split('.')[0] for s in df_final.index])))
@@ -368,7 +368,7 @@ with tab2:
                     col_info1, col_info2 = st.columns(2)
                     with col_info1:
                         st.markdown("**Instrumen:** Shimadzu ICP-OES")
-                        st.markdown(f"**Kode Batch / Klien:** {selected_group}")
+                        st.markdown(f"**Kode Pesanan / Klien:** {selected_group}")
                     with col_info2:
                         st.markdown(f"<p style='text-align: right;'><b>Tanggal Terbit:</b> {tanggal_hari_ini}</p>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align: right;'><b>Validasi Sistem:</b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
