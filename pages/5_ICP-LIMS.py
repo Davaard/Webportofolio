@@ -254,7 +254,10 @@ with tab2:
         if df_combined is not None:
             try:
                 sampel_yg_diproses = [s for s in df_combined.index if str(s) in wo_flat]
-                df_final = pd.DataFrame(index=sampel_yg_diproses)
+                
+                # SOLUSI ERROR: Tambahkan dtype=object dan inisialisasi kolom
+                # Agar kolom bisa menerima campuran angka desimal dan teks string ("N/A", "<0,08")
+                df_final = pd.DataFrame(index=sampel_yg_diproses, columns=df_combined.columns, dtype=object)
                 
                 for sampel in sampel_yg_diproses:
                     logam_diminta = wo_flat.get(str(sampel), set())
@@ -274,31 +277,15 @@ with tab2:
                 kolom_tersedia = [k for k in KOLOM_STANDAR if k in df_final.columns]
                 df_final = df_final[kolom_tersedia]
                 
-                st.success(f"✓ Ekstraksi Selesai! Berhasil menyaring {len(df_final)} Sampel valid dari total {len(df_combined)} data bacaan mesin.")
-                
-                st.markdown("---")
-                st.markdown("### 📋 HASIL UJI")
-
-                st.dataframe(df_final, use_container_width=True)
-                
-                # EXCEL EXPORT
-                buffer_final = io.BytesIO()
-                with pd.ExcelWriter(buffer_final, engine='xlsxwriter') as writer:
-                    df_final.to_excel(writer, sheet_name='Reported Result')
-                    
-                buffer_raw = io.BytesIO()
-                
-                # ... (kode filter limit df_final sebelumnya tetap sama)
-                
-                kolom_tersedia = [k for k in KOLOM_STANDAR if k in df_final.columns]
-                df_final = df_final[kolom_tersedia]
+                # Bersihkan sisa nilai kosong (NaN) bawaan dari inisialisasi kolom awal
+                df_final = df_final.dropna(axis=1, how='all').fillna("")
                 
                 st.success(f"✅ Ekstraksi Selesai! Berhasil menyaring {len(df_final)} Sampel valid dari total {len(df_combined)} data bacaan mesin.")
                 
                 st.markdown("---")
                 
                 # =====================================================================
-                # TAMPILAN SERTIFIKAT HASIL UJI (COA) MENGGANTIKAN DOWNLOAD EXCEL
+                # TAMPILAN SERTIFIKAT HASIL UJI (COA)
                 # =====================================================================
                 import datetime
                 tanggal_hari_ini = datetime.date.today().strftime("%d %B %Y")
@@ -309,14 +296,14 @@ with tab2:
                     st.markdown("<p style='text-align: center; font-size: 16px; margin-top: -10px;'><b>Laboratorium Pengujian Kualitas Terpadu</b></p>", unsafe_allow_html=True)
                     st.divider()
                     
-                    # Informasi Meta Analisis (Teks Kanan didorong pakai HTML)
+                    # Informasi Meta Analisis
                     col_info1, col_info2 = st.columns(2)
                     with col_info1:
                         st.markdown("**Instrumen:** Shimadzu ICP-OES")
                         st.markdown("**Metode Uji:** Ekstraksi Asam Nitrat / Multi-Elemen")
                     with col_info2:
                         st.markdown(f"<p style='text-align: right;'><b>Tanggal Terbit:</b> {tanggal_hari_ini}</p>", unsafe_allow_html=True)
-                        st.markdown("<p style='text-align: right;'><b></b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='text-align: right;'><b>Validasi Sistem:</b> LIMS Engine v1.0</p>", unsafe_allow_html=True)
                         
                     st.markdown("<br>", unsafe_allow_html=True)
                     
@@ -330,7 +317,7 @@ with tab2:
                     st.dataframe(df_final, use_container_width=True)
                     
                     # Keterangan Tambahan (Footnote standar CoA)
-                    st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan bahwa konsentrasi analit berada di bawah Limit Deteksi (Limit of Detection / LoD) instrumen.</i></p>", unsafe_allow_html=True)
+                    st.markdown("<p style='font-size: 12.5px; color: gray;'><i>* Keterangan: Tanda (<) menunjukkan bahwa konsentrasi analit berada di bawah Limit Deteksi (Limit of Detection / LoD) instrumen. Nilai N/A menunjukkan bahwa pengujian tersebut tidak direquest pada saat registrasi Work Order.</i></p>", unsafe_allow_html=True)
                     
                     # Tanda Tangan Footer
                     st.markdown("<br>", unsafe_allow_html=True)
